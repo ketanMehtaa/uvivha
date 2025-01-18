@@ -7,6 +7,7 @@ import PhysicalInfoForm from '@/components/profile/PhysicalInfoForm';
 import EducationCareerForm from '@/components/profile/EducationCareerForm';
 import FamilyBackgroundForm from '@/components/profile/FamilyBackgroundForm';
 import PreferencesForm from '@/components/profile/PreferencesForm';
+import { handleUnauthorized, handleLogout } from '@/lib/auth';
 
 type Step = 'basic' | 'physical' | 'education' | 'family' | 'preferences';
 
@@ -24,7 +25,7 @@ export default function ProfileEditPage() {
         const authData = await authRes.json();
         
         if (!authData.authenticated) {
-          router.push('/auth');
+          handleLogout(router);
           return;
         }
 
@@ -33,19 +34,19 @@ export default function ProfileEditPage() {
         const data = await res.json();
 
         if (data.error) {
+          if (handleUnauthorized(data.error, router)) return;
           console.error('Error fetching user data:', data.error);
-          router.push('/auth');
           return;
         }
 
         if (data.user) {
           setUser(data.user);
         } else {
-          router.push('/auth');
+          handleLogout(router);
         }
       } catch (error) {
         console.error('Error fetching user data:', error);
-        router.push('/auth');
+        handleLogout(router);
       } finally {
         setLoading(false);
       }

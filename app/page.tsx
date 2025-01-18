@@ -24,7 +24,7 @@ export default function LandingPage() {
                   Register Free
                 </Link>
                 <Link 
-                  href="/auth" 
+                  href="/login" 
                   className="px-6 py-3 border-2 border-red-600 text-red-600 rounded-full hover:bg-red-50 transition-colors"
                 >
                   Login

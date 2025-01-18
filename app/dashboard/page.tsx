@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { handleUnauthorized, handleLogout } from '@/lib/auth';
+import ProfilesList from '@/components/profiles/ProfilesList';
 
 interface UserProfile {
   id: string;
@@ -22,6 +24,7 @@ interface UserProfile {
   caste?: string;
   motherTongue?: string;
   photos?: string[];
+  isProfileComplete?: boolean;
 }
 
 export default function DashboardPage() {
@@ -29,12 +32,6 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-
-  const handleLogout = async () => {
-    // Clear auth token cookie
-    document.cookie = 'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
-    router.push('/auth');
-  };
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -44,7 +41,7 @@ export default function DashboardPage() {
         const authData = await authRes.json();
         
         if (!authData.authenticated) {
-          handleLogout();
+          handleLogout(router);
           return;
         }
 
@@ -53,10 +50,7 @@ export default function DashboardPage() {
         const data = await res.json();
 
         if (data.error) {
-          if (data.error === 'Unauthorized' || data.error === 'Invalid token' || data.error === 'User not found') {
-            handleLogout();
-            return;
-          }
+          if (handleUnauthorized(data.error, router)) return;
           setError(data.error);
           return;
         }
@@ -64,11 +58,11 @@ export default function DashboardPage() {
         if (data.user) {
           setUser(data.user);
         } else {
-          handleLogout();
+          handleLogout(router);
         }
       } catch (error) {
         console.error('Error fetching user data:', error);
-        handleLogout();
+        handleLogout(router);
       } finally {
         setLoading(false);
       }
@@ -92,7 +86,7 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-bold text-red-600 mb-4">Error</h1>
           <p className="text-gray-600 mb-6">{error}</p>
           <button 
-            onClick={handleLogout}
+            onClick={() => handleLogout(router)}
             className="inline-block bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors"
           >
             Go to Login
@@ -109,7 +103,7 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-bold text-red-600 mb-4">Authentication Required</h1>
           <p className="text-gray-600 mb-6">Please log in to access your dashboard.</p>
           <button 
-            onClick={handleLogout}
+            onClick={() => handleLogout(router)}
             className="inline-block bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors"
           >
             Go to Login
@@ -128,7 +122,8 @@ export default function DashboardPage() {
   
   const completedFields = requiredFields.filter(field => user[field] !== null && user[field] !== undefined);
   const completionPercentage = Math.round((completedFields.length / requiredFields.length) * 100);
-  const isProfileComplete = completionPercentage === 100;
+  // const isProfileComplete = completionPercentage === 100;
+  const isProfileComplete = user.isProfileComplete;
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-pink-50 to-red-50 p-4">
@@ -167,14 +162,21 @@ export default function DashboardPage() {
               </Link>
             </div>
           ) : (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <h2 className="text-lg font-semibold text-green-800 mb-2">
-                Profile Complete! 🎉
-              </h2>
-              <p className="text-green-700">
-                Your profile is complete and ready to be discovered by potential matches.
-              </p>
-            </div>
+            <>
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                <h2 className="text-lg font-semibold text-green-800 mb-2">
+                  Profile Complete! 🎉
+                </h2>
+                <p className="text-green-700">
+                  Your profile is complete and ready to be discovered by potential matches.
+                </p>
+              </div>
+              
+              <div className="bg-white rounded-lg shadow-xl p-8">
+                <h2 className="text-2xl font-bold text-gray-800 mb-6">Suggested Matches</h2>
+                <ProfilesList />
+              </div>
+            </>
           )}
         </div>
       </div>

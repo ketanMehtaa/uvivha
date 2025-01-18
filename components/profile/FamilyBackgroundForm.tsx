@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { useRouter } from 'next/navigation';
+import { handleApiError } from '@/lib/auth';
 
 interface FamilyBackgroundFormProps {
   user: any;
@@ -28,6 +30,7 @@ export default function FamilyBackgroundForm({
   isLastStep,
   setUser,
 }: FamilyBackgroundFormProps) {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     familyType: user?.familyType || 'none',
@@ -97,11 +100,10 @@ export default function FamilyBackgroundForm({
       }
 
       const data = await res.json();
-      setUser(data.user);
+      setUser({ ...user, ...data.user });
       onNext();
-    } catch (error: any) {
-      console.error('Error updating profile:', error);
-      alert(error.message || 'Failed to update profile. Please try again.');
+    } catch (error) {
+      handleApiError(error, router);
     } finally {
       setLoading(false);
     }

@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { FormShimmer } from "@/components/ui/shimmer";
+import { handleApiError } from '@/lib/auth';
 
 // Type for castes data
 type CastesData = {
@@ -175,18 +176,13 @@ export default function BasicInfoForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setLoading(true);
     try {
       const res = await fetch('/api/profile/basic', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
 
@@ -196,11 +192,10 @@ export default function BasicInfoForm({
       }
 
       const data = await res.json();
-      setUser(data.user);
+      setUser({ ...user, ...data.user });
       onNext();
-    } catch (error: any) {
-      console.error('Error updating profile:', error);
-      alert(error.message || 'Failed to update profile. Please try again.');
+    } catch (error) {
+      handleApiError(error, router);
     } finally {
       setLoading(false);
     }

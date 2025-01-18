@@ -54,4 +54,5 @@ model User {
   occupationPreference    String?
   locationPreference      String?
   maritalStatusPreference String?
+  isProfileComplete       Boolean? @default(false)
 }

@@ -3,7 +3,8 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "seed": "prisma db seed"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.7.4",
@@ -68,6 +69,7 @@
     "tailwind-merge": "^2.6.0",
     "tailwindcss": "^3.4.17",
     "tailwindcss-animate": "^1.0.7",
+    "ts-node": "^10.9.2",
     "typescript": "5.7.2",
     "vaul": "^1.1.2",
     "zod": "^3.24.1"
@@ -80,5 +82,8 @@
   },
   "devDependencies": {
     "prisma": "^6.2.1"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
   }
 }

@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { useRouter } from 'next/navigation';
+import { handleApiError } from '@/lib/auth';
 
 interface EducationCareerFormProps {
   user: any;
@@ -39,6 +41,8 @@ export default function EducationCareerForm({
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -99,9 +103,8 @@ export default function EducationCareerForm({
       const data = await res.json();
       setUser(data.user);
       onNext();
-    } catch (error: any) {
-      console.error('Error updating profile:', error);
-      alert(error.message || 'Failed to update profile. Please try again.');
+    } catch (error) {
+      handleApiError(error, router);
     } finally {
       setLoading(false);
     }

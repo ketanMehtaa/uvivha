@@ -19,3 +19,6 @@ use cookie like this     const cookieStore = await cookies();
         { status: 401 }
       );
     }
+
+use pnpm always , do not use npm
+seed the file to use commonjs syntax instead of es modules
