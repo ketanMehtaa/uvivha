@@ -23,6 +23,9 @@ model User {
   otplessUserId           String?   @unique
   otplessToken            String?
   height                  Float?
+  weight                  Float?
+  complexion              String?
+  physicalStatus          String?
   education               String?
   educationDetails        String?
   occupation              String?

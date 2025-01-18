@@ -1,6 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 interface PhysicalInfoFormProps {
   user: any;
@@ -8,6 +15,7 @@ interface PhysicalInfoFormProps {
   onPrevious: () => void;
   isFirstStep: boolean;
   isLastStep: boolean;
+  setUser: (user: any) => void;
 }
 
 export default function PhysicalInfoForm({
@@ -16,13 +24,14 @@ export default function PhysicalInfoForm({
   onPrevious,
   isFirstStep,
   isLastStep,
+  setUser,
 }: PhysicalInfoFormProps) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    height: user.height || '',
-    weight: user.weight || '',
-    complexion: user.complexion || '',
-    physicalStatus: user.physicalStatus || '',
+    height: user?.height?.toString() || '',
+    weight: user?.weight?.toString() || '',
+    complexion: user?.complexion || 'none',
+    physicalStatus: user?.physicalStatus || 'none',
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -35,10 +44,39 @@ export default function PhysicalInfoForm({
     }
   };
 
+  const handleSelectChange = (name: string, value: string) => {
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    if (!formData.height) newErrors.height = 'Height is required';
-    if (!formData.physicalStatus) newErrors.physicalStatus = 'Physical status is required';
+    
+    // Height validation
+    if (!formData.height) {
+      newErrors.height = 'Height is required';
+    } else {
+      const heightNum = Number(formData.height);
+      if (isNaN(heightNum) || heightNum < 120 || heightNum > 220) {
+        newErrors.height = 'Height must be between 120cm and 220cm';
+      }
+    }
+
+    // Weight validation (optional)
+    if (formData.weight) {
+      const weightNum = Number(formData.weight);
+      if (isNaN(weightNum) || weightNum < 30 || weightNum > 200) {
+        newErrors.weight = 'Weight must be between 30kg and 200kg';
+      }
+    }
+
+    // Physical Status validation
+    if (!formData.physicalStatus || formData.physicalStatus === 'none') {
+      newErrors.physicalStatus = 'Physical status is required';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -47,23 +85,32 @@ export default function PhysicalInfoForm({
     e.preventDefault();
     if (!validateForm()) return;
 
+    // Clean up the data before sending
+    const dataToSend = {
+      ...formData,
+      complexion: formData.complexion === 'none' ? null : formData.complexion,
+      physicalStatus: formData.physicalStatus === 'none' ? null : formData.physicalStatus,
+    };
+
     setLoading(true);
     try {
       const res = await fetch('/api/profile/physical', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(dataToSend),
       });
 
-      if (!res.ok) throw new Error('Failed to update profile');
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to update profile');
+      }
 
       const data = await res.json();
-      const userData = JSON.parse(localStorage.getItem('user') || '{}');
-      localStorage.setItem('user', JSON.stringify({ ...userData, ...data.user }));
+      setUser(data.user);
       onNext();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating profile:', error);
-      alert('Failed to update profile. Please try again.');
+      alert(error.message || 'Failed to update profile. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -90,22 +137,65 @@ export default function PhysicalInfoForm({
         {errors.height && <p className="mt-1 text-sm text-red-600">{errors.height}</p>}
       </div>
 
+      {/* Weight */}
+      <div>
+        <label htmlFor="weight" className="block text-sm font-medium text-gray-700">
+          Weight (in kg)
+        </label>
+        <input
+          type="number"
+          id="weight"
+          name="weight"
+          value={formData.weight}
+          onChange={handleChange}
+          min="30"
+          max="200"
+          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-red-500 focus:outline-none focus:ring-red-500"
+          placeholder="Enter weight in kilograms"
+        />
+        {errors.weight && <p className="mt-1 text-sm text-red-600">{errors.weight}</p>}
+      </div>
+
+      {/* Complexion */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Complexion
+        </label>
+        <Select
+          value={formData.complexion}
+          onValueChange={(value) => handleSelectChange('complexion', value)}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select complexion" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">Select complexion</SelectItem>
+            <SelectItem value="Very Fair">Very Fair</SelectItem>
+            <SelectItem value="Fair">Fair</SelectItem>
+            <SelectItem value="Wheatish">Wheatish</SelectItem>
+            <SelectItem value="Dark">Dark</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       {/* Physical Status */}
       <div>
-        <label htmlFor="physicalStatus" className="block text-sm font-medium text-gray-700">
+        <label className="block text-sm font-medium text-gray-700 mb-1">
           Physical Status
         </label>
-        <select
-          id="physicalStatus"
-          name="physicalStatus"
+        <Select
           value={formData.physicalStatus}
-          onChange={handleChange}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-red-500 focus:outline-none focus:ring-red-500"
+          onValueChange={(value) => handleSelectChange('physicalStatus', value)}
         >
-          <option value="">Select physical status</option>
-          <option value="Normal">Normal</option>
-          <option value="Physically Challenged">Physically Challenged</option>
-        </select>
+          <SelectTrigger>
+            <SelectValue placeholder="Select physical status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">Select physical status</SelectItem>
+            <SelectItem value="Normal">Normal</SelectItem>
+            <SelectItem value="Physically Challenged">Physically Challenged</SelectItem>
+          </SelectContent>
+        </Select>
         {errors.physicalStatus && <p className="mt-1 text-sm text-red-600">{errors.physicalStatus}</p>}
       </div>
 
@@ -124,7 +214,12 @@ export default function PhysicalInfoForm({
           disabled={loading}
           className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
         >
-          {loading ? 'Saving...' : 'Next'}
+          {loading ? (
+            <>
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+              Saving...
+            </>
+          ) : isLastStep ? 'Finish' : 'Next'}
         </button>
       </div>
     </form>
