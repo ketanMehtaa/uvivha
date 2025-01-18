@@ -17,41 +17,34 @@ export async function POST(request: Request) {
       );
     }
 
-    // Find or create user
-    const user = await prisma.user.upsert({
-      where: { mobile },
-      update: {
-        name: name || undefined,
-        updatedAt: new Date(),
-        otplessUserId: userId,
-      },
-      create: {
-        name: name || 'New User',
-        mobile,
-        password: '', // Empty password since we're using OTPless
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        otplessUserId: userId,
-        // Initialize other fields with defaults
-        photos: [],
-        gender: null,
-        birthDate: null,
-        location: null,
-        bio: null,
-        height: null,
-        education: null,
-        occupation: null,
-        income: null,
-        maritalStatus: null,
-        religion: null,
-        caste: null,
-        motherTongue: null,
-        agePreferenceMin: null,
-        agePreferenceMax: null,
-        heightPreferenceMin: null,
-        heightPreferenceMax: null,
-      },
+    // First check if user exists
+    let user = await prisma.user.findUnique({
+      where: { mobile }
     });
+
+    if (user) {
+      // If user exists, only update otplessUserId
+      user = await prisma.user.update({
+        where: { mobile },
+        data: {
+          otplessUserId: userId,
+          updatedAt: new Date(),
+        }
+      });
+    } else {
+      // If user doesn't exist, create new user with minimal info
+      user = await prisma.user.create({
+        data: {
+          name: name || 'New User',
+          mobile,
+          password: '', // Empty password since we're using OTPless
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          otplessUserId: userId,
+          photos: [],
+        }
+      });
+    }
 
     // Generate JWT token
     const token = jwt.sign(

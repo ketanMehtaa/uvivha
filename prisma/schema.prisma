@@ -38,6 +38,13 @@ model User {
   caste                   String?
   subcaste                String?
   motherTongue            String?
+  familyType              String?
+  familyStatus            String?
+  fatherOccupation        String?
+  motherOccupation        String?
+  siblings                String?
+  familyLocation          String?
+  aboutFamily             String?
   agePreferenceMin        Int?
   agePreferenceMax        Int?
   heightPreferenceMin     Float?

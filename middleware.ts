@@ -8,6 +8,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 const publicRoutes = [
   '/',
   '/auth',
+  '/login',
   '/api/auth/check',
   '/api/auth',
   '/_next',
@@ -59,11 +60,13 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
+     * - auth (auth page)
      * - api/auth (authentication endpoints)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
+     * - / (root page)
      */
-    '/((?!api/auth|_next/static|_next/image|favicon.ico).*)',
+    '/((?!auth|api/auth|_next/static|_next/image|favicon.ico|$).*)',
   ],
 };

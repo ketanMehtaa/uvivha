@@ -1,6 +1,15 @@
 'use client';
 
 import { useState } from 'react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 
 interface FamilyBackgroundFormProps {
   user: any;
@@ -21,19 +30,26 @@ export default function FamilyBackgroundForm({
 }: FamilyBackgroundFormProps) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    familyType: user.familyType || '',
-    familyStatus: user.familyStatus || '',
-    fatherOccupation: user.fatherOccupation || '',
-    motherOccupation: user.motherOccupation || '',
-    siblings: user.siblings || '',
-    familyLocation: user.familyLocation || '',
-    aboutFamily: user.aboutFamily || '',
+    familyType: user?.familyType || 'none',
+    familyStatus: user?.familyStatus || 'none',
+    fatherOccupation: user?.fatherOccupation || '',
+    motherOccupation: user?.motherOccupation || '',
+    siblings: user?.siblings || '',
+    familyLocation: user?.familyLocation || '',
+    aboutFamily: user?.aboutFamily || '',
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const handleSelectChange = (name: string, value: string) => {
     setFormData(prev => ({ ...prev, [name]: value }));
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
@@ -42,9 +58,14 @@ export default function FamilyBackgroundForm({
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    if (!formData.familyType) newErrors.familyType = 'Family type is required';
-    if (!formData.familyStatus) newErrors.familyStatus = 'Family status is required';
-    if (!formData.familyLocation) newErrors.familyLocation = 'Family location is required';
+    
+    if (!formData.familyType || formData.familyType === 'none') {
+      newErrors.familyType = 'Family type is required';
+    }
+    if (!formData.familyStatus || formData.familyStatus === 'none') {
+      newErrors.familyStatus = 'Family status is required';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -53,22 +74,34 @@ export default function FamilyBackgroundForm({
     e.preventDefault();
     if (!validateForm()) return;
 
+    // Clean up the data before sending
+    const dataToSend = {
+      ...formData,
+      familyType: formData.familyType === 'none' ? null : formData.familyType,
+      familyStatus: formData.familyStatus === 'none' ? null : formData.familyStatus,
+    };
+
     setLoading(true);
     try {
       const res = await fetch('/api/profile/family', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(dataToSend),
       });
 
-      if (!res.ok) throw new Error('Failed to update profile');
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to update profile');
+      }
 
       const data = await res.json();
-      setUser({ ...user, ...data.user });
+      setUser(data.user);
       onNext();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating profile:', error);
-      alert('Failed to update profile. Please try again.');
+      alert(error.message || 'Failed to update profile. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -78,104 +111,96 @@ export default function FamilyBackgroundForm({
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Family Type */}
       <div>
-        <label htmlFor="familyType" className="block text-sm font-medium text-gray-700">
-          Family Type
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Family Type*
         </label>
-        <select
-          id="familyType"
-          name="familyType"
+        <Select
           value={formData.familyType}
-          onChange={handleChange}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-red-500 focus:outline-none focus:ring-red-500"
+          onValueChange={(value) => handleSelectChange('familyType', value)}
         >
-          <option value="">Select family type</option>
-          <option value="Joint Family">Joint Family</option>
-          <option value="Nuclear Family">Nuclear Family</option>
-        </select>
+          <SelectTrigger>
+            <SelectValue placeholder="Select family type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">Select family type</SelectItem>
+            <SelectItem value="Joint Family">Joint Family</SelectItem>
+            <SelectItem value="Nuclear Family">Nuclear Family</SelectItem>
+          </SelectContent>
+        </Select>
         {errors.familyType && <p className="mt-1 text-sm text-red-600">{errors.familyType}</p>}
       </div>
 
       {/* Family Status */}
       <div>
-        <label htmlFor="familyStatus" className="block text-sm font-medium text-gray-700">
-          Family Status
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Family Status*
         </label>
-        <select
-          id="familyStatus"
-          name="familyStatus"
+        <Select
           value={formData.familyStatus}
-          onChange={handleChange}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-red-500 focus:outline-none focus:ring-red-500"
+          onValueChange={(value) => handleSelectChange('familyStatus', value)}
         >
-          <option value="">Select family status</option>
-          <option value="Middle Class">Middle Class</option>
-          <option value="Upper Middle Class">Upper Middle Class</option>
-          <option value="Rich">Rich</option>
-          <option value="Affluent">Affluent</option>
-        </select>
+          <SelectTrigger>
+            <SelectValue placeholder="Select family status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">Select family status</SelectItem>
+            <SelectItem value="Middle Class">Middle Class</SelectItem>
+            <SelectItem value="Upper Middle Class">Upper Middle Class</SelectItem>
+            <SelectItem value="Rich">Rich</SelectItem>
+            <SelectItem value="Affluent">Affluent</SelectItem>
+          </SelectContent>
+        </Select>
         {errors.familyStatus && <p className="mt-1 text-sm text-red-600">{errors.familyStatus}</p>}
       </div>
 
       {/* Father's Occupation */}
       <div>
-        <label htmlFor="fatherOccupation" className="block text-sm font-medium text-gray-700">
-          Father's Occupation
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Father's Occupation (Optional)
         </label>
-        <input
-          type="text"
-          id="fatherOccupation"
+        <Input
           name="fatherOccupation"
           value={formData.fatherOccupation}
           onChange={handleChange}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-red-500 focus:outline-none focus:ring-red-500"
           placeholder="Enter father's occupation"
         />
       </div>
 
       {/* Mother's Occupation */}
       <div>
-        <label htmlFor="motherOccupation" className="block text-sm font-medium text-gray-700">
-          Mother's Occupation
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Mother's Occupation (Optional)
         </label>
-        <input
-          type="text"
-          id="motherOccupation"
+        <Input
           name="motherOccupation"
           value={formData.motherOccupation}
           onChange={handleChange}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-red-500 focus:outline-none focus:ring-red-500"
           placeholder="Enter mother's occupation"
         />
       </div>
 
       {/* Siblings */}
       <div>
-        <label htmlFor="siblings" className="block text-sm font-medium text-gray-700">
-          Siblings
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Siblings (Optional)
         </label>
-        <input
-          type="text"
-          id="siblings"
+        <Input
           name="siblings"
           value={formData.siblings}
           onChange={handleChange}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-red-500 focus:outline-none focus:ring-red-500"
           placeholder="Number and details of siblings"
         />
       </div>
 
       {/* Family Location */}
       <div>
-        <label htmlFor="familyLocation" className="block text-sm font-medium text-gray-700">
-          Family Location
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Family Location (Optional)
         </label>
-        <input
-          type="text"
-          id="familyLocation"
+        <Input
           name="familyLocation"
           value={formData.familyLocation}
           onChange={handleChange}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-red-500 focus:outline-none focus:ring-red-500"
           placeholder="Enter family's location"
         />
         {errors.familyLocation && <p className="mt-1 text-sm text-red-600">{errors.familyLocation}</p>}
@@ -183,16 +208,14 @@ export default function FamilyBackgroundForm({
 
       {/* About Family */}
       <div>
-        <label htmlFor="aboutFamily" className="block text-sm font-medium text-gray-700">
-          About Family
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          About Family (Optional)
         </label>
-        <textarea
-          id="aboutFamily"
+        <Textarea
           name="aboutFamily"
           value={formData.aboutFamily}
           onChange={handleChange}
           rows={3}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-red-500 focus:outline-none focus:ring-red-500"
           placeholder="Tell us about your family"
         />
       </div>
@@ -212,7 +235,12 @@ export default function FamilyBackgroundForm({
           disabled={loading}
           className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
         >
-          {loading ? 'Saving...' : 'Next'}
+          {loading ? (
+            <>
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+              Saving...
+            </>
+          ) : isLastStep ? 'Finish' : 'Next'}
         </button>
       </div>
     </form>

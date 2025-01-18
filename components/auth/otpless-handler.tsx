@@ -44,7 +44,6 @@ export function OtplessHandler() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            name: 'New User',
             mobile,
             timestamp: response.timestamp,
             userId: response.userId,
@@ -61,7 +60,11 @@ export function OtplessHandler() {
 
         if (data.success) {
           console.log('4. Authentication successful, redirecting...');
-          router.push('/dashboard');
+          if (data.user.isProfileComplete) {
+            router.push('/dashboard');
+          } else {
+            router.push('/profile/edit');
+          }
         } else {
           throw new Error('Invalid response from server');
         }

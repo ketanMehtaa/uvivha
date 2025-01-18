@@ -27,28 +27,48 @@ interface UserProfile {
 export default function DashboardPage() {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+
+  const handleLogout = async () => {
+    // Clear auth token cookie
+    document.cookie = 'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+    router.push('/auth');
+  };
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
+        // First check if authenticated
+        const authRes = await fetch('/api/auth/check');
+        const authData = await authRes.json();
+        
+        if (!authData.authenticated) {
+          handleLogout();
+          return;
+        }
+
+        // Then fetch user data
         const res = await fetch('/api/user/me');
         const data = await res.json();
 
         if (data.error) {
-          console.error('Error fetching user data:', data.error);
-          router.push('/auth');
+          if (data.error === 'Unauthorized' || data.error === 'Invalid token' || data.error === 'User not found') {
+            handleLogout();
+            return;
+          }
+          setError(data.error);
           return;
         }
 
         if (data.user) {
           setUser(data.user);
         } else {
-          router.push('/auth');
+          handleLogout();
         }
       } catch (error) {
         console.error('Error fetching user data:', error);
-        router.push('/auth');
+        handleLogout();
       } finally {
         setLoading(false);
       }
@@ -65,18 +85,35 @@ export default function DashboardPage() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-r from-pink-50 to-red-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Error</h1>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <button 
+            onClick={handleLogout}
+            className="inline-block bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors"
+          >
+            Go to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-r from-pink-50 to-red-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">Session Expired</h1>
-          <p className="text-gray-600 mb-6">Please log in again to continue.</p>
-          <Link 
-            href="/auth" 
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Authentication Required</h1>
+          <p className="text-gray-600 mb-6">Please log in to access your dashboard.</p>
+          <button 
+            onClick={handleLogout}
             className="inline-block bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors"
           >
             Go to Login
-          </Link>
+          </button>
         </div>
       </div>
     );

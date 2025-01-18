@@ -19,6 +19,16 @@ export default function ProfileEditPage() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
+        // First check if authenticated
+        const authRes = await fetch('/api/auth/check');
+        const authData = await authRes.json();
+        
+        if (!authData.authenticated) {
+          router.push('/auth');
+          return;
+        }
+
+        // Then fetch user data
         const res = await fetch('/api/user/me');
         const data = await res.json();
 
