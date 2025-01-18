@@ -1,0 +1,72 @@
+{
+  "Brahmin": {
+    "subcastes": [
+      "Garhwali Brahmin",
+      "Kumaoni Brahmin",
+      "Gangari",
+      "Joshi",
+      "Pant",
+      "Bhatt",
+      "Purohit",
+      "Uniyal",
+      "Dabral",
+      "Thapliyal"
+    ]
+  },
+  "Rajput": {
+    "subcastes": [
+      "Garhwali Rajput",
+      "Kumaoni Rajput",
+      "Rautela",
+      "Karki",
+      "Bisht",
+      "Negi",
+      "Rana",
+      "Rawat",
+      "Mahra",
+      "Kathayat"
+    ]
+  },
+  "Scheduled Caste": {
+    "subcastes": [
+      "Koli",
+      "Bhangi",
+      "Chamar",
+      "Dom",
+      "Badhai",
+      "Lohar",
+      "Tamta",
+      "Dholi",
+      "Damai",
+      "Sarki"
+    ]
+  },
+  "Scheduled Tribe": {
+    "subcastes": [
+      "Bhotia",
+      "Buksa",
+      "Jannsari",
+      "Tharu",
+      "Raji",
+      "Bhutia"
+    ]
+  },
+  "Baniya": {
+    "subcastes": [
+      "Agarwal",
+      "Garg",
+      "Gupta",
+      "Mittal",
+      "Goyal"
+    ]
+  },
+  "Other": {
+    "subcastes": [
+      "Jaat",
+      "Gujjar",
+      "Sikh",
+      "Muslim",
+      "Christian"
+    ]
+  }
+} 

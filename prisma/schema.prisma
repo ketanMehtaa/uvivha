@@ -27,17 +27,28 @@ model User {
 
   // Profile details
   height          Float?
-  education      String?
-  occupation     String?
-  income         String?
-  maritalStatus  String?
-  religion       String?
-  caste          String?
-  motherTongue   String?
+  education       String?
+  educationDetails String?
+  occupation      String?
+  employedIn      String?
+  companyName     String?
+  jobTitle        String?
+  income          String?
+  maritalStatus   String?
+  religion        String?
+  caste           String?
+  subcaste        String?
+  motherTongue    String?
 
   // Preferences
-  agePreferenceMin Int?
-  agePreferenceMax Int?
+  agePreferenceMin    Int?
+  agePreferenceMax    Int?
   heightPreferenceMin Float?
   heightPreferenceMax Float?
+
+  maritalStatusPreference String?
+  educationPreference    String?
+  occupationPreference   String?
+  locationPreference     String?
+  castePreference       String?
 } 
