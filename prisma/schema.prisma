@@ -8,47 +8,40 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  name      String
-  mobile    String   @unique
-  password  String?
-  email     String?  @unique
-  gender    String?
-  birthDate DateTime?
-  location  String?
-  bio       String?
-  photos    String[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // OTPless authentication
-  otplessUserId String?  @unique
-  otplessToken  String?
-
-  // Profile details
-  height          Float?
-  education       String?
-  educationDetails String?
-  occupation      String?
-  employedIn      String?
-  companyName     String?
-  jobTitle        String?
-  income          String?
-  maritalStatus   String?
-  religion        String?
-  caste           String?
-  subcaste        String?
-  motherTongue    String?
-
-  // Preferences
-  agePreferenceMin    Int?
-  agePreferenceMax    Int?
-  heightPreferenceMin Float?
-  heightPreferenceMax Float?
-
+  id                      String    @id @default(cuid())
+  name                    String
+  mobile                  String    @unique
+  password                String?
+  email                   String?   @unique
+  gender                  String?
+  birthDate               DateTime?
+  location                String?
+  bio                     String?
+  photos                  String[]
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+  otplessUserId           String?   @unique
+  otplessToken            String?
+  height                  Float?
+  education               String?
+  educationDetails        String?
+  occupation              String?
+  employedIn              String?
+  companyName             String?
+  jobTitle                String?
+  income                  String?
+  maritalStatus           String?
+  religion                String?
+  caste                   String?
+  subcaste                String?
+  motherTongue            String?
+  agePreferenceMin        Int?
+  agePreferenceMax        Int?
+  heightPreferenceMin     Float?
+  heightPreferenceMax     Float?
+  castePreference         String?
+  educationPreference     String?
+  occupationPreference    String?
+  locationPreference      String?
   maritalStatusPreference String?
-  educationPreference    String?
-  occupationPreference   String?
-  locationPreference     String?
-  castePreference       String?
-} 
+}

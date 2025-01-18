@@ -1,0 +1,7 @@
+use jwt authenticaion in all places 
+dont use local storage 
+dont use hash for password
+use shadcn for ui 
+use consistent ui in all places
+dont try to use complex things in project and make project complex
+try to fix the error if you find any in any file

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import castes from '@/data/castes.json';
 import {
@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { FormShimmer } from "@/components/ui/shimmer";
 
 // Type for castes data
 type CastesData = {
@@ -24,7 +25,16 @@ interface BasicInfoFormProps {
   onPrevious: () => void;
   isFirstStep: boolean;
   isLastStep: boolean;
+  setUser: (user: any) => void;
 }
+
+const validatePassword = (password: string): string[] => {
+  const errors: string[] = [];
+  if (password.length < 6) {
+    errors.push('Password must be at least 6 characters long');
+  }
+  return errors;
+};
 
 export default function BasicInfoForm({
   user,
@@ -32,25 +42,104 @@ export default function BasicInfoForm({
   onPrevious,
   isFirstStep,
   isLastStep,
+  setUser,
 }: BasicInfoFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [fetchingData, setFetchingData] = useState(true);
   const [formData, setFormData] = useState({
-    name: user.name || '',
-    email: user.email || '',
-    gender: user.gender || '',
-    birthDate: user.birthDate || '',
-    location: user.location || '',
-    bio: user.bio || '',
-    caste: user.caste || '',
-    subcaste: user.subcaste || '',
+    name: '',
+    password: '',
+    email: '',
+    gender: '',
+    birthDate: '',
+    location: '',
+    bio: '',
+    caste: '',
+    subcaste: '',
   });
+
+  // Fetch user data when component mounts
+  useEffect(() => {
+    let isMounted = true;
+
+    // If we already have user data from props, use that instead of fetching
+    if (user?.name) {
+      const formattedDate = user.birthDate 
+        ? new Date(user.birthDate).toISOString().split('T')[0]
+        : '';
+
+      setFormData({
+        name: user.name || '',
+        password: user.password || '',
+        email: user.email || '',
+        gender: user.gender || '',
+        birthDate: formattedDate,
+        location: user.location || '',
+        bio: user.bio || '',
+        caste: user.caste || '',
+        subcaste: user.subcaste || '',
+      });
+      setFetchingData(false);
+      return;
+    }
+
+    const fetchUserData = async () => {
+      if (!isMounted) return;
+      
+      try {
+        const res = await fetch('/api/user/me');
+        const data = await res.json();
+
+        if (!isMounted) return;
+
+        if (data.error) {
+          console.error('Error fetching user data:', data.error);
+          return;
+        }
+
+        if (data.user) {
+          const formattedDate = data.user.birthDate 
+            ? new Date(data.user.birthDate).toISOString().split('T')[0]
+            : '';
+
+          setFormData({
+            name: data.user.name || '',
+            password: data.user.password || '',
+            email: data.user.email || '',
+            gender: data.user.gender || '',
+            birthDate: formattedDate,
+            location: data.user.location || '',
+            bio: data.user.bio || '',
+            caste: data.user.caste || '',
+            subcaste: data.user.subcaste || '',
+          });
+        }
+      } catch (error) {
+        if (!isMounted) return;
+        console.error('Error fetching user data:', error);
+      } finally {
+        if (isMounted) {
+          setFetchingData(false);
+        }
+      }
+    };
+
+    fetchUserData();
+
+    // Cleanup function to prevent state updates after unmount
+    return () => {
+      isMounted = false;
+    };
+  }, []); // Only run on mount
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // Clear previous errors
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
@@ -61,8 +150,8 @@ export default function BasicInfoForm({
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
-    // Clear subcaste when caste changes
-    if (name === 'caste') {
+    // Only clear subcaste when caste changes and it's a different value
+    if (name === 'caste' && value !== formData.caste) {
       setFormData(prev => ({ ...prev, subcaste: '' }));
     }
   };
@@ -70,11 +159,16 @@ export default function BasicInfoForm({
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.name) newErrors.name = 'Name is required';
+    if (!formData.password) newErrors.password = 'Password is required';
+    if (formData.password && formData.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters long';
+    }
     if (!formData.email) newErrors.email = 'Email is required';
     if (!formData.gender || formData.gender === 'none') newErrors.gender = 'Gender is required';
     if (!formData.birthDate) newErrors.birthDate = 'Birth date is required';
     if (!formData.location) newErrors.location = 'Location is required';
     if (!formData.caste || formData.caste === 'none') newErrors.caste = 'Caste is required';
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -97,23 +191,24 @@ export default function BasicInfoForm({
       });
 
       if (!res.ok) {
-        throw new Error('Failed to update profile');
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to update profile');
       }
 
       const data = await res.json();
-      
-      // Update local storage with new user data
-      const userData = JSON.parse(localStorage.getItem('user') || '{}');
-      localStorage.setItem('user', JSON.stringify({ ...userData, ...data.user }));
-      
+      setUser(data.user);
       onNext();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating profile:', error);
-      alert('Failed to update profile. Please try again.');
+      alert(error.message || 'Failed to update profile. Please try again.');
     } finally {
       setLoading(false);
     }
   };
+
+  if (fetchingData) {
+    return <FormShimmer />;
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -132,6 +227,23 @@ export default function BasicInfoForm({
           placeholder="Enter your full name"
         />
         {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
+      </div>
+
+      {/* Password */}
+      <div>
+        <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+          Password
+        </label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          value={formData.password}
+          onChange={handleChange}
+          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-red-500 focus:outline-none focus:ring-red-500"
+          placeholder="Enter your password"
+        />
+        {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
       </div>
 
       {/* Email */}
@@ -245,7 +357,7 @@ export default function BasicInfoForm({
         {errors.caste && <p className="mt-1 text-sm text-red-600">{errors.caste}</p>}
       </div>
 
-      {/* Subcaste - Only show if caste is selected */}
+      {/* Subcaste */}
       {formData.caste && (
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -275,17 +387,22 @@ export default function BasicInfoForm({
         <button
           type="button"
           onClick={onPrevious}
-          disabled={isFirstStep || loading}
+          disabled={isFirstStep || loading || fetchingData}
           className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
         >
           Previous
         </button>
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || fetchingData}
           className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
         >
-          {loading ? 'Saving...' : isLastStep ? 'Finish' : 'Next'}
+          {loading ? (
+            <>
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+              Saving...
+            </>
+          ) : isLastStep ? 'Finish' : 'Next'}
         </button>
       </div>
     </form>

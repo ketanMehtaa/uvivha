@@ -8,6 +8,7 @@ interface EducationCareerFormProps {
   onPrevious: () => void;
   isFirstStep: boolean;
   isLastStep: boolean;
+  setUser: (user: any) => void;
 }
 
 export default function EducationCareerForm({
@@ -16,6 +17,7 @@ export default function EducationCareerForm({
   onPrevious,
   isFirstStep,
   isLastStep,
+  setUser,
 }: EducationCareerFormProps) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -73,9 +75,8 @@ export default function EducationCareerForm({
 
       const data = await res.json();
       
-      // Update local storage with new user data
-      const userData = JSON.parse(localStorage.getItem('user') || '{}');
-      localStorage.setItem('user', JSON.stringify({ ...userData, ...data.user }));
+      // Update parent component's user state instead of localStorage
+      setUser({ ...user, ...data.user });
       
       onNext();
     } catch (error) {

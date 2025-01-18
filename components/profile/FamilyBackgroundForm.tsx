@@ -8,6 +8,7 @@ interface FamilyBackgroundFormProps {
   onPrevious: () => void;
   isFirstStep: boolean;
   isLastStep: boolean;
+  setUser: (user: any) => void;
 }
 
 export default function FamilyBackgroundForm({
@@ -16,6 +17,7 @@ export default function FamilyBackgroundForm({
   onPrevious,
   isFirstStep,
   isLastStep,
+  setUser,
 }: FamilyBackgroundFormProps) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -62,8 +64,7 @@ export default function FamilyBackgroundForm({
       if (!res.ok) throw new Error('Failed to update profile');
 
       const data = await res.json();
-      const userData = JSON.parse(localStorage.getItem('user') || '{}');
-      localStorage.setItem('user', JSON.stringify({ ...userData, ...data.user }));
+      setUser({ ...user, ...data.user });
       onNext();
     } catch (error) {
       console.error('Error updating profile:', error);

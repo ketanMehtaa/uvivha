@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 interface UserProfile {
   id: string;
@@ -26,17 +27,35 @@ interface UserProfile {
 export default function DashboardPage() {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
-    const userData = localStorage.getItem('user');
-    console.log('Dashboard: Loading user data from localStorage:', userData);
-    if (userData) {
-      const parsedUser = JSON.parse(userData);
-      console.log('Dashboard: Parsed user data:', parsedUser);
-      setUser(parsedUser);
-    }
-    setLoading(false);
-  }, []);
+    const fetchUserData = async () => {
+      try {
+        const res = await fetch('/api/user/me');
+        const data = await res.json();
+
+        if (data.error) {
+          console.error('Error fetching user data:', data.error);
+          router.push('/auth');
+          return;
+        }
+
+        if (data.user) {
+          setUser(data.user);
+        } else {
+          router.push('/auth');
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        router.push('/auth');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [router]);
 
   if (loading) {
     return (

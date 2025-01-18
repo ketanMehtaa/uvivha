@@ -17,12 +17,32 @@ export default function ProfileEditPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      setUser(JSON.parse(userData));
-    }
-    setLoading(false);
-  }, []);
+    const fetchUserData = async () => {
+      try {
+        const res = await fetch('/api/user/me');
+        const data = await res.json();
+
+        if (data.error) {
+          console.error('Error fetching user data:', data.error);
+          router.push('/auth');
+          return;
+        }
+
+        if (data.user) {
+          setUser(data.user);
+        } else {
+          router.push('/auth');
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        router.push('/auth');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [router]);
 
   const steps: Step[] = ['basic', 'physical', 'education', 'family', 'preferences'];
   
@@ -46,6 +66,9 @@ export default function ProfileEditPage() {
     const currentIndex = steps.indexOf(currentStep);
     if (currentIndex < steps.length - 1) {
       setCurrentStep(steps[currentIndex + 1]);
+    } else {
+      // If it's the last step, redirect to dashboard
+      router.push('/dashboard');
     }
   };
 
@@ -106,6 +129,7 @@ export default function ProfileEditPage() {
             onPrevious={handlePrevious}
             isFirstStep={currentStep === steps[0]}
             isLastStep={currentStep === steps[steps.length - 1]}
+            setUser={setUser}
           />
         </div>
       </div>
