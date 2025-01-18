@@ -1,0 +1,43 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  mobile    String   @unique
+  password  String?
+  email     String?  @unique
+  gender    String?
+  birthDate DateTime?
+  location  String?
+  bio       String?
+  photos    String[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // OTPless authentication
+  otplessUserId String?  @unique
+  otplessToken  String?
+
+  // Profile details
+  height          Float?
+  education      String?
+  occupation     String?
+  income         String?
+  maritalStatus  String?
+  religion       String?
+  caste          String?
+  motherTongue   String?
+
+  // Preferences
+  agePreferenceMin Int?
+  agePreferenceMax Int?
+  heightPreferenceMin Float?
+  heightPreferenceMax Float?
+} 
