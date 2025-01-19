@@ -13,6 +13,8 @@ export async function GET(
       select: {
         id: true,
         name: true,
+        mobile: true,
+        email: true,
         gender: true,
         birthDate: true,
         location: true,
@@ -51,7 +53,7 @@ export async function GET(
 
     return NextResponse.json({ profile });
   } catch (error) {
-    console.error('Error fetching profile:', error);
+    console.error('Error in profile route:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

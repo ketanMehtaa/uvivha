@@ -13,7 +13,8 @@ import {
   MapPin, 
   GraduationCap, 
   Briefcase,
-  AlertCircle 
+  AlertCircle,
+  Users
 } from 'lucide-react';
 
 interface Profile {
@@ -25,6 +26,8 @@ interface Profile {
   education?: string;
   occupation?: string;
   photos?: string[];
+  caste?: string;
+  subcaste?: string;
 }
 
 interface ProfilesListProps {
@@ -40,6 +43,7 @@ export default function ProfilesList({ profiles }: ProfilesListProps) {
   }, [profiles]);
 
   const calculateAge = (birthDate: string) => {
+    if (!birthDate) return null;
     const today = new Date();
     const birth = new Date(birthDate);
     let age = today.getFullYear() - birth.getFullYear();
@@ -65,77 +69,69 @@ export default function ProfilesList({ profiles }: ProfilesListProps) {
 
   if (!profiles?.length) {
     return (
-      <div className="text-center py-8">
-        <p className="text-muted-foreground">No matching profiles found.</p>
-        <p className="text-sm text-muted-foreground mt-2">
-          Try adjusting your preferences or check back later.
-        </p>
+      <div className="text-center py-8 text-muted-foreground">
+        No profiles found
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {profiles.map((profile) => (
         <Card key={profile.id} className="overflow-hidden">
-          <div className="aspect-[4/3] relative">
+          <div className="relative aspect-[4/3]">
             <Image
-              src={profile.photos?.[0] || '/placeholder-avatar.jpg'}
+              src={profile.photos?.[0] || '/placeholder-user.jpg'}
               alt={profile.name}
               fill
               className="object-cover"
             />
           </div>
           <CardContent className="p-4">
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h3 className="font-semibold text-lg mb-1">{profile.name}</h3>
-                {profile.location && (
-                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                    <MapPin className="h-4 w-4" />
-                    <span>{profile.location}</span>
-                  </div>
-                )}
-              </div>
+            <h3 className="font-semibold text-lg mb-2">{profile.name}</h3>
+            <div className="space-y-2 text-sm text-muted-foreground">
               {profile.birthDate && (
-                <Badge variant="secondary">
-                  {profile.gender}, {calculateAge(profile.birthDate)} yrs
-                </Badge>
+                <div>{calculateAge(profile.birthDate)} years</div>
               )}
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
+              {profile.location && (
+                <div className="flex items-center gap-1">
+                  <MapPin className="h-4 w-4" />
+                  {profile.location}
+                </div>
+              )}
               {profile.education && (
                 <div className="flex items-center gap-1">
-                  <GraduationCap className="h-4 w-4 text-muted-foreground" />
-                  <span>{profile.education}</span>
+                  <GraduationCap className="h-4 w-4" />
+                  {profile.education}
                 </div>
               )}
               {profile.occupation && (
                 <div className="flex items-center gap-1">
-                  <Briefcase className="h-4 w-4 text-muted-foreground" />
-                  <span>{profile.occupation}</span>
+                  <Briefcase className="h-4 w-4" />
+                  {profile.occupation}
+                </div>
+              )}
+              {(profile.caste || profile.subcaste) && (
+                <div className="flex items-center gap-1">
+                  <Users className="h-4 w-4" />
+                  <div>
+                    <span className="font-medium">{profile.caste}</span>
+                    {profile.subcaste && (
+                      <span className="text-muted-foreground"> ( {profile.subcaste} )</span>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
-
-            <div className="flex gap-2">
+            <div className="mt-4">
               <Button 
-                variant="outline" 
+                variant="default"
                 size="sm" 
                 className="w-full"
-                onClick={() => handleViewProfile(profile.id)}
+                onClick={() => router.push(`/profile/${profile.id}`)}
               >
                 <Eye className="h-4 w-4 mr-2" />
-                View Profile
-              </Button>
-              <Button variant="outline" size="sm" className="w-full">
-                <Heart className="h-4 w-4 mr-2" />
-                Interest
-              </Button>
-              <Button size="sm" className="w-full">
-                <Mail className="h-4 w-4 mr-2" />
-                Message
+                View Full Profile
               </Button>
             </div>
           </CardContent>

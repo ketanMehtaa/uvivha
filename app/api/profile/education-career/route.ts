@@ -65,9 +65,9 @@ export async function POST(req: Request) {
         jobTitle,
         income,
         updatedAt: new Date(),
-        isProfileComplete: {
-          set: await checkProfileCompletion(userId)
-        }
+        // isProfileComplete: {
+        //   set: await checkProfileCompletion(userId)
+        // }
       },
     });
 

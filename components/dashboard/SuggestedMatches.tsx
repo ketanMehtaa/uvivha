@@ -16,6 +16,8 @@ interface Profile {
   education?: string;
   occupation?: string;
   photos?: string[];
+  caste?: string;
+  subcaste?: string;
 }
 
 interface PaginationData {

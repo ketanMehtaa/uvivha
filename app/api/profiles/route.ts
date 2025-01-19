@@ -56,6 +56,8 @@ export async function GET(request: Request) {
         photos: true,
         education: true,
         occupation: true,
+        caste: true,
+        subcaste: true,
       },
       skip,
       take: limit,

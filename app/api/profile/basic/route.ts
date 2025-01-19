@@ -74,9 +74,9 @@ export async function POST(request: Request) {
         caste,
         subcaste,
         updatedAt: new Date(),
-        isProfileComplete: {
-          set: await checkProfileCompletion(userId)
-        }
+        // isProfileComplete: {
+        //   set: await checkProfileCompletion(userId)
+        // }
       },
     });
 

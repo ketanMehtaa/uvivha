@@ -52,9 +52,9 @@ export async function POST(request: Request) {
         complexion: complexion ,
         physicalStatus: physicalStatus ,
         updatedAt: new Date(),
-        isProfileComplete: {
-          set: await checkProfileCompletion(userId)
-        }
+        // isProfileComplete: {
+        //   set: await checkProfileCompletion(userId)
+        // }
       },
     });
 

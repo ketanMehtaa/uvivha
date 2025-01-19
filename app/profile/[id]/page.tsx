@@ -8,22 +8,27 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
-  Heart,
-  Mail,
-  Phone,
   MapPin,
   Briefcase,
   GraduationCap,
   Users,
   Calendar,
-  User,
-  Star,
-  AlertCircle
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+  Phone,
+  ArrowLeft
 } from 'lucide-react';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 interface UserProfile {
   id: string;
@@ -123,229 +128,252 @@ export default function ViewProfilePage({ params }: { params: { id: string } }) 
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-background relative">
       <Header />
       
-      <main className="flex-grow container py-6">
-        <div className="max-w-5xl mx-auto space-y-6">
-          {/* Profile Header */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="md:col-span-1">
-              <Card className="overflow-hidden">
-                <div className="aspect-square relative">
-                  <Image
-                    src={profile.photos?.[0] || '/placeholder-avatar.jpg'}
-                    alt={profile.name}
-                    fill
-                    className="object-cover"
-                  />
+      <main className="flex-grow container py-8 px-4 md:px-6 lg:px-8 pb-20">
+        <div className="max-w-7xl mx-auto">
+          {/* Profile Header Card */}
+          <Card className="mb-8">
+            <CardContent className="p-8">
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+                {/* Photo Section */}
+                <div className="md:col-span-4">
+                  {profile?.photos && profile.photos.length > 0 ? (
+                    <Carousel className="w-full">
+                      <CarouselContent>
+                        {profile.photos.map((photo, index) => (
+                          <CarouselItem key={index}>
+                            <div className="aspect-[3/4] relative rounded-xl overflow-hidden shadow-lg">
+                              <Image
+                                src={photo}
+                                alt={`${profile.name} - Photo ${index + 1}`}
+                                fill
+                                className="object-cover"
+                              />
+                            </div>
+                          </CarouselItem>
+                        ))}
+                      </CarouselContent>
+                      <CarouselPrevious className="left-2" />
+                      <CarouselNext className="right-2" />
+                    </Carousel>
+                  ) : (
+                    <div className="aspect-[3/4] relative rounded-xl overflow-hidden shadow-lg">
+                      <Image
+                        src="/placeholder-avatar.jpg"
+                        alt={profile?.name || 'Profile'}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  )}
                 </div>
-                <CardContent className="p-4 space-y-4">
-                  <div className="flex justify-between">
-                    <Button variant="outline" size="lg" className="w-[48%]">
-                      <Heart className="mr-2 h-4 w-4" />
-                      Interest
-                    </Button>
-                    <Button size="lg" className="w-[48%]">
-                      <Mail className="mr-2 h-4 w-4" />
-                      Message
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
 
-            <div className="md:col-span-2">
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h1 className="text-2xl font-bold mb-2">{profile.name}</h1>
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <MapPin className="h-4 w-4" />
-                        <span>{profile.location || 'Location not specified'}</span>
-                      </div>
-                    </div>
-                    <Badge variant="secondary" className="text-lg px-3 py-1">
-                      {profile.gender}, {profile.birthDate ? calculateAge(profile.birthDate) : 'N/A'} yrs
-                    </Badge>
-                  </div>
-
-                  <Separator className="my-4" />
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="flex items-center gap-2">
-                      <GraduationCap className="h-4 w-4 text-muted-foreground" />
-                      <span>{profile.education || 'Education not specified'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Briefcase className="h-4 w-4 text-muted-foreground" />
-                      <span>{profile.occupation || 'Occupation not specified'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Users className="h-4 w-4 text-muted-foreground" />
-                      <span>{profile.caste || 'Caste not specified'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <span>{profile.maritalStatus || 'Marital status not specified'}</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-
-          {/* Profile Details */}
-          <Card>
-            <CardContent className="p-6">
-              <Tabs defaultValue="about" className="space-y-4">
-                <TabsList>
-                  <TabsTrigger value="about" className="gap-2">
-                    <User className="h-4 w-4" />
-                    About
-                  </TabsTrigger>
-                  <TabsTrigger value="career" className="gap-2">
-                    <Briefcase className="h-4 w-4" />
-                    Career & Education
-                  </TabsTrigger>
-                  <TabsTrigger value="family" className="gap-2">
-                    <Users className="h-4 w-4" />
-                    Family Details
-                  </TabsTrigger>
-                  <TabsTrigger value="preferences" className="gap-2">
-                    <Star className="h-4 w-4" />
-                    Preferences
-                  </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="about" className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <h3 className="font-semibold">Basic Information</h3>
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Height</span>
-                          <span>{profile.height ? profile.height + ' cm' : 'Not specified'}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Weight</span>
-                          <span>{profile.weight ? profile.weight + ' kg' : 'Not specified'}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Complexion</span>
-                          <span>{profile.complexion || 'Not specified'}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Physical Status</span>
-                          <span>{profile.physicalStatus || 'Not specified'}</span>
-                        </div>
+                {/* Basic Info Section */}
+                <div className="md:col-span-8">
+                  <div className="space-y-6">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                      <div>
+                        <h1 className="text-3xl font-bold mb-2">{profile?.name}</h1>
+                        <Badge variant="secondary" className="text-base px-4 py-1">
+                          {profile?.gender}, {profile?.birthDate ? calculateAge(profile.birthDate) : 'N/A'} yrs
+                        </Badge>
                       </div>
                     </div>
 
-                    <div className="space-y-4">
-                      <h3 className="font-semibold">About Me</h3>
-                      <p className="text-muted-foreground">{profile.bio || 'No bio provided'}</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-base">
+                      {profile?.mobile && (
+                        <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 col-span-full">
+                          <Phone className="h-5 w-5 text-primary" />
+                          <span className="font-medium">{profile.mobile}</span>
+                        </div>
+                      )}
+                      {profile?.location && (
+                        <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                          <MapPin className="h-5 w-5 text-primary" />
+                          <span>{profile.location}</span>
+                        </div>
+                      )}
+                      {profile?.education && (
+                        <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                          <GraduationCap className="h-5 w-5 text-primary" />
+                          <span>{profile.education}</span>
+                        </div>
+                      )}
+                      {profile?.occupation && (
+                        <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                          <Briefcase className="h-5 w-5 text-primary" />
+                          <span>{profile.occupation}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
-                </TabsContent>
-
-                <TabsContent value="career" className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <h3 className="font-semibold">Education</h3>
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Highest Education</span>
-                          <span>{profile.education || 'Not specified'}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Details</span>
-                          <span>{profile.educationDetails || 'Not specified'}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <h3 className="font-semibold">Career</h3>
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Occupation</span>
-                          <span>{profile.occupation || 'Not specified'}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Employed In</span>
-                          <span>{profile.employedIn || 'Not specified'}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Company</span>
-                          <span>{profile.companyName || 'Not specified'}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Job Title</span>
-                          <span>{profile.jobTitle || 'Not specified'}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Annual Income</span>
-                          <span>{profile.income || 'Not specified'}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="family" className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <h3 className="font-semibold">Family Background</h3>
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Family Type</span>
-                          <span>{profile.familyType || 'Not specified'}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Family Status</span>
-                          <span>{profile.familyStatus || 'Not specified'}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Family Location</span>
-                          <span>{profile.familyLocation || 'Not specified'}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Father's Occupation</span>
-                          <span>{profile.fatherOccupation || 'Not specified'}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Mother's Occupation</span>
-                          <span>{profile.motherOccupation || 'Not specified'}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Siblings</span>
-                          <span>{profile.siblings || 'Not specified'}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <h3 className="font-semibold">About Family</h3>
-                      <p className="text-muted-foreground">{profile.aboutFamily || 'No family description provided'}</p>
-                    </div>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="preferences" className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <h3 className="font-semibold">Partner Preferences</h3>
-                      <p className="text-muted-foreground">Partner preferences section coming soon...</p>
-                    </div>
-                  </div>
-                </TabsContent>
-              </Tabs>
+                </div>
+              </div>
             </CardContent>
           </Card>
+
+          {/* Details Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="space-y-8">
+              {/* Basic Details */}
+              <Card className="shadow-md">
+                <CardContent className="p-6">
+                  <h2 className="text-xl font-semibold mb-6 pb-2 border-b">Basic Details</h2>
+                  <div className="space-y-4">
+                    {profile?.height && (
+                      <div className="flex items-center justify-between py-2">
+                        <span className="text-muted-foreground font-medium">Height</span>
+                        <span className="font-medium">{profile.height} cm</span>
+                      </div>
+                    )}
+                    {profile?.weight && (
+                      <div className="flex items-center justify-between py-2">
+                        <span className="text-muted-foreground font-medium">Weight</span>
+                        <span className="font-medium">{profile.weight} kg</span>
+                      </div>
+                    )}
+                    {profile?.complexion && (
+                      <div className="flex items-center justify-between py-2">
+                        <span className="text-muted-foreground font-medium">Complexion</span>
+                        <span className="font-medium">{profile.complexion}</span>
+                      </div>
+                    )}
+                    {profile?.maritalStatus && (
+                      <div className="flex items-center justify-between py-2">
+                        <span className="text-muted-foreground font-medium">Marital Status</span>
+                        <span className="font-medium">{profile.maritalStatus}</span>
+                      </div>
+                    )}
+                    {profile?.physicalStatus && (
+                      <div className="flex items-center justify-between py-2">
+                        <span className="text-muted-foreground font-medium">Physical Status</span>
+                        <span className="font-medium">{profile.physicalStatus}</span>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Career Details */}
+              <Card className="shadow-md">
+                <CardContent className="p-6">
+                  <h2 className="text-xl font-semibold mb-6 pb-2 border-b">Career Details</h2>
+                  <div className="space-y-4">
+                    {profile?.education && (
+                      <div className="flex items-center justify-between py-2">
+                        <span className="text-muted-foreground font-medium">Education</span>
+                        <span className="font-medium">{profile.education}</span>
+                      </div>
+                    )}
+                    {profile?.educationDetails && (
+                      <div className="flex items-center justify-between py-2">
+                        <span className="text-muted-foreground font-medium">Education Details</span>
+                        <span className="font-medium">{profile.educationDetails}</span>
+                      </div>
+                    )}
+                    {profile?.occupation && (
+                      <div className="flex items-center justify-between py-2">
+                        <span className="text-muted-foreground font-medium">Occupation</span>
+                        <span className="font-medium">{profile.occupation}</span>
+                      </div>
+                    )}
+                    {profile?.companyName && (
+                      <div className="flex items-center justify-between py-2">
+                        <span className="text-muted-foreground font-medium">Company</span>
+                        <span className="font-medium">{profile.companyName}</span>
+                      </div>
+                    )}
+                    {profile?.income && (
+                      <div className="flex items-center justify-between py-2">
+                        <span className="text-muted-foreground font-medium">Income</span>
+                        <span className="font-medium">{profile.income}</span>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="space-y-8">
+              {/* Family Details */}
+              <Card className="shadow-md">
+                <CardContent className="p-6">
+                  <h2 className="text-xl font-semibold mb-6 pb-2 border-b">Family Details</h2>
+                  <div className="space-y-4">
+                    {profile?.familyType && (
+                      <div className="flex items-center justify-between py-2">
+                        <span className="text-muted-foreground font-medium">Family Type</span>
+                        <span className="font-medium">{profile.familyType}</span>
+                      </div>
+                    )}
+                    {profile?.familyStatus && (
+                      <div className="flex items-center justify-between py-2">
+                        <span className="text-muted-foreground font-medium">Family Status</span>
+                        <span className="font-medium">{profile.familyStatus}</span>
+                      </div>
+                    )}
+                    {profile?.fatherOccupation && (
+                      <div className="flex items-center justify-between py-2">
+                        <span className="text-muted-foreground font-medium">Father's Occupation</span>
+                        <span className="font-medium">{profile.fatherOccupation}</span>
+                      </div>
+                    )}
+                    {profile?.motherOccupation && (
+                      <div className="flex items-center justify-between py-2">
+                        <span className="text-muted-foreground font-medium">Mother's Occupation</span>
+                        <span className="font-medium">{profile.motherOccupation}</span>
+                      </div>
+                    )}
+                    {profile?.siblings && (
+                      <div className="flex items-center justify-between py-2">
+                        <span className="text-muted-foreground font-medium">Siblings</span>
+                        <span className="font-medium">{profile.siblings}</span>
+                      </div>
+                    )}
+                    {profile?.familyLocation && (
+                      <div className="flex items-center justify-between py-2">
+                        <span className="text-muted-foreground font-medium">Family Location</span>
+                        <span className="font-medium">{profile.familyLocation}</span>
+                      </div>
+                    )}
+                  </div>
+                  {profile?.aboutFamily && (
+                    <div className="mt-6 pt-4 border-t">
+                      <span className="text-muted-foreground font-medium block mb-2">About Family</span>
+                      <p className="text-sm leading-relaxed">{profile.aboutFamily}</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* About Section */}
+              {profile?.bio && (
+                <Card className="shadow-md">
+                  <CardContent className="p-6">
+                    <h2 className="text-xl font-semibold mb-6 pb-2 border-b">About</h2>
+                    <p className="text-sm leading-relaxed">{profile.bio}</p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </div>
         </div>
       </main>
+
+      {/* Sticky Back Button */}
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+        <Button 
+          variant="default"
+          size="lg"
+          onClick={() => router.back()}
+          className="shadow-lg flex items-center gap-2 px-6"
+        >
+          <ArrowLeft className="h-5 w-5" />
+          Back
+        </Button>
+      </div>
 
       <Footer />
     </div>

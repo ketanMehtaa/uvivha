@@ -40,9 +40,9 @@ export async function POST(req: Request) {
         familyLocation: familyLocation || null,
         aboutFamily: aboutFamily || null,
         updatedAt: new Date(),
-        isProfileComplete: {
-          set: await checkProfileCompletion(userId)
-        }
+        // isProfileComplete: {
+        //   set: await checkProfileCompletion(userId)
+        // }
       },
     });
 
