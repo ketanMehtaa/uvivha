@@ -16,6 +16,21 @@ export default {
         hostname: '*.public.blob.vercel-storage.com',
         search: ''
       }
+      , {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+        search: ''
+      }, {
+        protocol: 'https',
+        hostname: 'i.pinimg.com',
+        search: ''
+      }
+      , {
+        protocol: 'https',
+        hostname: 'images.pexels.com',
+        search: ''
+      }
+
     ],
     domains: ['images'],
     unoptimized: process.env.NODE_ENV === 'development'
