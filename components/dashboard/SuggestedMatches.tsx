@@ -41,22 +41,28 @@ export default function SuggestedMatches() {
   const fetchProfiles = useCallback(async (page: number = 1) => {
     try {
       setLoading(true);
-      const res = await fetch('/api/profiles');
+      console.log('Fetching profiles for page:', page);
+      const res = await fetch(`/api/profiles?page=${page}&limit=${pagination.pageSize}`);
       const data = await res.json();
       
       if (!res.ok) {
-        setError(data.error);
+        console.error('API error:', data.error);
+        setError(data.error || 'Failed to load profiles');
         return;
       }
 
+      console.log('Received profiles:', data.profiles?.length);
+      console.log('Pagination:', data.pagination);
+      
       setProfiles(data.profiles);
+      setPagination(data.pagination);
     } catch (error) {
       console.error('Error fetching profiles:', error);
       setError('Failed to load profiles');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [pagination.pageSize]);
 
   useEffect(() => {
     fetchProfiles();

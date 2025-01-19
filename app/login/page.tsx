@@ -150,7 +150,9 @@ export default function LoginPage() {
                 <span className="px-2 bg-white text-gray-500">Or continue with</span>
               </div>
             </div>
-
+            <p className="text-sm text-muted-foreground">
+            &ldquo;Don&apos;t have an account yet?&rdquo;
+          </p>
             <div>
               <button
                 type="button"
@@ -165,22 +167,21 @@ export default function LoginPage() {
             </div>
           </form>
 
-          <p className="text-sm text-muted-foreground">
-            &ldquo;Don&apos;t have an account yet?&rdquo;
-          </p>
+          
         </div>
       </div>
 
       {/* Right side - Image */}
       <div className="hidden lg:block lg:w-1/2 relative bg-gradient-to-br from-red-50 to-pink-50">
-        <div className="absolute inset-0 flex items-center justify-center p-12">
+        <div className="absolute inset-0 flex items-center justify-center p-12 ">
           <Image
-            src="/couple-illustration.svg"
+            src="https://i.pinimg.com/736x/aa/16/8f/aa168fcd20428c80ad9de8a3a91ab870.jpg"
             alt="Login illustration"
             width={600}
             height={500}
             className="object-contain"
             priority
+            style={{borderRadius: "40px"}}
           />
         </div>
         <div className="absolute bottom-0 left-0 right-0 p-8 text-center bg-gradient-to-t from-white/80">
