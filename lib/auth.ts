@@ -1,8 +1,26 @@
+export async function handleLogout(router: any) {
+  try {
+    // Clear client-side storage
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // Make a request to clear server-side session
+    const response = await fetch('/api/auth/logout', { 
+      method: 'POST',
+      credentials: 'include' // Important for cookie handling
+    });
 
-export function handleLogout(router: any) {
-  // Clear auth token cookie
-  document.cookie = 'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
-  router.replace('/auth');
+    if (!response.ok) {
+      throw new Error('Logout failed');
+    }
+
+    // Force a page reload to clear any in-memory state
+    window.location.href = '/login';
+  } catch (error) {
+    console.error('Logout error:', error);
+    // Still redirect even if server logout fails
+    window.location.href = '/login';
+  }
 }
 
 export function handleUnauthorized(error: any, router: any) {

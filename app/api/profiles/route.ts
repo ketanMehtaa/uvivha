@@ -115,7 +115,7 @@ export async function GET() {
       orderBy: {
         createdAt: 'desc'
       },
-      take: 50
+      take: 5
     });
 
     return NextResponse.json({ 

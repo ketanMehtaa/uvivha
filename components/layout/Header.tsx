@@ -93,7 +93,7 @@ export default function Header() {
                 <Link href="/settings">Settings</Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => handleLogout(router)}>
+              <DropdownMenuItem onClick={async () => await handleLogout(router)}>
                 Logout
               </DropdownMenuItem>
             </DropdownMenuContent>
