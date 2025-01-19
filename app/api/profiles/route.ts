@@ -4,9 +4,15 @@ import jwt from 'jsonwebtoken';
 import { prisma } from '@/lib/prisma';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const DEFAULT_PAGE_SIZE = 10;
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || String(DEFAULT_PAGE_SIZE));
+    const skip = (page - 1) * limit;
+
     const cookieStore = await cookies();
     const token = cookieStore.get('auth-token')?.value;
 
@@ -28,115 +34,48 @@ export async function GET() {
       );
     }
 
-    // Fetch current user with all details
-    const currentUser = await prisma.user.findUnique({
-      where: { id: userId },
+    // Get total count for pagination
+    const totalCount = await prisma.user.count({
+      where: {
+        id: { not: userId }, // Exclude current user
+      }
+    });
+
+    // Fetch paginated profiles
+    const profiles = await prisma.user.findMany({
+      where: {
+        id: { not: userId }, // Exclude current user
+      },
       select: {
         id: true,
         name: true,
-        mobile: true,
-        email: true,
         gender: true,
         birthDate: true,
         location: true,
         bio: true,
         photos: true,
-        height: true,
-        weight: true,
-        complexion: true,
-        physicalStatus: true,
-        education: true,
-        educationDetails: true,
-        occupation: true,
-        employedIn: true,
-        companyName: true,
-        jobTitle: true,
-        income: true,
-        maritalStatus: true,
-        religion: true,
-        caste: true,
-        subcaste: true,
-        motherTongue: true,
-        familyType: true,
-        familyStatus: true,
-        fatherOccupation: true,
-        motherOccupation: true,
-        siblings: true,
-        familyLocation: true,
-        aboutFamily: true,
-        agePreferenceMin: true,
-        agePreferenceMax: true,
-        heightPreferenceMin: true,
-        heightPreferenceMax: true,
-        castePreference: true,
-        educationPreference: true,
-        occupationPreference: true,
-        locationPreference: true,
-        maritalStatusPreference: true,
-        isProfileComplete: true
-      }
-    });
-
-    if (!currentUser) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
-    }
-
-    if (!currentUser.gender || !currentUser.isProfileComplete) {
-      return NextResponse.json(
-        { error: 'Please complete your profile first' },
-        { status: 400 }
-      );
-    }
-
-    const oppositeGender = currentUser.gender === 'Male' ? 'Female' : 'Male';
-
-    const profiles = await prisma.user.findMany({
-      where: {
-        id: { not: userId },
-        gender: oppositeGender,
-        isProfileComplete: true,
-      },
-      select: {
-        id: true,
-        name: true,
-        gender: true,
-        birthDate: true,
-        location: true,
         education: true,
         occupation: true,
-        photos: true,
-        height: true,
-        caste: true,
-        maritalStatus: true,
       },
+      skip,
+      take: limit,
       orderBy: {
-        createdAt: 'desc'
+        createdAt: 'desc',
       },
-      take: 5
     });
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       profiles,
-      meta: {
-        total: profiles.length,
-        currentUserGender: currentUser.gender,
-        lookingFor: oppositeGender
+      pagination: {
+        total: totalCount,
+        page,
+        pageSize: limit,
+        totalPages: Math.ceil(totalCount / limit),
       }
     });
 
-  } catch (error: any) {
-    console.error('Error in profiles route:', error);
-
-    if (error instanceof jwt.JsonWebTokenError) {
-      return NextResponse.json(
-        { error: 'Invalid token' },
-        { status: 401 }
-      );
-    }
-
+  } catch (error) {
+    console.error('Error in GET /api/profiles:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
