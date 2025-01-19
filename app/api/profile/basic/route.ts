@@ -52,11 +52,11 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { 
       name, password, email, gender, birthDate, location, bio, 
-      religion, caste, subcaste, motherTongue, photos 
+       caste, subcaste, 
     } = body;
 
     // Validate required fields
-    if (!name || !email || !gender || !birthDate || !location || !religion || !caste) {
+    if (!name || !email || !gender || !birthDate || !location ||  !caste) {
       return NextResponse.json({ error: 'Required fields missing' }, { status: 400 });
     }
 
@@ -71,11 +71,8 @@ export async function POST(request: Request) {
         birthDate: birthDate ? new Date(birthDate) : null,
         location,
         bio,
-        religion,
         caste,
         subcaste,
-        motherTongue,
-        photos: photos || [],
         updatedAt: new Date(),
         isProfileComplete: {
           set: await checkProfileCompletion(userId)

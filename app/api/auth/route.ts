@@ -8,7 +8,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, mobile, timestamp, userId } = body;
+    const {  mobile, userId } = body;
 
     if (!mobile) {
       return NextResponse.json(
@@ -24,24 +24,22 @@ export async function POST(request: Request) {
 
     if (user) {
       // If user exists, only update otplessUserId
-      user = await prisma.user.update({
-        where: { mobile },
-        data: {
-          otplessUserId: userId,
-          updatedAt: new Date(),
-        }
-      });
+      // user = await prisma.user.update({
+      //   where: { mobile },
+      //   data: {
+      //     otplessUserId: userId,
+      //     updatedAt: new Date(),
+      //   }
+      // });
     } else {
       // If user doesn't exist, create new user with minimal info
       user = await prisma.user.create({
         data: {
-          name: name || 'New User',
+          
           mobile,
-          password: '', // Empty password since we're using OTPless
           createdAt: new Date(),
           updatedAt: new Date(),
           otplessUserId: userId,
-          photos: [],
         }
       });
     }
