@@ -2,10 +2,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "seed": "pnpm download-images && prisma db seed",
-    "download-images": "ts-node scripts/download-images.ts"
+    "download-images": "ts-node scripts/download-images.ts",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.7.4",
