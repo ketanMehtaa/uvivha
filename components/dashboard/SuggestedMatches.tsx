@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Heart, Star, Search, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -38,30 +38,29 @@ export default function SuggestedMatches() {
     totalPages: 0
   });
 
-  const fetchProfiles = async (page: number = 1) => {
+  const fetchProfiles = useCallback(async (page: number = 1) => {
     try {
       setLoading(true);
-      const res = await fetch(`/api/profiles?page=${page}&limit=${pagination.pageSize}`);
+      const res = await fetch('/api/profiles');
       const data = await res.json();
-
+      
       if (!res.ok) {
         setError(data.error);
         return;
       }
 
-      setProfiles(data.profiles || []);
-      setPagination(data.pagination);
+      setProfiles(data.profiles);
     } catch (error) {
       console.error('Error fetching profiles:', error);
       setError('Failed to load profiles');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    fetchProfiles(1);
-  }, []);
+    fetchProfiles();
+  }, [fetchProfiles]);
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= pagination.totalPages) {

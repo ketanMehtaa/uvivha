@@ -18,8 +18,11 @@ export default function NotFound() {
           <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
             Page not found
           </h2>
-          <p className="max-w-[600px] text-muted-foreground md:text-xl/relaxed">
-            Sorry, we couldn't find the page you're looking for. The page might have been removed or the link might be broken.
+          <p className="text-base text-muted-foreground mb-8">
+            Sorry, we couldn&apos;t find the page you&apos;re looking for. The page might have been removed or the link might be broken.
+          </p>
+          <p className="text-muted-foreground">
+            We can&apos;t find the page you&apos;re looking for.
           </p>
         </div>
         <div className="flex flex-col gap-2 min-[400px]:flex-row">

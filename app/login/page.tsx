@@ -164,6 +164,10 @@ export default function LoginPage() {
               </button>
             </div>
           </form>
+
+          <p className="text-sm text-muted-foreground">
+            &ldquo;Don&apos;t have an account yet?&rdquo;
+          </p>
         </div>
       </div>
 
@@ -181,7 +185,7 @@ export default function LoginPage() {
         </div>
         <div className="absolute bottom-0 left-0 right-0 p-8 text-center bg-gradient-to-t from-white/80">
           <p className="text-lg font-medium text-gray-900">
-            "Finding love in Uttrakhand's traditions"
+            &ldquo;Finding love in Uttrakhand&apos;s traditions&rdquo;
           </p>
         </div>
       </div>

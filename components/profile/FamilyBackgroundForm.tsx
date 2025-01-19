@@ -155,10 +155,10 @@ export default function FamilyBackgroundForm({
         {errors.familyStatus && <p className="mt-1 text-sm text-red-600">{errors.familyStatus}</p>}
       </div>
 
-      {/* Father's Occupation */}
+      {/* Father&apos;s Occupation */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Father's Occupation (Optional)
+          Father&apos;s Occupation (Optional)
         </label>
         <Input
           name="fatherOccupation"
@@ -168,10 +168,10 @@ export default function FamilyBackgroundForm({
         />
       </div>
 
-      {/* Mother's Occupation */}
+      {/* Mother&apos;s Occupation */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Mother's Occupation (Optional)
+          Mother&apos;s Occupation (Optional)
         </label>
         <Input
           name="motherOccupation"

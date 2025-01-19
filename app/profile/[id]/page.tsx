@@ -29,6 +29,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { use } from 'react';
 
 interface UserProfile {
   id: string;
@@ -63,17 +64,22 @@ interface UserProfile {
   siblings?: string;
 }
 
-export default function ViewProfilePage({ params }: { params: { id: string } }) {
+// This type matches Next.js App Router's expected type
+type PageContext = {
+  params: Promise<{ id: string }>;
+};
+
+export default function ViewProfilePage(props: PageContext) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const profileId = params.id;
+  const { id } = use(props.params);
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await fetch('/api/profiles/' + profileId);
+        const res = await fetch(`/api/profiles/${id}`);
         const data = await res.json();
 
         if (!res.ok) {
@@ -91,7 +97,7 @@ export default function ViewProfilePage({ params }: { params: { id: string } }) 
     };
 
     fetchProfile();
-  }, [profileId]);
+  }, [id]);
 
   if (loading) {
     return (
@@ -321,13 +327,13 @@ export default function ViewProfilePage({ params }: { params: { id: string } }) 
                     )}
                     {profile?.fatherOccupation && (
                       <div className="flex items-center justify-between py-2">
-                        <span className="text-muted-foreground font-medium">Father's Occupation</span>
+                        <span className="text-muted-foreground font-medium">Father&apos;s Occupation</span>
                         <span className="font-medium">{profile.fatherOccupation}</span>
                       </div>
                     )}
                     {profile?.motherOccupation && (
                       <div className="flex items-center justify-between py-2">
-                        <span className="text-muted-foreground font-medium">Mother's Occupation</span>
+                        <span className="text-muted-foreground font-medium">Mother&apos;s Occupation</span>
                         <span className="font-medium">{profile.motherOccupation}</span>
                       </div>
                     )}

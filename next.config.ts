@@ -16,6 +16,8 @@ export default {
         hostname: '*.public.blob.vercel-storage.com',
         search: ''
       }
-    ]
+    ],
+    domains: ['images'],
+    unoptimized: process.env.NODE_ENV === 'development'
   }
 };

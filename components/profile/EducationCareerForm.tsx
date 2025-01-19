@@ -128,8 +128,8 @@ export default function EducationCareerForm({
             <SelectItem value="none">Select education level</SelectItem>
             <SelectItem value="High School">High School</SelectItem>
             <SelectItem value="Intermediate">Intermediate</SelectItem>
-            <SelectItem value="Bachelor's">Bachelor's Degree</SelectItem>
-            <SelectItem value="Master's">Master's Degree</SelectItem>
+            <SelectItem value="Bachelor's">Bachelor&apos;s Degree</SelectItem>
+            <SelectItem value="Master's">Master&apos;s Degree</SelectItem>
             <SelectItem value="Doctorate">Doctorate</SelectItem>
             <SelectItem value="Other">Other</SelectItem>
           </SelectContent>

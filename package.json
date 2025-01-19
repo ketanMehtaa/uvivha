@@ -85,6 +85,8 @@
   },
   "devDependencies": {
     "@types/node": "20.17.6",
+    "eslint": "^9",
+    "eslint-config-next": "15.1.5",
     "prisma": "^6.2.1",
     "ts-node": "^10.9.2",
     "typescript": "5.7.2"

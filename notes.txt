@@ -38,3 +38,6 @@ response.cookies.set('auth-token', token, {
  tokens or userId in the route.
   The middleware will handle all auth 
   and set the userId. Let's simplify:
+
+
+  do not use commonjs anywhere , always use esm modules

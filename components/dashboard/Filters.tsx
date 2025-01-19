@@ -278,8 +278,8 @@ export default function Filters({ onFilterChange }: FiltersProps) {
                     <SelectItem value="none">All Education Levels</SelectItem>
                     <SelectItem value="high_school">High School</SelectItem>
                     <SelectItem value="diploma">Diploma</SelectItem>
-                    <SelectItem value="bachelor">Bachelor's Degree</SelectItem>
-                    <SelectItem value="master">Master's Degree</SelectItem>
+                    <SelectItem value="bachelor">Bachelor&apos;s Degree</SelectItem>
+                    <SelectItem value="master">Master&apos;s Degree</SelectItem>
                     <SelectItem value="phd">PhD/Doctorate</SelectItem>
                   </SelectContent>
                 </Select>

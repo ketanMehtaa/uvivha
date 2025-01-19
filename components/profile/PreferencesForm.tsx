@@ -249,8 +249,8 @@ export default function PreferencesForm({
           <SelectContent>
             <SelectItem value="none">Select education preference</SelectItem>
             <SelectItem value="Any">Any</SelectItem>
-            <SelectItem value="Bachelor's and above">Bachelor's and above</SelectItem>
-            <SelectItem value="Master's and above">Master's and above</SelectItem>
+            <SelectItem value="Bachelor's and above">Bachelor&apos;s and above</SelectItem>
+            <SelectItem value="Master's and above">Master&apos;s and above</SelectItem>
             <SelectItem value="Doctorate">Doctorate</SelectItem>
           </SelectContent>
         </Select>
