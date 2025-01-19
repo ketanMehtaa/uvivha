@@ -4,7 +4,14 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { handleUnauthorized, handleLogout } from '@/lib/auth';
-import ProfilesList from '@/components/profiles/ProfilesList';
+import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
+import Filters from '@/components/dashboard/Filters';
+import SuggestedMatches from '@/components/dashboard/SuggestedMatches';
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { UserRound } from 'lucide-react';
 
 interface UserProfile {
   id: string;
@@ -16,15 +23,20 @@ interface UserProfile {
   location?: string;
   bio?: string;
   height?: number;
+  weight?: number;
   education?: string;
   occupation?: string;
   income?: string;
   maritalStatus?: string;
-  religion?: string;
   caste?: string;
-  motherTongue?: string;
+  subcaste?: string;
   photos?: string[];
   isProfileComplete?: boolean;
+  complexion?: string;
+  physicalStatus?: string;
+  familyType?: string;
+  familyStatus?: string;
+  employedIn?: string;
 }
 
 export default function DashboardPage() {
@@ -46,17 +58,17 @@ export default function DashboardPage() {
         }
 
         // Then fetch user data
-        const res = await fetch('/api/user/me');
-        const data = await res.json();
+        const userRes = await fetch('/api/user/me');
+        const userData = await userRes.json();
 
-        if (data.error) {
-          if (handleUnauthorized(data.error, router)) return;
-          setError(data.error);
+        if (userData.error) {
+          if (handleUnauthorized(userData.error, router)) return;
+          setError(userData.error);
           return;
         }
 
-        if (data.user) {
-          setUser(data.user);
+        if (userData.user) {
+          setUser(userData.user);
         } else {
           handleLogout(router);
         }
@@ -73,42 +85,51 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-r from-pink-50 to-red-50 flex items-center justify-center">
-        <div className="text-xl font-semibold text-gray-700">Loading...</div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-xl font-semibold animate-pulse">Loading...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-r from-pink-50 to-red-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">Error</h1>
-          <p className="text-gray-600 mb-6">{error}</p>
-          <button 
-            onClick={() => handleLogout(router)}
-            className="inline-block bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors"
-          >
-            Go to Login
-          </button>
-        </div>
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="text-destructive">Error</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-muted-foreground">{error}</p>
+            <Button 
+              onClick={() => handleLogout(router)}
+              variant="destructive"
+              className="w-full"
+            >
+              Go to Login
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-r from-pink-50 to-red-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">Authentication Required</h1>
-          <p className="text-gray-600 mb-6">Please log in to access your dashboard.</p>
-          <button 
-            onClick={() => handleLogout(router)}
-            className="inline-block bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors"
-          >
-            Go to Login
-          </button>
-        </div>
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Authentication Required</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-muted-foreground">Please log in to access your dashboard.</p>
+            <Button 
+              onClick={() => handleLogout(router)}
+              className="w-full"
+            >
+              Go to Login
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -117,69 +138,82 @@ export default function DashboardPage() {
   const requiredFields: (keyof UserProfile)[] = [
     'name', 'mobile', 'email', 'gender', 'birthDate', 'location',
     'bio', 'height', 'education', 'occupation', 'income',
-    'maritalStatus', 'religion', 'caste', 'motherTongue'
+    'maritalStatus', 'caste'
   ];
   
   const completedFields = requiredFields.filter(field => user[field] !== null && user[field] !== undefined);
   const completionPercentage = Math.round((completedFields.length / requiredFields.length) * 100);
-  // const isProfileComplete = completionPercentage === 100;
   const isProfileComplete = user.isProfileComplete;
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-pink-50 to-red-50 p-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-lg shadow-xl p-8 mb-6">
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">
-            Welcome, {user.name}! 👋
-          </h1>
-          
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-gray-600 font-medium">Profile Completion</span>
-              <span className="text-sm font-semibold text-gray-700">{completionPercentage}%</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2.5">
-              <div 
-                className="bg-red-600 h-2.5 rounded-full transition-all duration-500"
-                style={{ width: `${completionPercentage}%` }}
-              ></div>
-            </div>
-          </div>
+    <div className="min-h-screen flex flex-col bg-background">
+      <Header />
+      
+      <main className="flex-grow container py-6">
+        <div className="space-y-6">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="space-y-1">
+                  <h1 className="text-2xl font-bold">
+                    Welcome back, {user.name}! 👋
+                  </h1>
+                  <p className="text-muted-foreground">
+                    Here's what's happening with your profile
+                  </p>
+                </div>
+                <Button asChild>
+                  <Link href="/profile/edit">
+                    <UserRound className="mr-2 h-4 w-4" />
+                    Edit Profile
+                  </Link>
+                </Button>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Profile Completion</span>
+                  <span className="text-sm text-muted-foreground">{completionPercentage}%</span>
+                </div>
+                <Progress value={completionPercentage} className="h-2" />
+              </div>
+            </CardContent>
+          </Card>
 
           {!isProfileComplete ? (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <h2 className="text-lg font-semibold text-yellow-800 mb-2">
-                Complete Your Profile
-              </h2>
-              <p className="text-yellow-700 mb-4">
-                Your profile is {completionPercentage}% complete. Complete your profile to increase your chances of finding the perfect match!
-              </p>
-              <Link 
-                href="/profile/edit" 
-                className="inline-block bg-yellow-600 text-white px-6 py-2 rounded-lg hover:bg-yellow-700 transition-colors"
-              >
-                Complete Profile
-              </Link>
-            </div>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <h2 className="text-lg font-semibold">Complete Your Profile</h2>
+                    <p className="text-muted-foreground">
+                      Your profile is {completionPercentage}% complete. Complete your profile to increase your chances of finding the perfect match!
+                    </p>
+                  </div>
+                  <Button asChild>
+                    <Link href="/profile/edit">Complete Profile</Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           ) : (
-            <>
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-                <h2 className="text-lg font-semibold text-green-800 mb-2">
-                  Profile Complete! 🎉
-                </h2>
-                <p className="text-green-700">
-                  Your profile is complete and ready to be discovered by potential matches.
-                </p>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <div className="md:col-span-1">
+                {/* <Filters onFilterChange={(filters) => {
+                  // Filter changes will be handled by the Filters component
+                  console.log('Filters updated:', filters);
+                }} /> */}
               </div>
               
-              <div className="bg-white rounded-lg shadow-xl p-8">
-                <h2 className="text-2xl font-bold text-gray-800 mb-6">Suggested Matches</h2>
-                <ProfilesList />
+              <div className="md:col-span-3">
+                <SuggestedMatches />
               </div>
-            </>
+            </div>
           )}
         </div>
-      </div>
+      </main>
+
+      <Footer />
     </div>
   );
 } 

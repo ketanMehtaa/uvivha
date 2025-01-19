@@ -1,4 +1,3 @@
-import { useRouter } from 'next/navigation';
 
 export function handleLogout(router: any) {
   // Clear auth token cookie

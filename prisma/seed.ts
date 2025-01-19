@@ -1,5 +1,4 @@
 const { PrismaClient } = require('@prisma/client');
-
 const prisma = new PrismaClient();
 
 const religions = ['Hindu', 'Muslim', 'Christian', 'Sikh', 'Buddhist', 'Jain'];
@@ -14,7 +13,35 @@ const familyTypes = ['Nuclear', 'Joint', 'Extended'];
 const familyStatuses = ['Middle Class', 'Upper Middle Class', 'Rich/Affluent'];
 const cities = ['Mumbai', 'Delhi', 'Bangalore', 'Chennai', 'Kolkata', 'Pune'];
 
-const getRandomElement = (array: string[]): string => {
+const maleImages = [
+  [
+    '/images/male/user1-1.jpg',
+    '/images/male/user1-2.jpg',
+    '/images/male/user1-3.jpg',
+  ],
+  [
+    '/images/male/user2-1.jpg',
+    '/images/male/user2-2.jpg',
+    '/images/male/user2-3.jpg',
+  ],
+  // Add more sets of male images
+];
+
+const femaleImages = [
+  [
+    '/images/female/user1-1.jpg',
+    '/images/female/user1-2.jpg',
+    '/images/female/user1-3.jpg',
+  ],
+  [
+    '/images/female/user2-1.jpg',
+    '/images/female/user2-2.jpg',
+    '/images/female/user2-3.jpg',
+  ],
+  // Add more sets of female images
+];
+
+const getRandomElement = <T>(array: T[]): T => {
   return array[Math.floor(Math.random() * array.length)];
 };
 
@@ -38,7 +65,8 @@ const generateUser = (index: number, gender: 'Male' | 'Female') => {
   const weight = gender === 'Male' ? getRandomInt(60, 85) : getRandomInt(45, 65);
 
   const mobile = `9${getRandomInt(100000000, 999999999)}`;
-  const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}${index}@example.com`;
+  const timestamp = Date.now();
+  const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}.${timestamp}@example.com`;
 
   return {
     name,
@@ -49,7 +77,7 @@ const generateUser = (index: number, gender: 'Male' | 'Female') => {
     birthDate,
     location: getRandomElement(cities),
     bio: `Hi, I'm ${firstName}. Looking forward to meeting someone special.`,
-    photos: [],
+    photos: gender === 'Male' ? maleImages[index % maleImages.length] : femaleImages[index % femaleImages.length],
     height,
     weight,
     complexion: getRandomElement(complexions),
@@ -91,16 +119,18 @@ const generateUser = (index: number, gender: 'Male' | 'Female') => {
 async function main() {
   console.log('Start seeding...');
 
-  // Generate 30 male profiles
-  for (let i = 0; i < 30; i++) {
+  // Create male profiles
+  for (let i = 0; i < 10; i++) {
     const userData = generateUser(i, 'Male');
     await prisma.user.create({ data: userData });
+    console.log(`Created male profile ${i + 1}`);
   }
 
-  // Generate 30 female profiles
-  for (let i = 30; i < 60; i++) {
+  // Create female profiles
+  for (let i = 0; i < 10; i++) {
     const userData = generateUser(i, 'Female');
     await prisma.user.create({ data: userData });
+    console.log(`Created female profile ${i + 1}`);
   }
 
   console.log('Seeding finished.');

@@ -22,3 +22,19 @@ use cookie like this     const cookieStore = await cookies();
 
 use pnpm always , do not use npm
 seed the file to use commonjs syntax instead of es modules
+
+
+i am storing cookie liek thjis 
+response.cookies.set('auth-token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 7 * 24 * 60 * 60 // 7 days
+    });
+
+
+ Since we're using middleware for authentication, we don't need to check for 
+ tokens or userId in the route.
+  The middleware will handle all auth 
+  and set the userId. Let's simplify:

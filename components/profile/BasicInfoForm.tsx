@@ -272,8 +272,8 @@ export default function BasicInfoForm({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="none">Select gender</SelectItem>
-            <SelectItem value="male">Male</SelectItem>
-            <SelectItem value="female">Female</SelectItem>
+            <SelectItem value="Male">Male</SelectItem>
+            <SelectItem value="Female">Female</SelectItem>
           </SelectContent>
         </Select>
         {errors.gender && <p className="mt-1 text-sm text-red-600">{errors.gender}</p>}

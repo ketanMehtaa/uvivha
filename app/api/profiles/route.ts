@@ -1,86 +1,145 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
+import { prisma } from '@/lib/prisma';
 
-const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get('auth-token')?.value;
 
     if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
 
-    let decoded;
-    try {
-      decoded = jwt.verify(token, JWT_SECRET);
-    } catch (error) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+    // Verify token and get user ID
+    const decoded = jwt.verify(token, JWT_SECRET);
     const userId = (decoded as any).userId || (decoded as any).id;
+
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Invalid token format' },
+        { status: 401 }
+      );
     }
 
-    // Get current user's gender
+    // Fetch current user with all details
     const currentUser = await prisma.user.findUnique({
       where: { id: userId },
-      select: { gender: true }
+      select: {
+        id: true,
+        name: true,
+        mobile: true,
+        email: true,
+        gender: true,
+        birthDate: true,
+        location: true,
+        bio: true,
+        photos: true,
+        height: true,
+        weight: true,
+        complexion: true,
+        physicalStatus: true,
+        education: true,
+        educationDetails: true,
+        occupation: true,
+        employedIn: true,
+        companyName: true,
+        jobTitle: true,
+        income: true,
+        maritalStatus: true,
+        religion: true,
+        caste: true,
+        subcaste: true,
+        motherTongue: true,
+        familyType: true,
+        familyStatus: true,
+        fatherOccupation: true,
+        motherOccupation: true,
+        siblings: true,
+        familyLocation: true,
+        aboutFamily: true,
+        agePreferenceMin: true,
+        agePreferenceMax: true,
+        heightPreferenceMin: true,
+        heightPreferenceMax: true,
+        castePreference: true,
+        educationPreference: true,
+        occupationPreference: true,
+        locationPreference: true,
+        maritalStatusPreference: true,
+        isProfileComplete: true
+      }
     });
 
     if (!currentUser) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
     }
 
-    // Fetch profiles of opposite gender who have completed their profiles
+    if (!currentUser.gender || !currentUser.isProfileComplete) {
+      return NextResponse.json(
+        { error: 'Please complete your profile first' },
+        { status: 400 }
+      );
+    }
+
+    const oppositeGender = currentUser.gender === 'Male' ? 'Female' : 'Male';
+
     const profiles = await prisma.user.findMany({
       where: {
         id: { not: userId },
-        gender: currentUser.gender === 'Male' ? 'Female' : 'Male',
+        gender: oppositeGender,
         isProfileComplete: true,
       },
       select: {
         id: true,
         name: true,
-        birthDate: true,
         gender: true,
+        birthDate: true,
         location: true,
         education: true,
         occupation: true,
-        bio: true,
+        photos: true,
         height: true,
         caste: true,
-        subcaste: true,
         maritalStatus: true,
-        photos: true,
       },
       orderBy: {
-        updatedAt: 'desc',
+        createdAt: 'desc'
       },
+      take: 50
     });
 
-    // Calculate age for each profile
-    const profilesWithAge = profiles.map(profile => {
-      const age = profile.birthDate ? 
-        Math.floor((new Date().getTime() - new Date(profile.birthDate).getTime()) / 31557600000) : 
-        null;
-      
-      return {
-        ...profile,
-        age,
-      };
+    return NextResponse.json({ 
+      profiles,
+      meta: {
+        total: profiles.length,
+        currentUserGender: currentUser.gender,
+        lookingFor: oppositeGender
+      }
     });
 
-    return NextResponse.json({ success: true, profiles: profilesWithAge });
-  } catch (error) {
-    console.error('Error fetching profiles:', error);
-    return NextResponse.json({ error: 'Failed to fetch profiles' }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
+  } catch (error: any) {
+    console.error('Error in profiles route:', error);
+
+    if (error instanceof jwt.JsonWebTokenError) {
+      return NextResponse.json(
+        { error: 'Invalid token' },
+        { status: 401 }
+      );
+    }
+
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 } 
