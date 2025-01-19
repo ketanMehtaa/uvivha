@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select"
 import { FormShimmer } from "@/components/ui/shimmer";
 import { handleApiError } from '@/lib/auth';
+import ImageUpload from './ImageUpload';
 
 // Type for castes data
 type CastesData = {
@@ -58,6 +59,7 @@ export default function BasicInfoForm({
     bio: '',
     caste: '',
     subcaste: '',
+    images: [] as string[],
   });
 
   // Fetch user data when component mounts
@@ -80,6 +82,7 @@ export default function BasicInfoForm({
         bio: user.bio || '',
         caste: user.caste || '',
         subcaste: user.subcaste || '',
+        images: user.photos || [],
       });
       setFetchingData(false);
       return;
@@ -114,6 +117,7 @@ export default function BasicInfoForm({
             bio: data.user.bio || '',
             caste: data.user.caste || '',
             subcaste: data.user.subcaste || '',
+            images: data.user.photos || [],
           });
         }
       } catch (error) {
@@ -128,11 +132,10 @@ export default function BasicInfoForm({
 
     fetchUserData();
 
-    // Cleanup function to prevent state updates after unmount
     return () => {
       isMounted = false;
     };
-  }, []); // Only run on mount
+  }, [user]); // Added user to dependency array to refetch when user prop changes
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -157,6 +160,13 @@ export default function BasicInfoForm({
     }
   };
 
+  const handleImagesChange = (newImages: string[]) => {
+    setFormData(prev => ({ ...prev, images: newImages }));
+    if (errors.images) {
+      setErrors(prev => ({ ...prev, images: '' }));
+    }
+  };
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.name) newErrors.name = 'Name is required';
@@ -169,6 +179,7 @@ export default function BasicInfoForm({
     if (!formData.birthDate) newErrors.birthDate = 'Birth date is required';
     if (!formData.location) newErrors.location = 'Location is required';
     if (!formData.caste || formData.caste === 'none') newErrors.caste = 'Caste is required';
+    if (formData.images.length < 2) newErrors.images = 'At least 2 images are required';
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -180,10 +191,15 @@ export default function BasicInfoForm({
 
     setLoading(true);
     try {
+      const dataToSubmit = {
+        ...formData,
+        photos: formData.images,
+      };
+
       const res = await fetch('/api/profile/basic', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(dataToSubmit),
       });
 
       if (!res.ok) {
@@ -377,27 +393,40 @@ export default function BasicInfoForm({
         </div>
       )}
 
+      {/* Profile Images */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Profile Images
+        </label>
+        <ImageUpload
+          images={formData.images}
+          onImagesChange={handleImagesChange}
+          className="mb-2"
+        />
+        {errors.images && (
+          <p className="mt-1 text-sm text-red-600">{errors.images}</p>
+        )}
+      </div>
+
       {/* Form Actions */}
       <div className="flex justify-between pt-4">
-        <button
-          type="button"
-          onClick={onPrevious}
-          disabled={isFirstStep || loading || fetchingData}
-          className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
-        >
-          Previous
-        </button>
+        {!isFirstStep && (
+          <button
+            type="button"
+            onClick={onPrevious}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+          >
+            Previous
+          </button>
+        )}
         <button
           type="submit"
-          disabled={loading || fetchingData}
-          className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
+          disabled={loading}
+          className={`px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 ${
+            isFirstStep ? 'ml-auto' : ''
+          }`}
         >
-          {loading ? (
-            <>
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-              Saving...
-            </>
-          ) : isLastStep ? 'Finish' : 'Next'}
+          {loading ? 'Saving...' : isLastStep ? 'Finish' : 'Next'}
         </button>
       </div>
     </form>

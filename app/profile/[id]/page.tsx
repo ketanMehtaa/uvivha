@@ -186,7 +186,12 @@ export default function ViewProfilePage({ params }: { params: { id: string } }) 
                       {profile?.mobile && (
                         <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 col-span-full">
                           <Phone className="h-5 w-5 text-primary" />
-                          <span className="font-medium">{profile.mobile}</span>
+                          <a 
+                            href={`tel:${profile.mobile}`}
+                            className="font-medium flex items-center gap-2 px-3 py-1 rounded-md hover:bg-primary/10 hover:text-primary active:bg-primary/20 transition-all"
+                          >
+                            {profile.mobile}
+                          </a>
                         </div>
                       )}
                       {profile?.location && (

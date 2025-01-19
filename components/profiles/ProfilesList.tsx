@@ -14,8 +14,16 @@ import {
   GraduationCap, 
   Briefcase,
   AlertCircle,
-  Users
+  Users,
+  ImageOff
 } from 'lucide-react';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 interface Profile {
   id: string;
@@ -37,6 +45,7 @@ interface ProfilesListProps {
 export default function ProfilesList({ profiles }: ProfilesListProps) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     console.log('Profiles received:', profiles?.length);
@@ -52,6 +61,10 @@ export default function ProfilesList({ profiles }: ProfilesListProps) {
       age--;
     }
     return age;
+  };
+
+  const handleImageError = (profileId: string) => {
+    setImageErrors(prev => ({ ...prev, [profileId]: true }));
   };
 
   const handleViewProfile = (profileId: string) => {
@@ -80,12 +93,40 @@ export default function ProfilesList({ profiles }: ProfilesListProps) {
       {profiles.map((profile) => (
         <Card key={profile.id} className="overflow-hidden">
           <div className="relative aspect-[4/3]">
-            <Image
-              src={profile.photos?.[0] || '/placeholder-user.jpg'}
-              alt={profile.name}
-              fill
-              className="object-cover"
-            />
+            {profile.photos && profile.photos.length > 0 ? (
+              <Carousel className="w-full">
+                <CarouselContent>
+                  {profile.photos.map((photo, index) => (
+                    <CarouselItem key={index}>
+                      <div className="aspect-[4/3] relative rounded-lg overflow-hidden">
+                        {imageErrors[`${profile.id}-${index}`] ? (
+                          <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted">
+                            <ImageOff className="h-12 w-12 text-muted-foreground mb-2" />
+                            <p className="text-sm text-muted-foreground">Image not available</p>
+                          </div>
+                        ) : (
+                          <Image
+                            src={photo}
+                            alt={`${profile.name} - Photo ${index + 1}`}
+                            fill
+                            className="object-cover"
+                            onError={() => handleImageError(`${profile.id}-${index}`)}
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          />
+                        )}
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious className="left-2" />
+                <CarouselNext className="right-2" />
+              </Carousel>
+            ) : (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted">
+                <ImageOff className="h-12 w-12 text-muted-foreground mb-2" />
+                <p className="text-sm text-muted-foreground">No photos available</p>
+              </div>
+            )}
           </div>
           <CardContent className="p-4">
             <h3 className="font-semibold text-lg mb-2">{profile.name}</h3>

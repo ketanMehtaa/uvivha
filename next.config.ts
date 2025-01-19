@@ -3,6 +3,11 @@ export default {
     remotePatterns: [
       {
         protocol: 'https',
+        hostname: 'hamydev.s3.ap-south-1.amazonaws.com',
+        search: ''
+      },
+      {
+        protocol: 'https',
         hostname: 'avatars.githubusercontent.com',
         search: ''
       },

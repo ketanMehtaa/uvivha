@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import jwt from 'jsonwebtoken';
 import { cookies } from 'next/headers';
+import jwt from 'jsonwebtoken';
+import { prisma } from '@/lib/prisma';
 
-const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 const checkProfileCompletion = async (userId: string) => {
@@ -35,6 +34,7 @@ const checkProfileCompletion = async (userId: string) => {
 
 export async function POST(request: Request) {
   try {
+    // Get token from cookies
     const cookieStore = await cookies();
     const token = cookieStore.get('auth-token')?.value;
 
@@ -42,6 +42,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Verify token and get user ID
     const decoded = jwt.verify(token, JWT_SECRET);
     const userId = (decoded as any).userId || (decoded as any).id;
 
@@ -49,40 +50,64 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid token format' }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { 
-      name, password, email, gender, birthDate, location, bio, 
-       caste, subcaste, 
-    } = body;
+    const data = await request.json();
+    const { name, email, gender, birthDate, location, bio, caste, subcaste, photos } = data;
 
     // Validate required fields
-    if (!name || !email || !gender || !birthDate || !location ||  !caste) {
-      return NextResponse.json({ error: 'Required fields missing' }, { status: 400 });
+    if (!name || !email || !gender || !birthDate || !location || !caste) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
     }
 
-    // Update user profile
+    // Validate photos
+    if (!photos || !Array.isArray(photos) || photos.length < 2) {
+      return NextResponse.json(
+        { error: 'At least 2 profile photos are required' },
+        { status: 400 }
+      );
+    }
+
+    // Update user data
     const user = await prisma.user.update({
       where: { id: userId },
       data: {
         name,
-        password,
         email,
         gender,
-        birthDate: birthDate ? new Date(birthDate) : null,
+        birthDate: new Date(birthDate),
         location,
         bio,
         caste,
         subcaste,
+        photos,
+        isProfileComplete: true,
         updatedAt: new Date(),
-        // isProfileComplete: {
-        //   set: await checkProfileCompletion(userId)
-        // }
       },
     });
 
-    return NextResponse.json({ success: true, user });
-  } catch (error: any) {
-    console.error('Error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ user });
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    
+    if ((error as any).name === 'JsonWebTokenError') {
+      return NextResponse.json(
+        { error: 'Invalid token' },
+        { status: 401 }
+      );
+    }
+
+    if ((error as any).name === 'TokenExpiredError') {
+      return NextResponse.json(
+        { error: 'Token expired' },
+        { status: 401 }
+      );
+    }
+
+    return NextResponse.json(
+      { error: 'Failed to update profile' },
+      { status: 500 }
+    );
   }
 } 
