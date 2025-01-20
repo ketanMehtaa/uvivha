@@ -51,10 +51,10 @@ export async function POST(request: Request) {
     }
 
     const data = await request.json();
-    const { name, email, gender, birthDate, location, bio, caste, subcaste, photos } = data;
+    const { name, email, password, gender, birthDate, location, bio, caste, subcaste, photos } = data;
 
     // Validate required fields
-    if (!name || !email || !gender || !birthDate || !location || !caste) {
+    if (!name || !email || !password || !gender || !birthDate || !location || !caste) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -75,6 +75,7 @@ export async function POST(request: Request) {
       data: {
         name,
         email,
+        password,
         gender,
         birthDate: new Date(birthDate),
         location,

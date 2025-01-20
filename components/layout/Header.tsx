@@ -31,8 +31,8 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 items-center justify-between">
-        <Link href="/dashboard" className="font-semibold">
-          Matrimony
+        <Link href="/dashboard" className="font-semibold text-2xl bg-gradient-to-r from-red-600 to-pink-600 bg-clip-text text-transparent">
+          Uvivha
         </Link>
 
         <DropdownMenu>
