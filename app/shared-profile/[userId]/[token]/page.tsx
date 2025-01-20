@@ -214,10 +214,10 @@ export default async function SharedProfilePage({ params }: SharedProfilePagePro
                         <Eye className="h-5 w-5 text-primary" />
                         <span>Viewed {shareInfo.viewCount} times</span>
                       </div>
-                      <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 ">
+                      {/* <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 ">
                         <Clock className="h-5 w-5 text-primary" />
                         <span>Expires {format(new Date(shareInfo.expiresAt), "PPP")}</span>
-                      </div>
+                      </div> */}
                       {user.location && (
                         <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
                           <MapPin className="h-5 w-5 text-primary" />
