@@ -97,9 +97,8 @@ export async function generateMetadata({ params }: SharedProfilePageProps): Prom
 
 async function getSharedProfile(userId: string, token: string) {
   try {
-    const baseUrl = process.env.VERCEL_URL 
-      ? `https://${process.env.VERCEL_URL}` 
-      : process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
 
     const response = await fetch(`${baseUrl}/api/profile/share/${userId}/${token}`, {
       headers: {
