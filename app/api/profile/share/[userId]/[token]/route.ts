@@ -25,6 +25,8 @@ export async function GET(
           select: {
             id: true,
             name: true,
+            mobile: true,
+            email: true,
             gender: true,
             birthDate: true,
             location: true,
@@ -52,7 +54,17 @@ export async function GET(
             motherOccupation: true,
             siblings: true,
             familyLocation: true,
-            aboutFamily: true
+            aboutFamily: true,
+            agePreferenceMin: true,
+            agePreferenceMax: true,
+            heightPreferenceMin: true,
+            heightPreferenceMax: true,
+            castePreference: true,
+            educationPreference: true,
+            occupationPreference: true,
+            locationPreference: true,
+            maritalStatusPreference: true,
+            isProfileComplete: true
           }
         }
       }
@@ -66,7 +78,8 @@ export async function GET(
       user: profileShare.user,
       shareInfo: {
         expiresAt: profileShare.expiresAt,
-        viewCount: profileShare.viewCount
+        viewCount: profileShare.viewCount,
+        renewalCount: profileShare.renewalCount
       }
     });
 

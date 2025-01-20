@@ -60,6 +60,18 @@ interface User {
   siblings?: string;
   familyLocation?: string;
   aboutFamily?: string;
+  mobile?: string;
+  email?: string;
+  agePreferenceMin?: number;
+  agePreferenceMax?: number;
+  heightPreferenceMin?: number;
+  heightPreferenceMax?: number;
+  castePreference?: string;
+  educationPreference?: string;
+  occupationPreference?: string;
+  locationPreference?: string;
+  maritalStatusPreference?: string;
+  isProfileComplete?: boolean;
 }
 
 interface ShareInfo {
@@ -238,6 +250,18 @@ export default async function SharedProfilePage({ params }: SharedProfilePagePro
               <CardContent className="p-6">
                 <h2 className="text-xl font-semibold mb-6 pb-2 border-b">Basic Details</h2>
                 <div className="space-y-4">
+                  {user.mobile && (
+                    <div className="flex items-center justify-between py-2">
+                      <span className="text-muted-foreground font-medium">Mobile</span>
+                      <span className="font-medium">{user.mobile}</span>
+                    </div>
+                  )}
+                  {user.email && (
+                    <div className="flex items-center justify-between py-2">
+                      <span className="text-muted-foreground font-medium">Email</span>
+                      <span className="font-medium">{user.email}</span>
+                    </div>
+                  )}
                   {user.height && (
                     <div className="flex items-center justify-between py-2">
                       <span className="text-muted-foreground font-medium">Height</span>
@@ -272,6 +296,12 @@ export default async function SharedProfilePage({ params }: SharedProfilePagePro
                     <div className="flex items-center justify-between py-2">
                       <span className="text-muted-foreground font-medium">Caste</span>
                       <span className="font-medium">{user.caste}</span>
+                    </div>
+                  )}
+                  {user.subcaste && (
+                    <div className="flex items-center justify-between py-2">
+                      <span className="text-muted-foreground font-medium">Subcaste</span>
+                      <span className="font-medium">{user.subcaste}</span>
                     </div>
                   )}
                   {user.motherTongue && (
@@ -374,6 +404,69 @@ export default async function SharedProfilePage({ params }: SharedProfilePagePro
                     <div className="flex items-center justify-between py-2">
                       <span className="text-muted-foreground font-medium">Family Location</span>
                       <span className="font-medium">{user.familyLocation}</span>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Partner Preferences */}
+            <Card className="shadow-md">
+              <CardContent className="p-6">
+                <h2 className="text-xl font-semibold mb-6 pb-2 border-b">Partner Preferences</h2>
+                <div className="space-y-4">
+                  {(user.agePreferenceMin || user.agePreferenceMax) && (
+                    <div className="flex items-center justify-between py-2">
+                      <span className="text-muted-foreground font-medium">Age</span>
+                      <span className="font-medium">
+                        {user.agePreferenceMin && user.agePreferenceMax
+                          ? `${user.agePreferenceMin} to ${user.agePreferenceMax} years`
+                          : user.agePreferenceMin
+                          ? `From ${user.agePreferenceMin} years`
+                          : `Up to ${user.agePreferenceMax} years`}
+                      </span>
+                    </div>
+                  )}
+                  {(user.heightPreferenceMin || user.heightPreferenceMax) && (
+                    <div className="flex items-center justify-between py-2">
+                      <span className="text-muted-foreground font-medium">Height</span>
+                      <span className="font-medium">
+                        {user.heightPreferenceMin && user.heightPreferenceMax
+                          ? `${user.heightPreferenceMin} to ${user.heightPreferenceMax} cm`
+                          : user.heightPreferenceMin
+                          ? `From ${user.heightPreferenceMin} cm`
+                          : `Up to ${user.heightPreferenceMax} cm`}
+                      </span>
+                    </div>
+                  )}
+                  {user.maritalStatusPreference && (
+                    <div className="flex items-center justify-between py-2">
+                      <span className="text-muted-foreground font-medium">Marital Status</span>
+                      <span className="font-medium">{user.maritalStatusPreference}</span>
+                    </div>
+                  )}
+                  {user.educationPreference && (
+                    <div className="flex items-center justify-between py-2">
+                      <span className="text-muted-foreground font-medium">Education</span>
+                      <span className="font-medium">{user.educationPreference}</span>
+                    </div>
+                  )}
+                  {user.occupationPreference && (
+                    <div className="flex items-center justify-between py-2">
+                      <span className="text-muted-foreground font-medium">Occupation</span>
+                      <span className="font-medium">{user.occupationPreference}</span>
+                    </div>
+                  )}
+                  {user.locationPreference && (
+                    <div className="flex items-center justify-between py-2">
+                      <span className="text-muted-foreground font-medium">Location</span>
+                      <span className="font-medium">{user.locationPreference}</span>
+                    </div>
+                  )}
+                  {user.castePreference && (
+                    <div className="flex items-center justify-between py-2">
+                      <span className="text-muted-foreground font-medium">Caste</span>
+                      <span className="font-medium">{user.castePreference}</span>
                     </div>
                   )}
                 </div>
