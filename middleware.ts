@@ -12,7 +12,8 @@ const publicRoutes = [
   '/api/auth/check',
   '/api/auth',
   '/_next',
-  '/favicon.ico'
+  '/favicon.ico',
+  '/shared-profile'  // Only the shared profile view is public
 ];
 
 export async function middleware(request: NextRequest) {

@@ -55,4 +55,18 @@ model User {
   locationPreference      String?
   maritalStatusPreference String?
   isProfileComplete       Boolean? @default(false)
+  profileShare            ProfileShare?
+}
+
+model ProfileShare {
+  token         String    @id @unique @default(uuid())
+  userId        String    @unique
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime  @default(now())
+  expiresAt     DateTime
+  lastRenewedAt DateTime?
+  renewalCount  Int       @default(0)
+  viewCount     Int       @default(0)
+
+  @@index([userId])
 }

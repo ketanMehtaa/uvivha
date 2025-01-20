@@ -2,64 +2,69 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { handleLogout } from '@/lib/auth';
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Bell } from 'lucide-react';
+import { User, LogOut, Settings, ChevronDown, UserCircle } from 'lucide-react';
 
 export default function Header() {
   const router = useRouter();
 
+  const handleLogout = async () => {
+    try {
+      const res = await fetch('/api/auth/logout', {
+        method: 'POST'
+      });
+      
+      if (res.ok) {
+        router.push('/auth');
+      }
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between">
-        <div className="flex items-center gap-6 md:gap-8">
-          <Link href="/dashboard" className="flex items-center space-x-2">
-            <span className="text-2xl font-bold bg-gradient-to-r from-red-600 to-pink-600 bg-clip-text text-transparent">
-              Uvivha
-            </span>
-          </Link>
-        </div>
+      <div className="container flex h-14 items-center justify-between">
+        <Link href="/dashboard" className="font-semibold">
+          Matrimony
+        </Link>
 
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-5 w-5" />
-            <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-600"></span>
-          </Button>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                <Avatar>
-                  <AvatarImage src="/placeholder-avatar.jpg" alt="Profile" />
-                  <AvatarFallback>U</AvatarFallback>
-                </Avatar>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/profile/edit">Edit Profile</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/settings">Settings</Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={async () => await handleLogout(router)}>
-                Logout
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" className="gap-2">
+              <User className="h-4 w-4" />
+              Account
+              <ChevronDown className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-[200px]">
+            <DropdownMenuItem asChild>
+              <Link href="/my-profile" className="cursor-pointer flex items-center">
+                <UserCircle className="mr-2 h-4 w-4" />
+                View Profile
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/settings" className="cursor-pointer flex items-center">
+                <Settings className="mr-2 h-4 w-4" />
+                Settings
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={handleLogout}
+              className="cursor-pointer text-destructive"
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              Logout
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   );
