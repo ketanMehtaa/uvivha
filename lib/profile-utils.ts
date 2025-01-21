@@ -1,6 +1,4 @@
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
 
 export const checkProfileCompletion = async (userId: string) => {
   const user = await prisma.user.findUnique({
@@ -28,8 +26,3 @@ export const checkProfileCompletion = async (userId: string) => {
 
   return Object.values(user).every(value => value !== null && value !== undefined);
 };
-
-// Clean up Prisma connection
-process.on('beforeExit', async () => {
-  await prisma.$disconnect();
-}); 
