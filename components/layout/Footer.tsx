@@ -10,7 +10,7 @@ export default function Footer() {
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-4">
             <h3 className="text-2xl font-bold bg-gradient-to-r from-red-600 to-pink-600 bg-clip-text text-transparent">
-              Vivha
+              Uvivha
             </h3>
             <p className="text-sm text-muted-foreground">
               Find your perfect life partner with our trusted matrimony service.
@@ -101,7 +101,7 @@ export default function Footer() {
             Made with <Heart className="h-4 w-4 text-red-500" /> by Vivha Team
           </p>
           <p className="mt-2">
-            © {new Date().getFullYear()} Vivha. All rights reserved.
+            © {new Date().getFullYear()} Uvivha. All rights reserved.
           </p>
         </div>
       </div>

@@ -286,8 +286,8 @@ export default function LandingPage() {
                     <span className="text-gray-600">/3 months</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-lg text-gray-400 line-through">₹999</span>
-                    <span className="text-sm text-green-600 font-medium">Save ₹999</span>
+                    <span className="text-lg text-gray-400 line-through">2499</span>
+                    <span className="text-sm text-green-600 font-medium">Save ₹2499</span>
                   </div>
                   <div className="mt-2 bg-green-100 text-green-600 px-3 py-1 rounded-full text-sm font-medium inline-block">
                     Limited Time Free!
@@ -328,18 +328,18 @@ export default function LandingPage() {
                 Most Popular
               </div>
               <div className="absolute top-0 left-0 bg-green-500 text-white px-3 py-1 text-sm font-semibold rounded-br">
-                60% OFF
+                100% OFF
               </div>
               <div className="p-8">
                 <h3 className="text-xl font-semibold text-gray-900 mb-4">Premium</h3>
                 <div className="mb-6">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-4xl font-bold">₹1,999</span>
+                    <span className="text-4xl font-bold text-green-600">₹0</span>
                     <span className="text-gray-600">/6 months</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-lg text-gray-400 line-through">₹4,999</span>
-                    <span className="text-sm text-green-600 font-medium">Save ₹3,000</span>
+                    <span className="text-sm text-green-600 font-medium">Save ₹4,999</span>
                   </div>
                 </div>
                 <ul className="space-y-4 mb-6">
