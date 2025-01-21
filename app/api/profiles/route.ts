@@ -34,17 +34,36 @@ export async function GET(request: Request) {
       );
     }
 
+    // Get current user's gender
+    const currentUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { gender: true }
+    });
+
+    if (!currentUser?.gender) {
+      return NextResponse.json(
+        { error: 'User gender not set' },
+        { status: 400 }
+      );
+    }
+
+    const oppositeGender = currentUser.gender === 'Male' ? 'Female' : 'Male';
+
     // Get total count for pagination
     const totalCount = await prisma.user.count({
       where: {
-        id: { not: userId }, // Exclude current user
+        id: { not: userId },
+        isProfileComplete: true,
+        gender: oppositeGender
       }
     });
 
     // Fetch paginated profiles
     const profiles = await prisma.user.findMany({
       where: {
-        id: { not: userId }, // Exclude current user
+        id: { not: userId },
+        isProfileComplete: true,
+        gender: oppositeGender
       },
       select: {
         id: true,

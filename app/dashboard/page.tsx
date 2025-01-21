@@ -48,16 +48,7 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        // First check if authenticated
-        const authRes = await fetch('/api/auth/check');
-        const authData = await authRes.json();
-        
-        if (!authData.authenticated) {
-          handleLogout(router);
-          return;
-        }
-
-        // Then fetch user data
+       
         const userRes = await fetch('/api/user/me');
         const userData = await userRes.json();
 

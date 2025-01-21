@@ -4,6 +4,7 @@ export async function handleLogout(router: any) {
     localStorage.clear();
     sessionStorage.clear();
     
+
     // Make a request to clear server-side session
     const response = await fetch('/api/auth/logout', { 
       method: 'POST',
