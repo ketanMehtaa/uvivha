@@ -1,3 +1,6 @@
+'use client'
+
+import React, { useEffect, useState } from "react";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Image from "next/image";
@@ -6,13 +9,16 @@ import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   MapPin,
   Briefcase,
   GraduationCap,
   Clock,
   Eye,
-  Heart
+  Heart,
+  Loader2,
+  X
 } from 'lucide-react';
 import {
   Carousel,
@@ -26,7 +32,7 @@ import Footer from "@/components/layout/Footer";
 import { TryAgainButton } from "@/components/shared-profile/TryAgainButton";
 
 interface SharedProfilePageProps {
-  params: Promise<{ userId: string; token: string }>;
+  params: { userId: string; token: string };
 }
 
 interface User {
@@ -96,19 +102,36 @@ function calculateAge(birthDate: string) {
   return age;
 }
 
-export async function generateMetadata({ params }: SharedProfilePageProps): Promise<Metadata> {
-  const { userId, token } = await params;
-  const data = await getSharedProfile(userId, token);
-  if (!data) return { title: "Profile Not Found" };
+// export async function generateMetadata({ params }: SharedProfilePageProps): Promise<Metadata> {
+//   const { userId, token } = await params;
+//   const data = await getSharedProfile(userId, token);
+//   if (!data) return { title: "Profile Not Found" };
   
-  return {
-    title: `${data.user.name}'s Profile`,
-    description: `View ${data.user.name}'s matrimony profile`
-  };
-}
+//   return {
+//     title: `${data.user.name}'s Profile`,
+//     description: `View ${data.user.name}'s matrimony profile`
+//   };
+// }
 
 async function getSharedProfile(userId: string, token: string) {
   try {
+    // Try to get from cache first
+    const cacheKey = `profile-${userId}-${token}`;
+    const cachedData = localStorage.getItem(cacheKey);
+    
+    if (cachedData) {
+      const { data, timestamp } = JSON.parse(cachedData);
+      const cacheAge = Date.now() - timestamp;
+      
+      // Return cached data if it's less than 5 minutes old
+      if (cacheAge < 5 * 60 * 1000) {
+        return data;
+      }
+      
+      // Remove expired cache
+      localStorage.removeItem(cacheKey);
+    }
+
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 
       (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
 
@@ -116,12 +139,20 @@ async function getSharedProfile(userId: string, token: string) {
       headers: {
         'Content-Type': 'application/json',
       },
-      next: { revalidate: 0 } // Disable cache to get fresh data
+      cache: 'force-cache',
+      next: { revalidate: 300 } // 5 minutes
     });
     
     if (!response.ok) return null;
     
     const data = await response.json();
+    
+    // Cache the new data
+    localStorage.setItem(cacheKey, JSON.stringify({
+      data,
+      timestamp: Date.now()
+    }));
+    
     return data;
   } catch (error) {
     console.error('Error fetching shared profile:', error);
@@ -129,11 +160,69 @@ async function getSharedProfile(userId: string, token: string) {
   }
 }
 
-export default async function SharedProfilePage({ params }: SharedProfilePageProps) {
-  const { userId, token } = await params;
-  const data = await getSharedProfile(userId, token);
-  
-  if (!data) {
+export default function SharedProfilePage({ 
+  params: { userId, token } 
+}: { 
+  params: { userId: string; token: string } 
+}) {
+  const [data, setData] = useState<ProfileData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowToast(true);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const result = await getSharedProfile(userId, token);
+        setData(result);
+        setLoading(false);
+      } catch (err) {
+        setError(true);
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, [userId, token]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <Header />
+        <div className="container max-w-7xl py-8 px-4 md:px-6 lg:px-8 flex-grow">
+          <Card className="mb-8">
+            <CardContent className="p-8">
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+                <div className="md:col-span-4">
+                  <Skeleton className="aspect-[3/4] w-full rounded-xl" />
+                </div>
+                <div className="md:col-span-8 space-y-4">
+                  <Skeleton className="h-8 w-48" />
+                  <Skeleton className="h-6 w-24" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Skeleton className="h-12" />
+                    <Skeleton className="h-12" />
+                    <Skeleton className="h-12" />
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!data || error) {
     return (
       <div className="min-h-screen flex flex-col bg-background">
         <Header />
@@ -156,7 +245,41 @@ export default async function SharedProfilePage({ params }: SharedProfilePagePro
   const { user, shareInfo } = data;
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-background relative">
+      {/* Floating Toast with Animation */}
+      {showToast && (
+        <div className="fixed bottom-4 right-4 mx-auto w-[80%] md:w-96 md:mx-0 bg-white rounded-lg shadow-2xl z-50 p-6 animate-slideUp">
+          <div className="flex justify-between items-start mb-3">
+            <h3 className="font-semibold text-xl bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">
+              Find Your Perfect Match
+            </h3>
+            <button 
+              onClick={() => setShowToast(false)}
+              className="text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          <p className="text-gray-600 mb-5 text-base">
+            Share you Biodata for free and find your perfect match.
+          </p>
+          <Link href="/auth" className="block">
+            <button className="w-full relative group overflow-hidden rounded-lg">
+              <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-pink-500 to-rose-500"></div>
+              <div className="absolute -inset-[1px] bg-gradient-to-r from-pink-500 via-rose-500 to-pink-500 animate-border rounded-lg">
+                <div className="w-[200%] h-full absolute animate-spin-slow"></div>
+              </div>
+              <div className="relative px-7 py-4 bg-white rounded-lg leading-none flex items-center justify-center space-x-3 hover:bg-gray-50 transition-colors group-hover:bg-opacity-90">
+                <span className="text-gradient bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent text-base font-semibold">
+                  Start Your Journey
+                </span>
+                <div className="w-2 h-2 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 animate-pulse"></div>
+              </div>
+            </button>
+          </Link>
+        </div>
+      )}
+
       <Header />
       <main className="flex-grow container py-8 px-4 md:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
@@ -520,4 +643,51 @@ export default async function SharedProfilePage({ params }: SharedProfilePagePro
       <Footer />
     </div>
   );
+}
+
+// Add this to your global CSS or as a style tag
+const styles = `
+@keyframes slideUp {
+  0% {
+    transform: translateY(20px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes border-rotate {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-border {
+  background-size: 200% 100%;
+  animation: border-rotate 3s linear infinite;
+}
+
+.animate-spin-slow {
+  animation: border-rotate 3s linear infinite;
+}
+
+.animate-slideUp {
+  animation: slideUp 2s ease-out forwards;
+}
+
+.text-gradient {
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+`;
+
+// Add the styles to the document
+if (typeof document !== 'undefined') {
+  const styleSheet = document.createElement('style');
+  styleSheet.textContent = styles;
+  document.head.appendChild(styleSheet);
 }
