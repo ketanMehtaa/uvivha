@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { handleUnauthorized, handleLogout } from '@/lib/auth';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import Filters from '@/components/dashboard/Filters';
+import Filters, { FilterValues, defaultFilters } from '@/components/dashboard/Filters';
 import SuggestedMatches from '@/components/dashboard/SuggestedMatches';
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -44,6 +44,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const [filters, setFilters] = useState<FilterValues>(defaultFilters);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -142,7 +143,7 @@ export default function DashboardPage() {
       
       <main className="flex-grow container py-6">
         <div className="space-y-6">
-          <Card>
+         {completionPercentage < 60 && <Card>
             <CardContent className="pt-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="space-y-1">
@@ -169,7 +170,7 @@ export default function DashboardPage() {
                 <Progress value={completionPercentage} className="h-2" />
               </div>
             </CardContent>
-          </Card>
+          </Card>}
 
           {!isProfileComplete ? (
             <Card>
@@ -190,14 +191,13 @@ export default function DashboardPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div className="md:col-span-1">
-                {/* <Filters onFilterChange={(filters) => {
-                  // Filter changes will be handled by the Filters component
-                  console.log('Filters updated:', filters);
-                }} /> */}
+                <Filters onFilterChange={(newFilters) => {
+                  setFilters(newFilters);
+                }} />
               </div>
               
               <div className="md:col-span-3">
-                <SuggestedMatches />
+                <SuggestedMatches filters={filters} />
               </div>
             </div>
           )}

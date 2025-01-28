@@ -88,14 +88,14 @@ export async function POST(request: Request) {
 
       if (isNaN(minHeight) || minHeight < HEIGHT_MIN || minHeight > HEIGHT_MAX) {
         return NextResponse.json(
-          { error: `Minimum height must be between ${HEIGHT_MIN}cm and ${HEIGHT_MAX}cm` },
+          { error: `Minimum height must be between ${HEIGHT_MIN}f and ${HEIGHT_MAX}f` },
           { status: 400 }
         );
       }
 
       if (isNaN(maxHeight) || maxHeight < HEIGHT_MIN || maxHeight > HEIGHT_MAX) {
         return NextResponse.json(
-          { error: `Maximum height must be between ${HEIGHT_MIN}cm and ${HEIGHT_MAX}cm` },
+          { error: `Maximum height must be between ${HEIGHT_MIN}f and ${HEIGHT_MAX}f` },
           { status: 400 }
         );
       }

@@ -6,28 +6,32 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
   // url      = env("PROD_DATABASE_URL")
-  
 }
 
 model User {
-  id                      String    @id @default(cuid())
+  id                      String        @id @default(cuid())
   name                    String?
-  mobile                  String    @unique
+  mobile                  String        @unique
   password                String?
-  email                   String?   @unique
-  gender                  String?
+  email                   String?       @unique
+  gender                  Gender?
   birthDate               DateTime?
   location                String?
+  district                UttarakhandDistrict?
   bio                     String?
   photos                  String[]
-  createdAt               DateTime  @default(now())
-  updatedAt               DateTime  @updatedAt
-  otplessUserId           String?   @unique
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+  otplessUserId           String?       @unique
   otplessToken            String?
+
+
   height                  Float?
   weight                  Float?
-  complexion              String?
+  complexion              Complexion?
   physicalStatus          String?
+
+
   education               String?
   educationDetails        String?
   occupation              String?
@@ -35,18 +39,23 @@ model User {
   companyName             String?
   jobTitle                String?
   income                  String?
-  maritalStatus           String?
+
+  maritalStatus           MaritalStatus?
   religion                String?
+  community               Community?
   caste                   String?
   subcaste                String?
+
   motherTongue            String?
-  familyType              String?
+  familyType              FamilyType?
   familyStatus            String?
   fatherOccupation        String?
   motherOccupation        String?
   siblings                String?
   familyLocation          String?
   aboutFamily             String?
+
+
   agePreferenceMin        Int?
   agePreferenceMax        Int?
   heightPreferenceMin     Float?
@@ -55,9 +64,15 @@ model User {
   educationPreference     String?
   occupationPreference    String?
   locationPreference      String?
-  maritalStatusPreference String?
-  isProfileComplete       Boolean? @default(false)
+  maritalStatusPreference MaritalStatus?
+  isProfileComplete       Boolean?      @default(false)
+
   profileShare            ProfileShare?
+  gotra                   Gotra?
+  onBehalf                OnBehalf?
+  manglik                 Manglik?
+  horoscope               Horoscope?
+  livingWith              LivingWith?
 }
 
 model ProfileShare {
@@ -71,4 +86,97 @@ model ProfileShare {
   viewCount     Int       @default(0)
 
   @@index([userId])
+}
+
+
+
+// ------------------------enum-----------------------------
+
+enum Community {
+  Garhwali
+  Kumaoni
+  Jaunsari
+}
+
+enum Gender {
+  Male
+  Female
+}
+
+enum MaritalStatus {
+  Married
+  Divorced
+  Widowed
+  NeverMarried
+}
+
+enum Complexion {
+  NONE
+  VERY_FAIR
+  FAIR
+  WHEATISH
+  DARK
+}
+
+enum FamilyType {
+  Nuclear
+  Joint
+}
+
+enum LivingWith {
+  Alone
+  WithFamily
+  SharedAccommodation
+  Other
+}
+
+enum Manglik {
+  Yes
+  No
+}
+
+enum Horoscope {
+  Aries
+  Taurus
+  Gemini
+  Cancer
+  Leo
+  Virgo
+  Libra
+  Scorpio
+  Sagittarius
+  Capricorn
+  Aquarius
+  Pisces
+}
+
+enum Gotra {
+  Bhardwaj
+  Kashyap
+  Vashisth
+  Karki
+  Other
+}
+
+enum OnBehalf {
+  Self
+  Parents
+  Sister
+  Brother
+}
+
+enum UttarakhandDistrict {
+  ALMORA 
+  BAGESHWAR 
+  CHAMOLI 
+  CHAMPAWAT 
+  DEHRADUN 
+  HARIDWAR 
+  NAINITAL 
+  PAURI 
+  PITHORAGARH 
+  RUDRAPRAYAG 
+  TEHRI 
+  UDHAM_SINGH_NAGAR 
+  UTTARKASHI 
 }

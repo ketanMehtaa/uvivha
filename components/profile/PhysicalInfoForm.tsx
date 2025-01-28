@@ -17,7 +17,13 @@ interface PhysicalInfoFormProps {
   isLastStep: boolean;
   setUser: (user: any) => void;
 }
-
+const complexionMapping = {
+  NONE: 'Select complexion',
+  VERY_FAIR: 'Very Fair',
+  FAIR: 'Fair',
+  WHEATISH: 'Wheatish',
+  DARK: 'Dark'
+}
 export default function PhysicalInfoForm({
   user,
   onNext,
@@ -121,7 +127,7 @@ export default function PhysicalInfoForm({
       {/* Height */}
       <div>
         <label htmlFor="height" className="block text-sm font-medium text-gray-700">
-          Height (in cm)
+          Height (in f)
         </label>
         <input
           type="number"
@@ -169,11 +175,14 @@ export default function PhysicalInfoForm({
             <SelectValue placeholder="Select complexion" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="none">Select complexion</SelectItem>
+            {/* <SelectItem value="none">Select complexion</SelectItem>
             <SelectItem value="Very Fair">Very Fair</SelectItem>
             <SelectItem value="Fair">Fair</SelectItem>
             <SelectItem value="Wheatish">Wheatish</SelectItem>
-            <SelectItem value="Dark">Dark</SelectItem>
+            <SelectItem value="Dark">Dark</SelectItem> */}
+            {Object.entries(complexionMapping).map(([key, value]) => (
+              <SelectItem key={key} value={key}>{value}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>

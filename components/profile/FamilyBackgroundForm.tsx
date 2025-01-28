@@ -125,8 +125,8 @@ export default function FamilyBackgroundForm({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="none">Select family type</SelectItem>
-            <SelectItem value="Joint Family">Joint Family</SelectItem>
-            <SelectItem value="Nuclear Family">Nuclear Family</SelectItem>
+            <SelectItem value="Joint">Joint Family</SelectItem>
+            <SelectItem value="Nuclear">Nuclear Family</SelectItem>
           </SelectContent>
         </Select>
         {errors.familyType && <p className="mt-1 text-sm text-red-600">{errors.familyType}</p>}

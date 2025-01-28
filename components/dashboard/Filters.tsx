@@ -20,6 +20,7 @@ import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Filter, X } from 'lucide-react';
 import castes from '@/data/castes.json';
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface CastesData {
   [key: string]: {
@@ -35,32 +36,33 @@ export interface FilterValues {
   weightRange: { min: number; max: number };
   caste: string;
   subcaste: string;
+  community: 'Garhwali' | 'Kumaoni' | 'Jaunsari' | 'none';
   education: string;
-  educationDetails: string;
-  occupation: string;
   employedIn: string;
   income: string;
   location: string;
-  maritalStatus: string;
-  complexion: string;
+  maritalStatus: 'NeverMarried' | 'Divorced' | 'Widowed' | 'Married' | 'none';
+  complexion: 'VERY_FAIR' | 'FAIR' | 'WHEATISH' | 'DARK' | 'NONE' | 'none';
   physicalStatus: string;
-  familyType: string;
+  familyType: 'Joint' | 'Nuclear' | 'none';
   familyStatus: string;
+  manglik: 'Yes' | 'No' | 'none';
+  hasPhotos: 'Yes' | 'No' | 'none';
+  occupation: string;
 }
 
 interface FiltersProps {
   onFilterChange: (filters: FilterValues) => void;
 }
 
-const defaultFilters: FilterValues = {
+export const defaultFilters: FilterValues = {
   ageRange: { min: 18, max: 50 },
-  heightRange: { min: 140, max: 200 },
+  heightRange: { min: 4, max: 7 },
   weightRange: { min: 40, max: 120 },
   caste: 'none',
   subcaste: 'none',
+  community: 'none',
   education: 'none',
-  educationDetails: '',
-  occupation: 'none',
   employedIn: 'none',
   income: 'none',
   location: '',
@@ -69,6 +71,9 @@ const defaultFilters: FilterValues = {
   physicalStatus: 'none',
   familyType: 'none',
   familyStatus: 'none',
+  manglik: 'none',
+  hasPhotos: 'none',
+  occupation: 'none',
 };
 
 export default function Filters({ onFilterChange }: FiltersProps) {
@@ -148,14 +153,14 @@ export default function Filters({ onFilterChange }: FiltersProps) {
                 <label className="text-sm font-medium">Height Range (cm)</label>
                 <Slider
                   defaultValue={[filters.heightRange.min, filters.heightRange.max]}
-                  max={200}
-                  min={140}
-                  step={1}
+                  max={7}
+                  min={3}
+                  step={0.2}
                   onValueChange={(value) => handleChange('heightRange', { min: value[0], max: value[1] })}
                 />
                 <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>{filters.heightRange.min}cm</span>
-                  <span>{filters.heightRange.max}cm</span>
+                  <span>{filters.heightRange.min}feet</span>
+                  <span>{filters.heightRange.max}feet</span>
                 </div>
               </div>
 
@@ -202,12 +207,28 @@ export default function Filters({ onFilterChange }: FiltersProps) {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">Any</SelectItem>
-                    <SelectItem value="very_fair">Very Fair</SelectItem>
-                    <SelectItem value="fair">Fair</SelectItem>
-                    <SelectItem value="wheatish">Wheatish</SelectItem>
-                    <SelectItem value="dark">Dark</SelectItem>
+                    <SelectItem value="VERY_FAIR">Very Fair</SelectItem>
+                    <SelectItem value="FAIR">Fair</SelectItem>
+                    <SelectItem value="WHEATISH">Wheatish</SelectItem>
+                    <SelectItem value="DARK">Dark</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="hasPhotos"
+                  checked={filters.hasPhotos === 'Yes'}
+                  onCheckedChange={(checked) => 
+                    handleChange('hasPhotos', checked ? 'Yes' : 'none')
+                  }
+                />
+                <label 
+                  htmlFor="hasPhotos" 
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Has Profile Photo
+                </label>
               </div>
             </div>
           </AccordionContent>
@@ -257,11 +278,29 @@ export default function Filters({ onFilterChange }: FiltersProps) {
                   </Select>
                 </div>
               )}
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Community</label>
+                <Select
+                  value={filters.community}
+                  onValueChange={(value) => handleChange('community', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Community" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">All Communities</SelectItem>
+                    <SelectItem value="Garhwali">Garhwali</SelectItem>
+                    <SelectItem value="Kumaoni">Kumaoni</SelectItem>
+                    <SelectItem value="Jaunsari">Jaunsari</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="education">
+        {/* <AccordionItem value="education">
           <AccordionTrigger>Education & Career</AccordionTrigger>
           <AccordionContent>
             <div className="space-y-4">
@@ -292,15 +331,14 @@ export default function Filters({ onFilterChange }: FiltersProps) {
                   onValueChange={(value) => handleChange('employedIn', value)}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select Employment Type" />
+                    <SelectValue placeholder="Select Employment" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">All Types</SelectItem>
-                    <SelectItem value="government">Government</SelectItem>
-                    <SelectItem value="private">Private</SelectItem>
-                    <SelectItem value="business">Business</SelectItem>
-                    <SelectItem value="self_employed">Self Employed</SelectItem>
-                    <SelectItem value="not_working">Not Working</SelectItem>
+                    <SelectItem value="none">All</SelectItem>
+                    <SelectItem value="Private Sector">Private Sector</SelectItem>
+                    <SelectItem value="Government/Public Sector">Government Sector</SelectItem>
+                    <SelectItem value="Business/Self Employed">Business/Self Employed</SelectItem>
+                    <SelectItem value="Not Working">Not Working</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -361,7 +399,7 @@ export default function Filters({ onFilterChange }: FiltersProps) {
               </div>
             </div>
           </AccordionContent>
-        </AccordionItem>
+        </AccordionItem> */}
 
         <AccordionItem value="family">
           <AccordionTrigger>Family Details</AccordionTrigger>
@@ -378,8 +416,8 @@ export default function Filters({ onFilterChange }: FiltersProps) {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">All Types</SelectItem>
-                    <SelectItem value="joint">Joint Family</SelectItem>
-                    <SelectItem value="nuclear">Nuclear Family</SelectItem>
+                    <SelectItem value="Joint">Joint Family</SelectItem>
+                    <SelectItem value="Nuclear">Nuclear Family</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -402,6 +440,23 @@ export default function Filters({ onFilterChange }: FiltersProps) {
                   </SelectContent>
                 </Select>
               </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Manglik Status</label>
+                <Select
+                  value={filters.manglik}
+                  onValueChange={(value) => handleChange('manglik', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Manglik Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Any</SelectItem>
+                    <SelectItem value="Yes">Yes</SelectItem>
+                    <SelectItem value="No">No</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </AccordionContent>
         </AccordionItem>
@@ -410,7 +465,7 @@ export default function Filters({ onFilterChange }: FiltersProps) {
           <AccordionTrigger>Location</AccordionTrigger>
           <AccordionContent>
             <div className="space-y-2">
-              <label className="text-sm font-medium">City or State</label>
+              <label className="text-sm font-medium">City or District</label>
               <Input
                 type="text"
                 value={filters.location}
@@ -425,6 +480,7 @@ export default function Filters({ onFilterChange }: FiltersProps) {
           <AccordionTrigger>Marital Status</AccordionTrigger>
           <AccordionContent>
             <div className="space-y-2">
+              <label className="text-sm font-medium">Marital Status</label>
               <Select
                 value={filters.maritalStatus}
                 onValueChange={(value) => handleChange('maritalStatus', value)}
@@ -434,10 +490,10 @@ export default function Filters({ onFilterChange }: FiltersProps) {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">All</SelectItem>
-                  <SelectItem value="never_married">Never Married</SelectItem>
-                  <SelectItem value="divorced">Divorced</SelectItem>
-                  <SelectItem value="widowed">Widowed</SelectItem>
-                  <SelectItem value="awaiting_divorce">Awaiting Divorce</SelectItem>
+                  <SelectItem value="NeverMarried">Never Married</SelectItem>
+                  <SelectItem value="Divorced">Divorced</SelectItem>
+                  <SelectItem value="Widowed">Widowed</SelectItem>
+                  <SelectItem value="Married">Married</SelectItem>
                 </SelectContent>
               </Select>
             </div>

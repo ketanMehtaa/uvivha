@@ -388,7 +388,7 @@ export default function SharedProfilePage({
                   {user.height && (
                     <div className="flex items-center justify-between py-2">
                       <span className="text-muted-foreground font-medium">Height</span>
-                      <span className="font-medium">{user.height} cm</span>
+                      <span className="font-medium">{user.height} f</span>
                     </div>
                   )}
                   {user.weight && (
@@ -555,10 +555,10 @@ export default function SharedProfilePage({
                       <span className="text-muted-foreground font-medium">Height</span>
                       <span className="font-medium">
                         {user.heightPreferenceMin && user.heightPreferenceMax
-                          ? `${user.heightPreferenceMin} to ${user.heightPreferenceMax} cm`
+                          ? `${user.heightPreferenceMin} to ${user.heightPreferenceMax} f`
                           : user.heightPreferenceMin
-                          ? `From ${user.heightPreferenceMin} cm`
-                          : `Up to ${user.heightPreferenceMax} cm`}
+                          ? `From ${user.heightPreferenceMin} f`
+                          : `Up to ${user.heightPreferenceMax} f`}
                       </span>
                     </div>
                   )}

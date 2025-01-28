@@ -9,6 +9,11 @@ const nextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'byoli.com',
+        pathname: '/**'
+      },
+      {
+        protocol: 'https',
         hostname: 'avatars.githubusercontent.com',
         pathname: '/**'
       },
