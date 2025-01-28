@@ -403,7 +403,7 @@ export default function ProfilesList({ profiles }: ProfilesListProps) {
                       {selectedProfile?.height && (
                         <div className="flex items-center justify-between py-2">
                           <span className="text-muted-foreground font-medium">Height</span>
-                          <span className="font-medium">{selectedProfile.height} cm</span>
+                          <span className="font-medium">{selectedProfile.height} f</span>
                         </div>
                       )}
                       {selectedProfile?.weight && (

@@ -229,7 +229,7 @@ export default function MyProfilePage() {
                     {profile?.height && (
                       <div className="flex items-center justify-between py-2">
                         <span className="text-muted-foreground font-medium">Height</span>
-                        <span className="font-medium">{profile.height} cm</span>
+                        <span className="font-medium">{profile.height} f</span>
                       </div>
                     )}
                     {profile?.weight && (

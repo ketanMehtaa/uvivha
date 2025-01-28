@@ -150,7 +150,7 @@ export default function Filters({ onFilterChange }: FiltersProps) {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Height Range (cm)</label>
+                <label className="text-sm font-medium">Height Range (f)</label>
                 <Slider
                   defaultValue={[filters.heightRange.min, filters.heightRange.max]}
                   max={7}

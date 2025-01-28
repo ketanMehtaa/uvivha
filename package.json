@@ -1,7 +1,7 @@
 {
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "NODE_OPTIONS='--inspect' next dev --turbopack",
     "build": "prisma generate && next build",
     "start": "next start",
     "seed": "NODE_OPTIONS='--loader ts-node/esm' ts-node prisma/seed.ts",
