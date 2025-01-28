@@ -359,7 +359,7 @@ export default function ProfilesList({ profiles }: ProfilesListProps) {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-base">
-                      {selectedProfile?.mobile && (
+                      {/* {selectedProfile?.mobile && (
                         <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 col-span-full">
                           <Phone className="h-5 w-5 text-primary" />
                           <a 
@@ -369,7 +369,7 @@ export default function ProfilesList({ profiles }: ProfilesListProps) {
                             {selectedProfile.mobile}
                           </a>
                         </div>
-                      )}
+                      )} */}
                       {selectedProfile?.location && (
                         <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
                           <MapPin className="h-5 w-5 text-primary" />
