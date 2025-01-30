@@ -286,8 +286,8 @@ export default function LandingPage() {
                     <span className="text-gray-600">/3 months</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-lg text-gray-400 line-through">2499</span>
-                    <span className="text-sm text-green-600 font-medium">Save ₹2499</span>
+                    <span className="text-lg text-gray-400 line-through">900</span>
+                    <span className="text-sm text-green-600 font-medium">Save 900</span>
                   </div>
                   <div className="mt-2 bg-green-100 text-green-600 px-3 py-1 rounded-full text-sm font-medium inline-block">
                     Limited Time Free!
@@ -338,8 +338,8 @@ export default function LandingPage() {
                     <span className="text-gray-600">/6 months</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-lg text-gray-400 line-through">₹4,999</span>
-                    <span className="text-sm text-green-600 font-medium">Save ₹4,999</span>
+                    <span className="text-lg text-gray-400 line-through">₹1,500</span>
+                    <span className="text-sm text-green-600 font-medium">Save ₹1,500</span>
                   </div>
                 </div>
                 <ul className="space-y-4 mb-6">
@@ -369,7 +369,8 @@ export default function LandingPage() {
                   </li>
                 </ul>
                 <Link 
-                  href={`https://wa.me/917454948175?text=${encodeURIComponent('Hi Uvivha, want to buy your Premium plan')}`}
+                  // href={`https://wa.me/917454948175?text=${encodeURIComponent('Hi Uvivha, want to buy your Premium plan')}`}
+                  href="/auth" 
                   target="_blank"
                   className="block w-full py-3 px-6 text-center bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-all hover:shadow-lg"
                 >
@@ -387,12 +388,12 @@ export default function LandingPage() {
                 <h3 className="text-xl font-semibold text-gray-900 mb-4">VIP</h3>
                 <div className="mb-6">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-4xl font-bold">₹3,999</span>
+                    <span className="text-4xl font-bold">₹0</span>
                     <span className="text-gray-600">/12 months</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-lg text-gray-400 line-through">₹9,999</span>
-                    <span className="text-sm text-green-600 font-medium">Save ₹6,000</span>
+                    <span className="text-lg text-gray-400 line-through">₹2,500</span>
+                    <span className="text-sm text-green-600 font-medium">Save ₹2,500</span>
                   </div>
                 </div>
                 <ul className="space-y-4 mb-6">
@@ -422,7 +423,8 @@ export default function LandingPage() {
                   </li>
                 </ul>
                 <Link 
-                  href={`https://wa.me/917454948175?text=${encodeURIComponent('Hi Uvivha, want to buy your VIP plan')}`}
+                  // href={`https://wa.me/917454948175?text=${encodeURIComponent('Hi Uvivha, want to buy your VIP plan')}`}
+                  href="/auth" 
                   target="_blank"
                   className="block w-full py-3 px-6 text-center bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white rounded-lg font-semibold transition-all hover:shadow-lg"
                 >
