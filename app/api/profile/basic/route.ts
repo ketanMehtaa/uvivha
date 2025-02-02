@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { prisma } from '@/lib/prisma';
+import { Gender, Purpose, OnBehalf, Community, MaritalStatus } from '@prisma/client';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
@@ -65,14 +66,51 @@ export async function POST(request: Request) {
       instagramHandle,
       purpose,
       onBehalf,
-      community
+      community,
+      maritalStatus
     } = data;
 
     // Validate required fields
     if (!name || !email || !password || !gender || !birthDate || !location || !caste || !subcaste || !purpose
-      || !bio || !onBehalf || !community) {
+      || !bio || !onBehalf || !community || !maritalStatus) {
       return NextResponse.json(
-        { error: 'Missing required fields name, email, password, gender, birthDate, location, caste, subcaste, purpose, bio, onBehalf, community' },
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
+    // Validate enum values
+    if (!Object.values(Gender).includes(gender as Gender)) {
+      return NextResponse.json(
+        { error: 'Invalid gender value' },
+        { status: 400 }
+      );
+    }
+
+    if (!Object.values(Purpose).includes(purpose as Purpose)) {
+      return NextResponse.json(
+        { error: 'Invalid purpose value' },
+        { status: 400 }
+      );
+    }
+
+    if (!Object.values(OnBehalf).includes(onBehalf as OnBehalf)) {
+      return NextResponse.json(
+        { error: 'Invalid onBehalf value' },
+        { status: 400 }
+      );
+    }
+
+    if (!Object.values(Community).includes(community as Community)) {
+      return NextResponse.json(
+        { error: 'Invalid community value' },
+        { status: 400 }
+      );
+    }
+
+    if (!Object.values(MaritalStatus).includes(maritalStatus as MaritalStatus)) {
+      return NextResponse.json(
+        { error: 'Invalid marital status value' },
         { status: 400 }
       );
     }
@@ -102,6 +140,7 @@ export async function POST(request: Request) {
         subcaste,
         community,
         onBehalf,
+        maritalStatus,
         photos,
         isProfileComplete: true,
         updatedAt: new Date(),

@@ -354,6 +354,7 @@ export default function BasicInfoForm({
         <Select
           value={formData.maritalStatus}
           onValueChange={(value) => handleSelectChange('maritalStatus', value)}
+          required
         >
           <SelectTrigger>
             <SelectValue placeholder="Select marital status" />
