@@ -3,8 +3,8 @@ import { Analytics } from '@vercel/analytics/react';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Uvivha - Free Uttrakhand Matrimony Service | Find Your Perfect Match',
-  description: 'Join Uvivha - The most trusted FREE matrimonial service for Uttrakhand. Create your profile for free and connect with verified matches who share your values and traditions. Get 3 months free access today!',
+  title: 'Hamy - Free Uttrakhand Matrimony Service | Find Your Perfect Match',
+  description: 'Join Hamy - The most trusted FREE matrimonial service for Uttrakhand. Create your profile for free and connect with verified matches who share your values and traditions. Get 3 months free access today!',
   keywords: [
     'free matrimony',
     'uttrakhand matrimony',
@@ -58,29 +58,29 @@ export const metadata: Metadata = {
     'bio data Free',
     'Free bio data for marriage in uttrakhand',
   ],
-  authors: [{ name: 'Uvivha' }],
-  creator: 'Uvivha',
-  publisher: 'Uvivha',
+  authors: [{ name: 'Hamy' }],
+  creator: 'Hamy',
+  publisher: 'Hamy',
   formatDetection: {
     telephone: true,
     email: true,
     address: true,
   },
-  metadataBase: new URL('https://uvivha.com'),
+  metadataBase: new URL('https://hamy.com'),
   alternates: {
     canonical: '/',
   },
   openGraph: {
-    title: 'Uvivha - Free Uttrakhand Matrimony Service | Find Your Perfect Match',
-    description: 'Join Uvivha - The most trusted FREE matrimonial service for Uttrakhand. Create your profile for free and connect with verified matches. Get 3 months free access today!',
-    url: 'https://uvivha.com',
-    siteName: 'Uvivha',
+    title: 'Hamy - Free Uttrakhand Matrimony Service | Find Your Perfect Match',
+    description: 'Join Hamy - The most trusted FREE matrimonial service for Uttrakhand. Create your profile for free and connect with verified matches. Get 3 months free access today!',
+    url: 'https://hamy.com',
+    siteName: 'Hamy',
     images: [
       {
-        url: 'https://uvivha.com/og-image.jpg',
+        url: 'https://hamy.com/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'Uvivha - Uttrakhand Matrimony Service',
+        alt: 'Hamy - Uttrakhand Matrimony Service',
       },
     ],
     locale: 'en_US',
@@ -88,10 +88,10 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Uvivha - Free Uttrakhand Matrimony Service',
-    description: 'Join the most trusted FREE matrimonial service for Uttrakhand. Create your profile for free today!',
-    images: ['https://uvivha.com/twitter-image.jpg'],
-    creator: '@uvivha',
+    title: 'Hamy - Free Uttrakhand Matrimony Service',
+    description: 'Find your perfect match with our trusted matrimony service',
+    images: ['https://hamy.com/twitter-image.jpg'],
+    creator: '@hamy',
   },
   robots: {
     index: true,

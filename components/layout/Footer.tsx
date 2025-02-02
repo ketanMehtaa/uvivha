@@ -10,7 +10,7 @@ export default function Footer() {
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-4">
             <h3 className="text-2xl font-bold bg-gradient-to-r from-red-600 to-pink-600 bg-clip-text text-transparent">
-              Uvivha
+              Hamy
             </h3>
             <p className="text-sm text-muted-foreground">
               Find your perfect life partner with our trusted matrimony service.
@@ -98,10 +98,10 @@ export default function Footer() {
 
         <div className="mt-12 pt-8 border-t text-center text-sm text-muted-foreground">
           <p className="flex items-center justify-center gap-1">
-            Made with <Heart className="h-4 w-4 text-red-500" /> by Vivha Team
+            Made with <Heart className="h-4 w-4 text-red-500" /> by Hamy Team
           </p>
           <p className="mt-2">
-            © {new Date().getFullYear()} Uvivha. All rights reserved.
+            © {new Date().getFullYear()} Hamy. All rights reserved.
           </p>
         </div>
       </div>

@@ -51,12 +51,28 @@ export async function POST(request: Request) {
     }
 
     const data = await request.json();
-    const { name, email, password, gender, birthDate, location, bio, caste, subcaste, photos } = data;
+    const {
+      name,
+      email,
+      password,
+      gender,
+      birthDate,
+      location,
+      bio,
+      caste,
+      subcaste,
+      photos,
+      instagramHandle,
+      purpose,
+      onBehalf,
+      community
+    } = data;
 
     // Validate required fields
-    if (!name || !email || !password || !gender || !birthDate || !location || !caste) {
+    if (!name || !email || !password || !gender || !birthDate || !location || !caste || !subcaste || !purpose
+      || !bio || !onBehalf || !community) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Missing required fields name, email, password, gender, birthDate, location, caste, subcaste, purpose, bio, onBehalf, community' },
         { status: 400 }
       );
     }
@@ -79,9 +95,13 @@ export async function POST(request: Request) {
         gender,
         birthDate: new Date(birthDate),
         location,
+        instagramHandle,
+        purpose,
         bio,
         caste,
         subcaste,
+        community,
+        onBehalf,
         photos,
         isProfileComplete: true,
         updatedAt: new Date(),
@@ -91,7 +111,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ user });
   } catch (error) {
     console.error('Error updating profile:', error);
-    
+
     if ((error as any).name === 'JsonWebTokenError') {
       return NextResponse.json(
         { error: 'Invalid token' },

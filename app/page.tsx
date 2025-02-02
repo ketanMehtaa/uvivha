@@ -31,7 +31,7 @@ export default function LandingPage() {
                   <span className="text-red-600 block mt-2">Uttrakhand</span>
                 </h1>
                 <p className="text-lg md:text-xl text-gray-600 mt-6">
-                  Join the most trusted matrimony service for Uttrakhand. Connect with compatible matches who share your values and traditions.
+                  Join the most trusted Dating+Matrimony for Uttrakhand. Connect with compatible matches who share your values and traditions.
                 </p>
               </div>
 
@@ -450,21 +450,21 @@ export default function LandingPage() {
                 names: "Aditya & Deepika",
                 date: "Married Jan 2024",
                 location: "Dehradun",
-                story: "Being from Dehradun, we wanted someone who shared our Pahadi values. Thanks to Uvivha, we found each other and connected instantly over our love for local traditions and culture."
+                story: "Being from Dehradun, we wanted someone who shared our Pahadi values. Thanks to Hamy, we found each other and connected instantly over our love for local traditions and culture."
               },
               {
                 image: "https://i.pinimg.com/736x/5e/3f/93/5e3f93143a76085eaa861f961ec0074a.jpg",
                 names: "Vikram & Naina",
                 date: "Married Nov 2023",
                 location: "Haridwar",
-                story: "Living in Haridwar, spirituality was important to both of us. Uvivha helped us find the perfect match who shared our beliefs and family values. Our journey from matching to marriage was beautiful."
+                story: "Living in Haridwar, spirituality was important to both of us. Hamy helped us find the perfect match who shared our beliefs and family values. Our journey from matching to marriage was beautiful."
               },
               {
                 image: "https://i.pinimg.com/736x/54/cb/8f/54cb8f74d66fe783f2421b022c264d7f.jpg",
                 names: "Rohit & Prerna",
                 date: "Married Dec 2023",
                 location: "Nainital",
-                story: "We both grew up in Nainital and wanted to find someone who appreciated the mountains as much as we do. Uvivha's local matching helped us find exactly what we were looking for."
+                story: "We both grew up in Nainital and wanted to find someone who appreciated the mountains as much as we do. Hamy's local matching helped us find exactly what we were looking for."
               }
             ].map((story, i) => (
               <div key={i} className="bg-white p-6 md:p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">

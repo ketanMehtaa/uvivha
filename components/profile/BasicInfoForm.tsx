@@ -3,6 +3,11 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import castes from '@/data/castes.json';
+import { Community, MaritalStatus } from '@prisma/client';
+import { OnBehalf } from '@prisma/client';
+import { Purpose } from '@prisma/client';
+// import { Manglik } from '@prisma/client';
+// import { Gotra } from '@prisma/client';
 import {
   Select,
   SelectContent,
@@ -54,11 +59,16 @@ export default function BasicInfoForm({
     password: '',
     email: '',
     gender: '',
+    purpose: '',
+    instagramHandle: '',
     birthDate: '',
+    onBehalf: '',
+    maritalStatus: '',
     location: '',
     bio: '',
     caste: '',
     subcaste: '',
+    community: '',
     images: [] as string[],
   });
 
@@ -77,11 +87,16 @@ export default function BasicInfoForm({
         password: user.password || '',
         email: user.email || '',
         gender: user.gender || '',
+        purpose: user.purpose || '',
+        instagramHandle: user.instagramHandle || '',
         birthDate: formattedDate,
+        onBehalf: user.onBehalf || '',
+        maritalStatus: user.maritalStatus || '',
         location: user.location || '',
         bio: user.bio || '',
         caste: user.caste || '',
         subcaste: user.subcaste || '',
+        community: user.community || '',
         images: user.photos || [],
       });
       setFetchingData(false);
@@ -112,11 +127,16 @@ export default function BasicInfoForm({
             password: data.user.password || '',
             email: data.user.email || '',
             gender: data.user.gender || '',
+            purpose: data.user.purpose || '',
+            instagramHandle: data.user.instagramHandle || '',
             birthDate: formattedDate,
+            onBehalf: data.user.onBehalf || '',
+            maritalStatus: data.user.maritalStatus || '',
             location: data.user.location || '',
             bio: data.user.bio || '',
             caste: data.user.caste || '',
             subcaste: data.user.subcaste || '',
+            community: data.user.community || '',
             images: data.user.photos || [],
           });
         }
@@ -178,9 +198,17 @@ export default function BasicInfoForm({
     if (!formData.gender || formData.gender === 'none') newErrors.gender = 'Gender is required';
     if (!formData.birthDate) newErrors.birthDate = 'Birth date is required';
     if (!formData.location) newErrors.location = 'Location is required';
+    if (!formData.community || formData.community === 'none') newErrors.community = 'Community is required';
     if (!formData.caste || formData.caste === 'none') newErrors.caste = 'Caste is required';
+    if (!formData.subcaste || formData.subcaste === 'none') newErrors.subcaste = 'Subcaste is required';
+    if (!formData.maritalStatus || formData.maritalStatus === 'none') newErrors.maritalStatus = 'Marital status is required';
     if (formData.images.length < 2) newErrors.images = 'At least 2 images are required';
-    
+    if (!formData.purpose || formData.purpose === 'none') newErrors.purpose = 'Purpose is required';
+    if (formData.instagramHandle && formData.instagramHandle.includes(' ')) newErrors.instagramHandle = 'Instagram handle must not contain spaces';
+    if (formData.bio && formData.bio.length < 5) newErrors.bio = 'Bio must be at least 5 characters long';
+    if (formData.bio && /[0-9]/.test(formData.bio)) newErrors.bio = 'Bio must not contain any numbers';
+    if (!formData.onBehalf || formData.onBehalf === 'none') newErrors.onBehalf = 'On behalf is required';
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -294,7 +322,94 @@ export default function BasicInfoForm({
         </Select>
         {errors.gender && <p className="mt-1 text-sm text-red-600">{errors.gender}</p>}
       </div>
+      {/* On behalf */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          On behalf
+        </label>
+        <Select
+          value={formData.onBehalf}
+          onValueChange={(value) => handleSelectChange('onBehalf', value)}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select On behalf" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">Select On behalf</SelectItem>
+            {Object.values(OnBehalf).map((onBehalfName) => (
+              <SelectItem key={onBehalfName} value={onBehalfName}>
+                {onBehalfName}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {errors.onBehalf && <p className="mt-1 text-sm text-red-600">{errors.onBehalf}</p>}
+      </div>
 
+      {/* Marital Status */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Marital Status
+        </label>
+        <Select
+          value={formData.maritalStatus}
+          onValueChange={(value) => handleSelectChange('maritalStatus', value)}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select marital status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">Select marital status</SelectItem>
+            {Object.values(MaritalStatus).map((status) => (
+              <SelectItem key={status} value={status}>
+                {status.replace(/([A-Z])/g, ' $1').trim()}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {errors.maritalStatus && <p className="mt-1 text-sm text-red-600">{errors.maritalStatus}</p>}
+      </div>
+
+      {/* Purpose */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Purpose
+        </label>
+        <Select
+          value={formData.purpose}
+          onValueChange={(value) => handleSelectChange('purpose', value)}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select purpose" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">Select Purpose</SelectItem>
+            {Object.values(Purpose).map((purpose) => (
+              <SelectItem key={purpose} value={purpose}>
+                {purpose}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {errors.purpose && <p className="mt-1 text-sm text-red-600">{errors.purpose}</p>}
+      </div>
+      
+        {/* instagram handle */}
+      <div>
+        <label htmlFor="instagramHandle" className="block text-sm font-medium text-gray-700">
+          Instagram Handle (Optional)
+        </label>
+        <input
+          type="text"
+          id="instagramHandle"
+          name="instagramHandle"
+          value={formData.instagramHandle}
+          onChange={handleChange}
+          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-red-500 focus:outline-none focus:ring-red-500"
+          placeholder="Instagram Handle"
+        />
+        {errors.instagramHandle && <p className="mt-1 text-sm text-red-600">{errors.instagramHandle}</p>}
+      </div>
       {/* Birth Date */}
       <div>
         <label htmlFor="birthDate" className="block text-sm font-medium text-gray-700">
@@ -314,7 +429,7 @@ export default function BasicInfoForm({
       {/* Location */}
       <div>
         <label htmlFor="location" className="block text-sm font-medium text-gray-700">
-          Location
+          Current Location 
         </label>
         <input
           type="text"
@@ -342,8 +457,32 @@ export default function BasicInfoForm({
           className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-red-500 focus:outline-none focus:ring-red-500"
           placeholder="Tell us about yourself"
         />
+        {errors.bio && <p className="mt-1 text-sm text-red-600">{errors.bio}</p>}
       </div>
 
+       {/* Community */}
+       <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Community
+        </label>
+        <Select
+          value={formData.community}
+          onValueChange={(value) => handleSelectChange('community', value)}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select community" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">Select community</SelectItem>
+            {Object.values(Community).map((communityName) => (
+              <SelectItem key={communityName} value={communityName}>
+                {communityName}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {errors.community && <p className="mt-1 text-sm text-red-600">{errors.community}</p>}
+      </div>
       {/* Caste */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -390,6 +529,7 @@ export default function BasicInfoForm({
               ))}
             </SelectContent>
           </Select>
+          {errors.subcaste && <p className="mt-1 text-sm text-red-600">{errors.subcaste}</p>}
         </div>
       )}
 

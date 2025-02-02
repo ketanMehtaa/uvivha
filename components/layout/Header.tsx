@@ -32,7 +32,7 @@ export default function Header() {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 items-center justify-between">
         <Link href="/dashboard" className="font-semibold text-2xl bg-gradient-to-r from-red-600 to-pink-600 bg-clip-text text-transparent">
-          Uvivha
+          Hamy
         </Link>
 
         <DropdownMenu>
@@ -48,6 +48,13 @@ export default function Header() {
               <Link href="/my-profile" className="cursor-pointer flex items-center">
                 <UserCircle className="mr-2 h-4 w-4" />
                 View Profile
+              </Link>
+            </DropdownMenuItem>
+            {/* edit profile */}
+            <DropdownMenuItem asChild>
+              <Link href="/profile/edit" className="cursor-pointer flex items-center">
+                <Settings className="mr-2 h-4 w-4" />
+                Edit Profile
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>

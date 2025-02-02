@@ -65,8 +65,8 @@ export default function PhysicalInfoForm({
       newErrors.height = 'Height is required';
     } else {
       const heightNum = Number(formData.height);
-      if (isNaN(heightNum) || heightNum < 120 || heightNum > 220) {
-        newErrors.height = 'Height must be between 120cm and 220cm';
+      if (isNaN(heightNum) || heightNum < 3 || heightNum > 8) {
+        newErrors.height = 'Height must be between 3ft and 8ft';
       }
     }
 
@@ -78,9 +78,15 @@ export default function PhysicalInfoForm({
       }
     }
 
+
     // Physical Status validation
     if (!formData.physicalStatus || formData.physicalStatus === 'none') {
       newErrors.physicalStatus = 'Physical status is required';
+    }
+
+    // Complexion validation
+    if (!formData.complexion || formData.complexion === 'NONE') {
+      newErrors.complexion = 'Complexion is required';
     }
 
     setErrors(newErrors);
@@ -94,7 +100,7 @@ export default function PhysicalInfoForm({
     // Clean up the data before sending
     const dataToSend = {
       ...formData,
-      complexion: formData.complexion === 'none' ? null : formData.complexion,
+      complexion: formData.complexion === 'NONE' ? null : formData.complexion,
       physicalStatus: formData.physicalStatus === 'none' ? null : formData.physicalStatus,
     };
 
@@ -134,11 +140,13 @@ export default function PhysicalInfoForm({
           id="height"
           name="height"
           value={formData.height}
+
           onChange={handleChange}
+          step="0.01"  
           min="3"
           max="8"
           className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-red-500 focus:outline-none focus:ring-red-500"
-          placeholder="Enter height in centimeters"
+          placeholder="Enter height in ft"
         />
         {errors.height && <p className="mt-1 text-sm text-red-600">{errors.height}</p>}
       </div>
@@ -185,6 +193,7 @@ export default function PhysicalInfoForm({
             ))}
           </SelectContent>
         </Select>
+        {errors.complexion && <p className="mt-1 text-sm text-red-600">{errors.complexion}</p>}
       </div>
 
       {/* Physical Status */}

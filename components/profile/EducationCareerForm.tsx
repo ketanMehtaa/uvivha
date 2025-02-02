@@ -143,6 +143,7 @@ export default function EducationCareerForm({
           Education Details
         </label>
         <Textarea
+          required
           name="educationDetails"
           value={formData.educationDetails}
           onChange={handleChange}
@@ -218,13 +219,19 @@ export default function EducationCareerForm({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="none">Select income range</SelectItem>
-            <SelectItem value="0-5">0-5 LPA</SelectItem>
-            <SelectItem value="5-10">5-10 LPA</SelectItem>
+            <SelectItem value="0-2">0-2 LPA</SelectItem>
+            <SelectItem value="2-4">2-4 LPA</SelectItem>
+            <SelectItem value="4-6">4-6 LPA</SelectItem>
+            <SelectItem value="6-8">6-8 LPA</SelectItem>
+            <SelectItem value="8-10">8-10 LPA</SelectItem>
             <SelectItem value="10-15">10-15 LPA</SelectItem>
             <SelectItem value="15-20">15-20 LPA</SelectItem>
-            <SelectItem value="20-30">20-30 LPA</SelectItem>
+            <SelectItem value="20-25">20-25 LPA</SelectItem>
+            <SelectItem value="25-30">25-30 LPA</SelectItem>
             <SelectItem value="30-50">30-50 LPA</SelectItem>
-            <SelectItem value="50+">50+ LPA</SelectItem>
+            <SelectItem value="50-100">50-100 LPA</SelectItem>
+            <SelectItem value="100">100+ LPA</SelectItem>
+
           </SelectContent>
         </Select>
       </div>

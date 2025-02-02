@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/select"
 import { useRouter } from 'next/navigation';
 import { handleApiError } from '@/lib/auth';
-
+import { MaritalStatus } from '@prisma/client';
 // Type for castes data
 type CastesData = {
   [key: string]: {
@@ -21,8 +21,8 @@ type CastesData = {
 
 interface PreferencesFormProps {
   user: any;
-  onNext: () => void;
-  onPrevious: () => void;
+  onNextAction: () => void;
+  onPreviousAction: () => void;
   isFirstStep: boolean;
   isLastStep: boolean;
   setUser: (user: any) => void;
@@ -30,8 +30,8 @@ interface PreferencesFormProps {
 
 export default function PreferencesForm({
   user,
-  onNext,
-  onPrevious,
+  onNextAction,
+  onPreviousAction,
   isFirstStep,
   isLastStep,
   setUser,
@@ -41,8 +41,8 @@ export default function PreferencesForm({
   const [formData, setFormData] = useState({
     agePreferenceMin: user?.agePreferenceMin || '',
     agePreferenceMax: user?.agePreferenceMax || '',
-    heightPreferenceMin: user?.heightPreferenceMin || '',
-    heightPreferenceMax: user?.heightPreferenceMax || '',
+    heightPreferenceMin: user?.heightPreferenceMin?.toString() || '',
+    heightPreferenceMax: user?.heightPreferenceMax?.toString() || '',
     maritalStatusPreference: user?.maritalStatusPreference || 'none',
     educationPreference: user?.educationPreference || 'none',
     occupationPreference: user?.occupationPreference || 'none',
@@ -70,16 +70,30 @@ export default function PreferencesForm({
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     
-    // Remove required field validations since all fields are optional
-    // Only validate ranges if both min and max are provided
+    // Age preference validation
     if (formData.agePreferenceMin && formData.agePreferenceMax) {
       if (parseInt(formData.agePreferenceMin) > parseInt(formData.agePreferenceMax)) {
         newErrors.agePreferenceMin = 'Minimum age cannot be greater than maximum age';
       }
     }
     
+    // Height preference validation
+    if (formData.heightPreferenceMin) {
+      const heightNum = Number(formData.heightPreferenceMin);
+      if (isNaN(heightNum) || heightNum < 3 || heightNum > 8) {
+        newErrors.heightPreferenceMin = 'Height must be between 3ft and 8ft';
+      }
+    }
+    
+    if (formData.heightPreferenceMax) {
+      const heightNum = Number(formData.heightPreferenceMax);
+      if (isNaN(heightNum) || heightNum < 3 || heightNum > 8) {
+        newErrors.heightPreferenceMax = 'Height must be between 3ft and 8ft';
+      }
+    }
+
     if (formData.heightPreferenceMin && formData.heightPreferenceMax) {
-      if (parseInt(formData.heightPreferenceMin) > parseInt(formData.heightPreferenceMax)) {
+      if (Number(formData.heightPreferenceMin) > Number(formData.heightPreferenceMax)) {
         newErrors.heightPreferenceMin = 'Minimum height cannot be greater than maximum height';
       }
     }
@@ -129,7 +143,7 @@ export default function PreferencesForm({
       if (isLastStep) {
         router.push('/dashboard');
       } else {
-        onNext();
+        onNextAction();
       }
     } catch (error) {
       handleApiError(error, router);
@@ -188,9 +202,11 @@ export default function PreferencesForm({
             name="heightPreferenceMin"
             value={formData.heightPreferenceMin}
             onChange={handleChange}
-            min="120"
-            max="220"
+            step="0.01"
+            min="3"
+            max="8"
             className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-red-500 focus:outline-none focus:ring-red-500"
+            placeholder="Enter height in ft"
           />
           {errors.heightPreferenceMin && <p className="mt-1 text-sm text-red-600">{errors.heightPreferenceMin}</p>}
         </div>
@@ -204,9 +220,11 @@ export default function PreferencesForm({
             name="heightPreferenceMax"
             value={formData.heightPreferenceMax}
             onChange={handleChange}
-            min="120"
-            max="220"
+            step="0.01"
+            min="3"
+            max="8"
             className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-red-500 focus:outline-none focus:ring-red-500"
+            placeholder="Enter height in ft"
           />
           {errors.heightPreferenceMax && <p className="mt-1 text-sm text-red-600">{errors.heightPreferenceMax}</p>}
         </div>
@@ -225,11 +243,12 @@ export default function PreferencesForm({
             <SelectValue placeholder="Select marital status preference" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="none">Select marital status</SelectItem>
-            <SelectItem value="Never Married">Never Married</SelectItem>
-            <SelectItem value="Divorced">Divorced</SelectItem>
-            <SelectItem value="Widowed">Widowed</SelectItem>
-            <SelectItem value="Any">Any</SelectItem>
+            <SelectItem value="none">Select marital status preference</SelectItem>
+            {Object.values(MaritalStatus).map((status) => (
+              <SelectItem key={status} value={status}>
+                {status.replace(/([A-Z])/g, ' $1').trim()}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -324,7 +343,7 @@ export default function PreferencesForm({
       <div className="flex justify-between pt-4">
         <button
           type="button"
-          onClick={onPrevious}
+          onClick={onPreviousAction}
           disabled={isFirstStep || loading}
           className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
         >

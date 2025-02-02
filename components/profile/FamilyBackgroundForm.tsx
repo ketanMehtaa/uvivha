@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { useRouter } from 'next/navigation';
 import { handleApiError } from '@/lib/auth';
+import { FamilyType } from '@prisma/client';
 
 interface FamilyBackgroundFormProps {
   user: any;
@@ -120,13 +121,16 @@ export default function FamilyBackgroundForm({
           value={formData.familyType}
           onValueChange={(value) => handleSelectChange('familyType', value)}
         >
-          <SelectTrigger>
-            <SelectValue placeholder="Select family type" />
+           <SelectTrigger>
+            <SelectValue placeholder="Select On behalf" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="none">Select family type</SelectItem>
-            <SelectItem value="Joint">Joint Family</SelectItem>
-            <SelectItem value="Nuclear">Nuclear Family</SelectItem>
+            <SelectItem value="none">Select Family Type</SelectItem>
+            {Object.values(FamilyType).map((familyTypeName) => (
+              <SelectItem key={familyTypeName} value={familyTypeName}>
+                {familyTypeName}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
         {errors.familyType && <p className="mt-1 text-sm text-red-600">{errors.familyType}</p>}
@@ -190,7 +194,7 @@ export default function FamilyBackgroundForm({
           name="siblings"
           value={formData.siblings}
           onChange={handleChange}
-          placeholder="Number and details of siblings"
+          placeholder="2 brother(1 married, 1 unmarried) , 1 sister(married)"
         />
       </div>
 

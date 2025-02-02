@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { prisma } from '@/lib/prisma';
+import { MaritalStatus } from '@prisma/client';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
@@ -12,7 +13,6 @@ const HEIGHT_MIN = 120;
 const HEIGHT_MAX = 220;
 
 // Valid options from frontend
-const VALID_MARITAL_STATUS = ['Never Married', 'Divorced', 'Widowed', 'Any'];
 const VALID_EDUCATION = ["Bachelor's and above", "Master's and above", 'Doctorate', 'Any'];
 const VALID_OCCUPATION = ['Private Job', 'Government Job', 'Business', 'Self Employed', 'Any'];
 
@@ -27,31 +27,37 @@ export async function POST(request: Request) {
     }
 
     // Verify token and get user ID
-    let decoded;
-    try {
-      decoded = jwt.verify(token, JWT_SECRET);
-    } catch (error) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+    const decoded = jwt.verify(token, JWT_SECRET);
     const userId = (decoded as any).userId || (decoded as any).id;
+
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Invalid token format' }, { status: 401 });
     }
 
     const data = await request.json();
+    const {
+      agePreferenceMin,
+      agePreferenceMax,
+      heightPreferenceMin,
+      heightPreferenceMax,
+      maritalStatusPreference,
+      educationPreference,
+      occupationPreference,
+      locationPreference,
+      castePreference,
+    } = data;
 
     // Clean up the data - convert empty strings, "none", and undefined to null
     const cleanData = {
-      agePreferenceMin: data.agePreferenceMin || null,
-      agePreferenceMax: data.agePreferenceMax || null,
-      heightPreferenceMin: data.heightPreferenceMin || null,
-      heightPreferenceMax: data.heightPreferenceMax || null,
-      maritalStatusPreference: data.maritalStatusPreference === 'none' ? null : data.maritalStatusPreference || null,
-      educationPreference: data.educationPreference === 'none' ? null : data.educationPreference || null,
-      occupationPreference: data.occupationPreference === 'none' ? null : data.occupationPreference || null,
-      locationPreference: data.locationPreference || null,
-      castePreference: data.castePreference === 'none' ? null : data.castePreference || null,
+      agePreferenceMin: agePreferenceMin || null,
+      agePreferenceMax: agePreferenceMax || null,
+      heightPreferenceMin: heightPreferenceMin || null,
+      heightPreferenceMax: heightPreferenceMax || null,
+      maritalStatusPreference: maritalStatusPreference === 'none' ? null : maritalStatusPreference || null,
+      educationPreference: educationPreference === 'none' ? null : educationPreference || null,
+      occupationPreference: occupationPreference === 'none' ? null : occupationPreference || null,
+      locationPreference: locationPreference || null,
+      castePreference: castePreference === 'none' ? null : castePreference || null,
     };
 
     // Only validate if values are provided (not null or empty)
@@ -81,35 +87,22 @@ export async function POST(request: Request) {
       }
     }
 
-    // Only validate if values are provided (not null or empty)
+    // Validate height ranges if provided
     if (cleanData.heightPreferenceMin && cleanData.heightPreferenceMax) {
-      const minHeight = parseInt(cleanData.heightPreferenceMin);
-      const maxHeight = parseInt(cleanData.heightPreferenceMax);
-
-      if (isNaN(minHeight) || minHeight < HEIGHT_MIN || minHeight > HEIGHT_MAX) {
+      const minHeight = Number(cleanData.heightPreferenceMin);
+      const maxHeight = Number(cleanData.heightPreferenceMax);
+      
+      if (isNaN(minHeight) || isNaN(maxHeight) || minHeight < 3 || maxHeight > 8 || minHeight > maxHeight) {
         return NextResponse.json(
-          { error: `Minimum height must be between ${HEIGHT_MIN}f and ${HEIGHT_MAX}f` },
-          { status: 400 }
-        );
-      }
-
-      if (isNaN(maxHeight) || maxHeight < HEIGHT_MIN || maxHeight > HEIGHT_MAX) {
-        return NextResponse.json(
-          { error: `Maximum height must be between ${HEIGHT_MIN}f and ${HEIGHT_MAX}f` },
-          { status: 400 }
-        );
-      }
-
-      if (minHeight > maxHeight) {
-        return NextResponse.json(
-          { error: 'Minimum height cannot be greater than maximum height' },
+          { error: 'Invalid height range' },
           { status: 400 }
         );
       }
     }
 
     // Only validate if values are provided (not null or empty)
-    if (cleanData.maritalStatusPreference && !VALID_MARITAL_STATUS.includes(cleanData.maritalStatusPreference)) {
+    if (cleanData.maritalStatusPreference && 
+        !Object.values(MaritalStatus).includes(cleanData.maritalStatusPreference as MaritalStatus)) {
       return NextResponse.json(
         { error: 'Invalid marital status preference' },
         { status: 400 }
@@ -136,8 +129,8 @@ export async function POST(request: Request) {
       data: {
         agePreferenceMin: cleanData.agePreferenceMin ? parseInt(cleanData.agePreferenceMin) : null,
         agePreferenceMax: cleanData.agePreferenceMax ? parseInt(cleanData.agePreferenceMax) : null,
-        heightPreferenceMin: cleanData.heightPreferenceMin ? parseInt(cleanData.heightPreferenceMin) : null,
-        heightPreferenceMax: cleanData.heightPreferenceMax ? parseInt(cleanData.heightPreferenceMax) : null,
+        heightPreferenceMin: cleanData.heightPreferenceMin ? Number(cleanData.heightPreferenceMin) : null,
+        heightPreferenceMax: cleanData.heightPreferenceMax ? Number(cleanData.heightPreferenceMax) : null,
         maritalStatusPreference: cleanData.maritalStatusPreference,
         educationPreference: cleanData.educationPreference,
         occupationPreference: cleanData.occupationPreference,

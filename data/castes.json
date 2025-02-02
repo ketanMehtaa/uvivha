@@ -10,7 +10,8 @@
       "Purohit",
       "Uniyal",
       "Dabral",
-      "Thapliyal"
+      "Thapliyal",
+      "Other"
     ]
   },
   "Rajput": {
@@ -24,7 +25,8 @@
       "Rana",
       "Rawat",
       "Mahra",
-      "Kathayat"
+      "Kathayat",
+      "Other"
     ]
   },
   "Scheduled Caste": {
@@ -38,7 +40,8 @@
       "Damai",
       "Sarki",
       "Bhangi",
-      "Chamar"
+      "Chamar",
+      "Other"
     ]
   },
   "Scheduled Tribe": {
@@ -48,7 +51,8 @@
       "Jannsari",
       "Tharu",
       "Raji",
-      "Bhutia"
+      "Bhutia",
+      "Other"
     ]
   },
   "Vaishya": {
@@ -57,7 +61,13 @@
       "Kumaoni Vaishya",
       "Sahu",
       "Sah",
-      "Rauniyar"
+      "Rauniyar",
+      "Other"
+    ]
+  },
+  "Other": {
+    "subcastes": [
+      "Other"
     ]
   }
 } 

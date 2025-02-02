@@ -34,8 +34,8 @@ export async function POST(request: Request) {
     const weightNum = weight ? parseFloat(weight) : null;
 
     // Validate parsed values
-    if (isNaN(heightNum) || heightNum < 120 || heightNum > 220) {
-      return NextResponse.json({ error: 'Height must be between 120cm and 220cm' }, { status: 400 });
+    if (isNaN(heightNum) || heightNum < 3 || heightNum > 8) {
+      return NextResponse.json({ error: 'Height must be between 3ft  and 8ft' }, { status: 400 });
     }
 
     if (weightNum !== null && (isNaN(weightNum) || weightNum < 30 || weightNum > 200)) {
