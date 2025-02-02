@@ -107,9 +107,10 @@ enum Gender {
 }
 
 enum MaritalStatus {
+  NeverMarried
   Divorced
   Widowed
-  NeverMarried
+  
 }
 
 enum Complexion {

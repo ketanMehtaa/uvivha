@@ -41,3 +41,11 @@ response.cookies.set('auth-token', token, {
 
 
   do not use commonjs anywhere , always use esm modules
+
+
+
+
+  // todo 
+  // in the login screen in password give eye option to see password , also give eye in basic details page 
+  // when there is some error move the screen to the erro in the profile /edit part
+  register me me loader add krna he
