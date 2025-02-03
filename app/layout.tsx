@@ -3,6 +3,7 @@ import { Analytics } from '@vercel/analytics/react';
 import { HighlightInit } from '@highlight-run/next/client';
 import { Metadata } from 'next';
 import { CSPostHogProvider } from '../lib/posthog'
+import { InstallPWA } from '@/components/pwa/InstallPWA';
 
 export const metadata: Metadata = {
   title: 'Hamy - Free Uttrakhand Matrimony Service | Find Your Perfect Match',
@@ -131,7 +132,7 @@ export default function RootLayout({
           urlBlocklist: []
         }}
       />
-      <html lang="en">
+      <html lang="en" suppressHydrationWarning>
         <head>
           <meta
             name="viewport"
@@ -157,7 +158,8 @@ export default function RootLayout({
           />
           <link 
             rel="manifest" 
-            href="/site.webmanifest" 
+            href="/manifest.json" 
+            crossOrigin="use-credentials"
           />
           <meta name="theme-color" content="#dc2626" />
           <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -166,6 +168,7 @@ export default function RootLayout({
         </head>
         <body className="flex min-h-screen w-full flex-col">
           <CSPostHogProvider>
+            <InstallPWA />
             {children}
           </CSPostHogProvider>
           <Analytics />
