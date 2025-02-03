@@ -136,14 +136,15 @@ export default function RootLayout({
             name="viewport"
             content="width=device-width, initial-scale=1, maximum-scale=1"
           />
-          <link rel="icon" href="/favicon.ico" />
+          <link rel="icon" href="/public/favicon.ico" />
           <link
             rel="apple-touch-icon"
             sizes="180x180"
             href="/apple-touch-icon.png"
           />
-          <link rel="manifest" href="/site.webmanifest" />
-          <meta name="theme-color" content="#dc2626" />
+
+          {/* <link rel="manifest" href="/site.webmanifest" /> */}
+          {/* <meta name="theme-color" content="#dc2626" /> */}
         </head>
         <body className="flex min-h-screen w-full flex-col">
           {children}
