@@ -2,6 +2,7 @@ import './globals.css';
 import { Analytics } from '@vercel/analytics/react';
 import { HighlightInit } from '@highlight-run/next/client';
 import { Metadata } from 'next';
+import { CSPostHogProvider } from '../lib/posthog'
 
 export const metadata: Metadata = {
   title: 'Hamy - Free Uttrakhand Matrimony Service | Find Your Perfect Match',
@@ -136,18 +137,37 @@ export default function RootLayout({
             name="viewport"
             content="width=device-width, initial-scale=1, maximum-scale=1"
           />
-          <link rel="icon" href="/public/favicon.ico" />
+          <link rel="icon" href="/favicon.ico" />
           <link
             rel="apple-touch-icon"
             sizes="180x180"
             href="/apple-touch-icon.png"
           />
-
-          {/* <link rel="manifest" href="/site.webmanifest" /> */}
-          {/* <meta name="theme-color" content="#dc2626" /> */}
+          <link 
+            rel="icon" 
+            type="image/png" 
+            sizes="32x32" 
+            href="/favicon-32x32.png"
+          />
+          <link 
+            rel="icon" 
+            type="image/png" 
+            sizes="16x16" 
+            href="/favicon-16x16.png"
+          />
+          <link 
+            rel="manifest" 
+            href="/site.webmanifest" 
+          />
+          <meta name="theme-color" content="#dc2626" />
+          <meta name="apple-mobile-web-app-capable" content="yes" />
+          <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+          <meta name="apple-mobile-web-app-title" content="Hamy" />
         </head>
         <body className="flex min-h-screen w-full flex-col">
-          {children}
+          <CSPostHogProvider>
+            {children}
+          </CSPostHogProvider>
           <Analytics />
         </body>
       </html>
