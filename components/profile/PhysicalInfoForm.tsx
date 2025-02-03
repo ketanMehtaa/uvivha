@@ -73,8 +73,8 @@ export default function PhysicalInfoForm({
     // Weight validation (optional)
     if (formData.weight) {
       const weightNum = Number(formData.weight);
-      if (isNaN(weightNum) || weightNum < 30 || weightNum > 200) {
-        newErrors.weight = 'Weight must be between 30kg and 200kg';
+      if (isNaN(weightNum) || weightNum < 30 || weightNum > 120) {
+        newErrors.weight = 'Weight must be between 30kg and 120kg';
       }
     }
 
@@ -163,7 +163,7 @@ export default function PhysicalInfoForm({
           value={formData.weight}
           onChange={handleChange}
           min="30"
-          max="200"
+          max="120"
           className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-red-500 focus:outline-none focus:ring-red-500"
           placeholder="Enter weight in kilograms"
         />
