@@ -6,7 +6,8 @@
     "start": "next start",
     "seed": "NODE_OPTIONS='--loader ts-node/esm' ts-node prisma/seed.ts",
     "download-images": "ts-node scripts/download-images.ts",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "postbuild": "cp worker/sw.js public/sw.js"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.7.4",
