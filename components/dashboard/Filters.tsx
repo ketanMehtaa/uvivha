@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -21,6 +21,8 @@ import { Badge } from "@/components/ui/badge";
 import { Filter, X } from 'lucide-react';
 import castes from '@/data/castes.json';
 import { Checkbox } from "@/components/ui/checkbox";
+import { Community, MaritalStatus, Complexion, FamilyType, Purpose } from '@prisma/client';
+import { debounce, isEqual } from 'lodash';
 
 interface CastesData {
   [key: string]: {
@@ -31,20 +33,21 @@ interface CastesData {
 const castesData = castes as CastesData;
 
 export interface FilterValues {
+  mode: Purpose | 'none';
   ageRange: { min: number; max: number };
   heightRange: { min: number; max: number };
   weightRange: { min: number; max: number };
   caste: string;
   subcaste: string;
-  community: 'Garhwali' | 'Kumaoni' | 'Jaunsari' | 'none';
+  community: Community | 'none';
   education: string;
   employedIn: string;
   income: string;
   location: string;
-  maritalStatus: 'NeverMarried' | 'Divorced' | 'Widowed' | 'Married' | 'none';
-  complexion: 'VERY_FAIR' | 'FAIR' | 'WHEATISH' | 'DARK' | 'NONE' | 'none';
-  physicalStatus: string;
-  familyType: 'Joint' | 'Nuclear' | 'none';
+  maritalStatus: MaritalStatus | 'none';
+  complexion: Complexion | 'none';
+  physicalStatus: 'Normal' | 'Physically Challenged' | 'none';
+  familyType: FamilyType | 'none';
   familyStatus: string;
   manglik: 'Yes' | 'No' | 'none';
   hasPhotos: 'Yes' | 'No' | 'none';
@@ -56,7 +59,8 @@ interface FiltersProps {
 }
 
 export const defaultFilters: FilterValues = {
-  ageRange: { min: 18, max: 50 },
+  mode: 'Dating',
+  ageRange: { min: 18, max: 70 },
   heightRange: { min: 4, max: 7 },
   weightRange: { min: 40, max: 120 },
   caste: 'none',
@@ -78,23 +82,67 @@ export const defaultFilters: FilterValues = {
 
 export default function Filters({ onFilterChange }: FiltersProps) {
   const [filters, setFilters] = useState<FilterValues>(defaultFilters);
+  const [debouncedFilters, setDebouncedFilters] = useState<FilterValues>(defaultFilters);
 
-  const handleChange = (field: keyof FilterValues, value: any) => {
+  // Memoize the debounced filter change handler
+  const debouncedHandleFilterChange = useMemo(
+    () =>
+      debounce((newFilters: FilterValues) => {
+        if (!isEqual(newFilters, debouncedFilters)) {
+          setDebouncedFilters(newFilters);
+          onFilterChange(newFilters);
+        }
+      }, 1000),
+    [onFilterChange, debouncedFilters]
+  );
+
+  // Cleanup debounce on unmount
+  useEffect(() => {
+    return () => {
+      debouncedHandleFilterChange.cancel();
+    };
+  }, [debouncedHandleFilterChange]);
+
+  const handleChange = useCallback((field: keyof FilterValues, value: any) => {
+    console.log('recreating filters')
     const newFilters = { ...filters, [field]: value };
     setFilters(newFilters);
-    onFilterChange(newFilters);
-  };
+    debouncedHandleFilterChange(newFilters);
+  }, [filters, debouncedHandleFilterChange]);
 
-  const activeFiltersCount = Object.entries(filters).filter(([key, value]) => {
-    if (typeof value === 'object' && value !== null) {
-      // Check if it's a range object
-      if ('min' in value && 'max' in value) {
-        const defaultValue = defaultFilters[key as keyof FilterValues];
-        return value.min !== (defaultValue as any).min || value.max !== (defaultValue as any).max;
+  // Memoize active filters count calculation
+  const activeFiltersCount = useMemo(() => {
+    return Object.entries(filters).filter(([key, value]) => {
+      if (typeof value === 'object' && value !== null) {
+        if ('min' in value && 'max' in value) {
+          const defaultValue = defaultFilters[key as keyof FilterValues];
+          return value.min !== (defaultValue as any).min || value.max !== (defaultValue as any).max;
+        }
       }
-    }
-    return value !== 'none' && value !== '';
-  }).length;
+      return value !== 'none' && value !== '' && key !== 'mode'; // Don't count mode in active filters
+    }).length;
+  }, [filters]);
+
+  // Memoize the reset handler
+  const handleReset = useCallback(() => {
+    const newFilters = {
+      ...defaultFilters,
+      mode: filters.mode // Preserve the current mode
+    };
+    setFilters(newFilters);
+    setDebouncedFilters(newFilters);
+    onFilterChange(newFilters);
+  }, [filters.mode, onFilterChange]);
+
+  // Optimize range change handlers
+  const handleRangeChange = useCallback((field: 'ageRange' | 'heightRange' | 'weightRange', value: [number, number]) => {
+    const newFilters = {
+      ...filters,
+      [field]: { min: value[0], max: value[1] }
+    };
+    setFilters(newFilters);
+    debouncedHandleFilterChange(newFilters);
+  }, [filters, debouncedHandleFilterChange]);
 
   return (
     <div className="bg-card rounded-lg border p-4 space-y-4">
@@ -110,15 +158,42 @@ export default function Filters({ onFilterChange }: FiltersProps) {
           <Button 
             variant="ghost" 
             size="sm"
-            onClick={() => {
-              setFilters(defaultFilters);
-              onFilterChange(defaultFilters);
-            }}
+            onClick={handleReset}
           >
             <X className="h-4 w-4 mr-1" />
             Clear all
           </Button>
         )}
+      </div>
+
+      <div className="flex flex-col space-y-2">
+        <label className="text-sm font-medium">Mode</label>
+        <div className="flex gap-2">
+          <Button
+            variant={filters.mode === 'Dating' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => {
+              const newFilters = { ...filters, mode: Purpose.Dating };
+              setFilters(newFilters);
+              onFilterChange(newFilters);
+            }}
+            className="flex-1"
+          >
+            Dating
+          </Button>
+          <Button
+            variant={filters.mode === 'Matrimony' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => {
+              const newFilters = { ...filters, mode: Purpose.Matrimony };
+              setFilters(newFilters);
+              onFilterChange(newFilters);
+            }}
+            className="flex-1"
+          >
+            Matrimony
+          </Button>
+        </div>
       </div>
 
       <Accordion type="multiple" className="w-full">
@@ -132,7 +207,7 @@ export default function Filters({ onFilterChange }: FiltersProps) {
                   <Input
                     type="number"
                     value={filters.ageRange.min}
-                    onChange={(e) => handleChange('ageRange', { ...filters.ageRange, min: parseInt(e.target.value) })}
+                    onChange={(e) => handleRangeChange('ageRange', [parseInt(e.target.value), filters.ageRange.max])}
                     className="w-20"
                     min="18"
                     max="100"
@@ -141,7 +216,7 @@ export default function Filters({ onFilterChange }: FiltersProps) {
                   <Input
                     type="number"
                     value={filters.ageRange.max}
-                    onChange={(e) => handleChange('ageRange', { ...filters.ageRange, max: parseInt(e.target.value) })}
+                    onChange={(e) => handleRangeChange('ageRange', [filters.ageRange.min, parseInt(e.target.value)])}
                     className="w-20"
                     min="18"
                     max="100"
@@ -156,7 +231,7 @@ export default function Filters({ onFilterChange }: FiltersProps) {
                   max={7}
                   min={3}
                   step={0.2}
-                  onValueChange={(value) => handleChange('heightRange', { min: value[0], max: value[1] })}
+                  onValueChange={(value) => handleRangeChange('heightRange', [value[0], value[1]])}
                 />
                 <div className="flex justify-between text-xs text-muted-foreground">
                   <span>{filters.heightRange.min}feet</span>
@@ -171,7 +246,7 @@ export default function Filters({ onFilterChange }: FiltersProps) {
                   max={120}
                   min={40}
                   step={1}
-                  onValueChange={(value) => handleChange('weightRange', { min: value[0], max: value[1] })}
+                  onValueChange={(value) => handleRangeChange('weightRange', [value[0], value[1]])}
                 />
                 <div className="flex justify-between text-xs text-muted-foreground">
                   <span>{filters.weightRange.min}kg</span>
@@ -207,10 +282,11 @@ export default function Filters({ onFilterChange }: FiltersProps) {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">Any</SelectItem>
-                    <SelectItem value="VERY_FAIR">Very Fair</SelectItem>
-                    <SelectItem value="FAIR">Fair</SelectItem>
-                    <SelectItem value="WHEATISH">Wheatish</SelectItem>
-                    <SelectItem value="DARK">Dark</SelectItem>
+                    {Object.values(Complexion).map((complexion) => (
+                      <SelectItem key={complexion} value={complexion}>
+                        {complexion.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -290,9 +366,11 @@ export default function Filters({ onFilterChange }: FiltersProps) {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">All Communities</SelectItem>
-                    <SelectItem value="Garhwali">Garhwali</SelectItem>
-                    <SelectItem value="Kumaoni">Kumaoni</SelectItem>
-                    <SelectItem value="Jaunsari">Jaunsari</SelectItem>
+                    {Object.values(Community).map((community) => (
+                      <SelectItem key={community} value={community}>
+                        {community}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -416,8 +494,11 @@ export default function Filters({ onFilterChange }: FiltersProps) {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">All Types</SelectItem>
-                    <SelectItem value="Joint">Joint Family</SelectItem>
-                    <SelectItem value="Nuclear">Nuclear Family</SelectItem>
+                    {Object.values(FamilyType).map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type.replace(/([A-Z])/g, ' $1').trim()}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -490,10 +571,11 @@ export default function Filters({ onFilterChange }: FiltersProps) {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">All</SelectItem>
-                  <SelectItem value="NeverMarried">Never Married</SelectItem>
-                  <SelectItem value="Divorced">Divorced</SelectItem>
-                  <SelectItem value="Widowed">Widowed</SelectItem>
-                  <SelectItem value="Married">Married</SelectItem>
+                  {Object.values(MaritalStatus).map((status) => (
+                    <SelectItem key={status} value={status}>
+                      {status.replace(/([A-Z])/g, ' $1').trim()}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

@@ -28,6 +28,7 @@ interface Profile {
   photos?: string[];
   caste?: string;
   subcaste?: string;
+  purpose?: string;
 }
 
 interface PaginationData {
@@ -98,7 +99,7 @@ export default function SuggestedMatches({ filters }: SuggestedMatchesProps) {
           return;
         }
 
-        console.log('Received profiles:', data.profiles?.length);
+        console.log('Received profiles:', data.profiles?.length, 'with mode:', filters.mode);
         console.log('Pagination:', data.pagination);
 
         setProfiles(data.profiles);

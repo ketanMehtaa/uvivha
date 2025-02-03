@@ -44,7 +44,9 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const [filters, setFilters] = useState<FilterValues>(defaultFilters);
+  const [filters, setFilters] = useState<FilterValues>({
+    ...defaultFilters
+  });
 
   useEffect(() => {
     const fetchUserData = async () => {
