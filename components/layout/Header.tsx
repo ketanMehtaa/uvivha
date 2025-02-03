@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { User, LogOut, Settings, ChevronDown, UserCircle } from 'lucide-react';
+import Image from 'next/image';
 
 export default function Header() {
   const router = useRouter();
@@ -29,10 +30,19 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className=" top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 items-center justify-between">
-        <Link href="/dashboard" className="font-semibold text-2xl bg-gradient-to-r from-red-600 to-pink-600 bg-clip-text text-transparent">
-          Hamy
+        <Link href="/dashboard" className="flex items-center gap-2">
+          <Image 
+            src="/favicon.ico" 
+            alt="Hamy" 
+            width={32} 
+            height={32} 
+            className="rounded-sm"
+          />
+          <span className="font-semibold text-2xl bg-gradient-to-r from-red-600 to-pink-600 bg-clip-text text-transparent">
+            Hamy
+          </span>
         </Link>
 
         <DropdownMenu>
