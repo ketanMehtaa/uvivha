@@ -35,6 +35,7 @@ interface Profile {
   gender?: string;
   birthDate?: string;
   location?: string;
+  district?: string;
   education?: string;
   occupation?: string;
   photos?: string[];
@@ -61,6 +62,15 @@ interface Profile {
   fatherOccupation?: string;
   motherOccupation?: string;
   siblings?: string;
+  purpose?: string;
+  instagramHandle?: string;
+  religion?: string;
+  motherTongue?: string;
+  gotra?: string;
+  onBehalf?: string;
+  manglik?: string;
+  horoscope?: string;
+  livingWith?: string;
 }
 
 interface ProfilesListProps {
@@ -69,7 +79,7 @@ interface ProfilesListProps {
 
 const ProfileShimmer = () => {
   return (
-    <div className="space-y-8 animate-in fade-in-0">
+    <div className="space-y-8 animate-in fade-in-0 ">
       {/* Profile Header Shimmer */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
         {/* Photo Section Shimmer */}
@@ -206,7 +216,7 @@ export default function ProfilesList({ profiles }: ProfilesListProps) {
 
   return (
     <>
-      <div className="w-full px-4">
+      <div className="w-full px-4 mt-4">
         <Carousel
           opts={{
             align: "start",
@@ -217,7 +227,7 @@ export default function ProfilesList({ profiles }: ProfilesListProps) {
           <CarouselContent className="-ml-2 md:-ml-4">
             {profiles.map((profile) => (
               <CarouselItem key={profile.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 md:basis-1/3 ">
-                <Card className="overflow-hidden">
+                <Card className="overflow-hidden h-full flex flex-col">
                   <div className="relative aspect-[4/3]">
                     {profile.photos && profile.photos.length > 0 ? (
                       <Carousel className="w-full">
@@ -254,44 +264,65 @@ export default function ProfilesList({ profiles }: ProfilesListProps) {
                       </div>
                     )}
                   </div>
-                  <CardContent className="p-4">
-                    <h3 className="font-semibold text-lg mb-2">{profile.name}</h3>
-                    <div className="space-y-2 text-sm text-muted-foreground">
-                      {profile.birthDate && (
-                        <div>{calculateAge(profile.birthDate)} years</div>
-                      )}
-                      {profile.location && (
-                        <div className="flex items-center gap-1">
-                          <MapPin className="h-4 w-4" />
-                          {profile.location}
-                        </div>
-                      )}
-                      {profile.education && (
-                        <div className="flex items-center gap-1">
-                          <GraduationCap className="h-4 w-4" />
-                          {profile.education}
-                        </div>
-                      )}
-                      {profile.occupation && (
-                        <div className="flex items-center gap-1">
-                          <Briefcase className="h-4 w-4" />
-                          {profile.occupation}
-                        </div>
-                      )}
-                      {(profile.caste || profile.subcaste) && (
-                        <div className="flex items-center gap-1">
-                          <Users className="h-4 w-4" />
-                          <div>
-                            <span className='font-medium'>{profile.community}</span> &nbsp;
-                            <span className="font-medium">{profile.caste}</span>
-                            {profile.subcaste && (
-                              <span className="text-muted-foreground"> ( {profile.subcaste} )</span>
+                  <CardContent className="p-4 flex flex-col flex-1">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-lg mb-2">{profile.name}</h3>
+                      <div className="space-y-2 text-sm text-muted-foreground">
+                        {profile.birthDate && (
+                          <div className="flex items-center gap-1">
+                            <span>{calculateAge(profile.birthDate)} years</span>
+                            {profile.purpose && (
+                              <Badge variant="secondary" className="ml-2">
+                                {profile.purpose}
+                              </Badge>
                             )}
                           </div>
-                        </div>
-                      )}
+                        )}
+                        {profile.location && (
+                          <div className="flex items-center gap-1">
+                            <MapPin className="h-4 w-4" />
+                            {profile.location}
+                            {profile.district && <span className="text-muted-foreground">({profile.district})</span>}
+                          </div>
+                        )}
+                        {profile.education && (
+                          <div className="flex items-center gap-1">
+                            <GraduationCap className="h-4 w-4" />
+                            {profile.education}
+                            {profile.educationDetails && (
+                              <span className="text-muted-foreground">({profile.educationDetails})</span>
+                            )}
+                          </div>
+                        )}
+                        {(profile.occupation || profile.employedIn) && (
+                          <div className="flex items-center gap-1">
+                            <Briefcase className="h-4 w-4" />
+                            {profile.occupation}
+                            {profile.employedIn && (
+                              <span className="text-muted-foreground">({profile.employedIn})</span>
+                            )}
+                          </div>
+                        )}
+                        {(profile.caste || profile.subcaste || profile.community) && (
+                          <div className="flex items-center gap-1">
+                            <Users className="h-4 w-4" />
+                            <div className="flex items-center gap-1">
+                              {profile.community && <span className="font-medium">{profile.community}</span>}
+                              {profile.caste && (
+                                <>
+                                  {profile.community && <span className="mx-1">•</span>}
+                                  <span className="font-medium">{profile.caste}</span>
+                                </>
+                              )}
+                              {profile.subcaste && (
+                                <span className="text-muted-foreground ml-1">({profile.subcaste})</span>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <div className="mt-4">
+                    <div className="mt-4 pt-4 border-t">
                       <Button 
                         variant="default"
                         size="sm" 
@@ -353,13 +384,20 @@ export default function ProfilesList({ profiles }: ProfilesListProps) {
                   <div className="space-y-6">
                     <div>
                       <h1 className="text-3xl font-bold mb-2">{selectedProfile?.name}</h1>
-                      <Badge variant="secondary" className="text-base px-4 py-1">
-                        {selectedProfile?.gender}, {selectedProfile?.birthDate ? calculateAge(selectedProfile.birthDate) : 'N/A'} yrs
-                      </Badge>
+                      <div className="flex flex-wrap gap-2">
+                        <Badge variant="secondary" className="text-base px-4 py-1">
+                          {selectedProfile?.gender}, {selectedProfile?.birthDate ? calculateAge(selectedProfile.birthDate) : 'N/A'} yrs
+                        </Badge>
+                        {selectedProfile?.purpose && (
+                          <Badge variant="outline" className="text-base px-4 py-1">
+                            {selectedProfile.purpose}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-base">
-                      {/* {selectedProfile?.mobile && (
+                      {selectedProfile?.mobile && (
                         <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 col-span-full">
                           <Phone className="h-5 w-5 text-primary" />
                           <a 
@@ -369,11 +407,14 @@ export default function ProfilesList({ profiles }: ProfilesListProps) {
                             {selectedProfile.mobile}
                           </a>
                         </div>
-                      )} */}
+                      )}
                       {selectedProfile?.location && (
                         <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
                           <MapPin className="h-5 w-5 text-primary" />
                           <span>{selectedProfile.location}</span>
+                          {selectedProfile.district && (
+                            <span className="text-muted-foreground">({selectedProfile.district})</span>
+                          )}
                         </div>
                       )}
                       {selectedProfile?.education && (
@@ -424,6 +465,42 @@ export default function ProfilesList({ profiles }: ProfilesListProps) {
                           <span className="font-medium">{selectedProfile.maritalStatus}</span>
                         </div>
                       )}
+                      {selectedProfile?.religion && (
+                        <div className="flex items-center justify-between py-2">
+                          <span className="text-muted-foreground font-medium">Religion</span>
+                          <span className="font-medium">{selectedProfile.religion}</span>
+                        </div>
+                      )}
+                      {selectedProfile?.motherTongue && (
+                        <div className="flex items-center justify-between py-2">
+                          <span className="text-muted-foreground font-medium">Mother Tongue</span>
+                          <span className="font-medium">{selectedProfile.motherTongue}</span>
+                        </div>
+                      )}
+                      {selectedProfile?.gotra && (
+                        <div className="flex items-center justify-between py-2">
+                          <span className="text-muted-foreground font-medium">Gotra</span>
+                          <span className="font-medium">{selectedProfile.gotra}</span>
+                        </div>
+                      )}
+                      {selectedProfile?.manglik && (
+                        <div className="flex items-center justify-between py-2">
+                          <span className="text-muted-foreground font-medium">Manglik</span>
+                          <span className="font-medium">{selectedProfile.manglik}</span>
+                        </div>
+                      )}
+                      {selectedProfile?.horoscope && (
+                        <div className="flex items-center justify-between py-2">
+                          <span className="text-muted-foreground font-medium">Horoscope</span>
+                          <span className="font-medium">{selectedProfile.horoscope}</span>
+                        </div>
+                      )}
+                      {selectedProfile?.livingWith && (
+                        <div className="flex items-center justify-between py-2">
+                          <span className="text-muted-foreground font-medium">Living With</span>
+                          <span className="font-medium">{selectedProfile.livingWith}</span>
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -455,6 +532,18 @@ export default function ProfilesList({ profiles }: ProfilesListProps) {
                         <div className="flex items-center justify-between py-2">
                           <span className="text-muted-foreground font-medium">Income</span>
                           <span className="font-medium">{selectedProfile.income}</span>
+                        </div>
+                      )}
+                      {selectedProfile?.companyName && (
+                        <div className="flex items-center justify-between py-2">
+                          <span className="text-muted-foreground font-medium">Company</span>
+                          <span className="font-medium">{selectedProfile.companyName}</span>
+                        </div>
+                      )}
+                      {selectedProfile?.jobTitle && (
+                        <div className="flex items-center justify-between py-2">
+                          <span className="text-muted-foreground font-medium">Job Title</span>
+                          <span className="font-medium">{selectedProfile.jobTitle}</span>
                         </div>
                       )}
                     </div>
@@ -496,6 +585,18 @@ export default function ProfilesList({ profiles }: ProfilesListProps) {
                           <span className="font-medium">{selectedProfile.siblings}</span>
                         </div>
                       )}
+                      {selectedProfile?.familyLocation && (
+                        <div className="flex items-center justify-between py-2">
+                          <span className="text-muted-foreground font-medium">Family Location</span>
+                          <span className="font-medium">{selectedProfile.familyLocation}</span>
+                        </div>
+                      )}
+                      {selectedProfile?.onBehalf && (
+                        <div className="flex items-center justify-between py-2">
+                          <span className="text-muted-foreground font-medium">Profile Created By</span>
+                          <span className="font-medium">{selectedProfile.onBehalf}</span>
+                        </div>
+                      )}
                     </div>
                     {selectedProfile?.aboutFamily && (
                       <div className="mt-6 pt-4 border-t">
@@ -506,12 +607,24 @@ export default function ProfilesList({ profiles }: ProfilesListProps) {
                   </CardContent>
                 </Card>
 
-                {/* About Section */}
-                {selectedProfile?.bio && (
+                {/* Social Media */}
+                {selectedProfile?.instagramHandle && (
                   <Card className="shadow-md">
                     <CardContent className="p-6">
-                      <h2 className="text-xl font-semibold mb-6 pb-2 border-b">About</h2>
-                      <p className="text-sm leading-relaxed">{selectedProfile.bio}</p>
+                      <h2 className="text-xl font-semibold mb-6 pb-2 border-b">Social Media</h2>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between py-2">
+                          <span className="text-muted-foreground font-medium">Instagram</span>
+                          <a 
+                            href={`https://instagram.com/${selectedProfile.instagramHandle}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-medium text-primary hover:underline"
+                          >
+                            @{selectedProfile.instagramHandle}
+                          </a>
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
                 )}

@@ -49,7 +49,7 @@ export interface FilterValues {
   physicalStatus: 'Normal' | 'Physically Challenged' | 'none';
   familyType: FamilyType | 'none';
   familyStatus: string;
-  manglik: 'Yes' | 'No' | 'none';
+  // manglik: 'Yes' | 'No' | 'none';
   hasPhotos: 'Yes' | 'No' | 'none';
   occupation: string;
 }
@@ -75,7 +75,7 @@ export const defaultFilters: FilterValues = {
   physicalStatus: 'none',
   familyType: 'none',
   familyStatus: 'none',
-  manglik: 'none',
+  // manglik: 'none',
   hasPhotos: 'none',
   occupation: 'none',
 };
@@ -522,7 +522,7 @@ export default function Filters({ onFilterChange }: FiltersProps) {
                 </Select>
               </div>
 
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <label className="text-sm font-medium">Manglik Status</label>
                 <Select
                   value={filters.manglik}
@@ -537,7 +537,7 @@ export default function Filters({ onFilterChange }: FiltersProps) {
                     <SelectItem value="No">No</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
+              </div> */}
             </div>
           </AccordionContent>
         </AccordionItem>

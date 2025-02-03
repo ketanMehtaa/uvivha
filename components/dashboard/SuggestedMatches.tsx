@@ -144,13 +144,13 @@ export default function SuggestedMatches({ filters }: SuggestedMatchesProps) {
 
         <TabsContent value="matches" className="space-y-4">
           <Card>
-            <CardHeader>
+            {/* <CardHeader>
               <CardTitle>Suggested Matches</CardTitle>
-            </CardHeader>
+            </CardHeader> */}
             <CardContent>
               {loading ? (
                 <>
-                  <div className="w-full px-4">
+                  <div className="w-full px-4 mt-4">
                     <Carousel
                       opts={{
                         align: 'start',

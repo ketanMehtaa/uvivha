@@ -126,7 +126,7 @@ export async function POST(request: Request) {
         employedIn: true,
         familyType: true,
         familyStatus: true,
-        manglik: true,
+        // manglik: true,
         community: true,
         purpose: true,
       },

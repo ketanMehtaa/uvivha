@@ -19,9 +19,26 @@ export async function GET(
         gender: true,
         birthDate: true,
         location: true,
+        // district: true,
         bio: true,
+        photos: true,
+        purpose: true,
+        instagramHandle: true,
+
+        // Basic Details
         height: true,
         weight: true,
+        complexion: true,
+        physicalStatus: true,
+        // religion: true,
+        // motherTongue: true,
+        // gotra: true,
+        // manglik: true,
+        // horoscope: true,
+        // livingWith: true,
+        maritalStatus: true,
+
+        // Career Details
         education: true,
         educationDetails: true,
         occupation: true,
@@ -29,12 +46,13 @@ export async function GET(
         companyName: true,
         jobTitle: true,
         income: true,
-        maritalStatus: true,
+
+        // Community Details
+        community: true,
         caste: true,
         subcaste: true,
-        photos: true,
-        complexion: true,
-        physicalStatus: true,
+
+        // Family Details
         familyType: true,
         familyStatus: true,
         familyLocation: true,
@@ -42,6 +60,7 @@ export async function GET(
         fatherOccupation: true,
         motherOccupation: true,
         siblings: true,
+        onBehalf: true,
       }
     });
 
