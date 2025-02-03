@@ -46,16 +46,19 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       (async () => {
         try {
-          // First try to check authentication
-          const authCheck = await fetch('/api/auth/check', {
-            credentials: 'include'
-          });
-          
-          const authData = await authCheck.json();
+          // Only check auth for root path
+          if (new URL(event.request.url).pathname === '/') {
+            // First try to check authentication
+            const authCheck = await fetch('/api/auth/check', {
+              credentials: 'include'
+            });
+            
+            const authData = await authCheck.json();
 
-          // If user is authenticated and trying to access root, redirect to dashboard
-          if (authData.authenticated && event.request.url.endsWith('/')) {
-            return Response.redirect('/dashboard', 302);
+            // If user is authenticated and at root path, redirect to dashboard
+            if (authData.authenticated) {
+              return Response.redirect('/dashboard', 302);
+            }
           }
 
           // For other cases, try network first
