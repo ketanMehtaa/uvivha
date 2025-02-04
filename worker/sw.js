@@ -56,12 +56,11 @@ self.addEventListener('fetch', (event) => {
           const url = new URL(event.request.url);
           console.log('PWA Navigation - Path:', url.pathname);
 
-          // Only check auth for root path
-          if (url.pathname === '/') {
-            console.log('PWA - Checking auth at root path');
+          // Check auth for both root and start_url
+          if (url.pathname === '/' || url.pathname === '.') {
+            console.log('PWA - Checking auth for navigation');
             
             try {
-              // First try to check authentication
               const authCheck = await fetch('/api/auth/check', {
                 credentials: 'include',
                 headers: {
@@ -74,7 +73,6 @@ self.addEventListener('fetch', (event) => {
               const authData = await authCheck.json();
               console.log('PWA - Auth data:', authData);
 
-              // If user is authenticated and at root path, redirect to dashboard
               if (authData.authenticated) {
                 console.log('PWA - User authenticated, redirecting to dashboard');
                 return Response.redirect('/dashboard', 302);
@@ -83,7 +81,6 @@ self.addEventListener('fetch', (event) => {
               }
             } catch (authError) {
               console.error('PWA - Auth check failed:', authError);
-              // On auth check failure, proceed with normal navigation
             }
           }
 
