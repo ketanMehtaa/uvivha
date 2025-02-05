@@ -1,76 +1,120 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import jwt from 'jsonwebtoken';
+import * as jose from 'jose';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
-// List of public routes that don't require authentication 
+// List of public routes that don't require authentication
 const publicRoutes = [
   '/',
   '/auth',
   '/login',
   '/api/auth/check',
-  '/api/auth',
-  '/_next',
+  '/api/auth/login',
+  '/api/auth/register',
+  '/_next/static',
+  '/_next/image',
+  '/_next/webpack-hmr',
   '/favicon.ico',
+  '/manifest.json',
+  '/android-chrome-192x192.png',
   '/shared-profile'
+];
+
+// Static asset prefixes that should always be public
+const staticPrefixes = [
+  '/_next/',
+  '/static/',
+  '/images/',
+  '/assets/'
 ];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  // console.log('Middleware checking path:', pathname);
 
-  // Allow public routes
-  if (publicRoutes.some(route => pathname.startsWith(route))) {
-    // Special handling for root path ONLY for PWA
-    if (pathname === '/' && isPwaRequest(request)) {
-      const authToken = request.cookies.get('auth-token')?.value;
-      
-      if (authToken) {
-        try {
-          // Verify token before redirecting
-          jwt.verify(authToken, JWT_SECRET);
-          return NextResponse.redirect(new URL('/dashboard', request.url));
-        } catch (error) {
-          // If token is invalid, continue to root
-          console.error('Invalid token at root:', error);
-        }
-      }
-    }
-    
+  // First check if it's a static asset
+  if (staticPrefixes.some(prefix => pathname.startsWith(prefix))) {
+    // console.log('Static asset accessed:', pathname);
     return NextResponse.next();
   }
 
-  // Rest of the existing middleware logic remains the same...
-}
+  // Then check public routes with exact matching
+  if (publicRoutes.includes(pathname)) {
+    console.log('Public route accessed:', pathname);
+    return NextResponse.next();
+  }
 
-// Helper function to detect PWA request
-function isPwaRequest(request: NextRequest): boolean {
-  // Check for PWA-specific headers or conditions
-  const userAgent = request.headers.get('user-agent') || '';
-  const acceptHeader = request.headers.get('accept') || '';
+  // For shared-profile and its API routes, allow the dynamic routes
+  if (pathname.startsWith('/shared-profile/') || pathname.startsWith('/api/profile/share/')) {
+    console.log('Shared profile route accessed:', pathname);
+    return NextResponse.next();
+  }
 
-  // Add more PWA detection logic as needed
-  const isPwa = (
-    userAgent.includes('WebView') || // Common in mobile PWA
-    userAgent.includes('wv') || // Another WebView indicator
-    request.headers.get('sec-fetch-mode') === 'navigate' || // PWA navigation mode
-    acceptHeader.includes('text/html') // Typical PWA request
-  );
+  // Check for auth token in cookies
+  const authToken = request.cookies.get('auth-token')?.value;
 
-  return isPwa;
+  if (!authToken) {
+    console.log('No auth token found for path:', pathname);
+    const response = NextResponse.redirect(new URL('/login', request.url));
+    response.cookies.delete({
+      name: 'auth-token',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/'
+    });
+    return response;
+  }
+
+  try {
+    // Create secret key for jose
+    const secret = new TextEncoder().encode(JWT_SECRET);
+    
+    // Verify JWT token
+    console.log('Verifying token for path:', pathname);
+    const { payload } = await jose.jwtVerify(authToken, secret);
+    
+    // Check if decoded token has the required fields
+    if (!payload || typeof payload !== 'object' || !(payload.userId || payload.id)) {
+      console.error('Token validation failed:', {
+        path: pathname,
+        hasPayload: !!payload,
+        type: typeof payload,
+        hasUserId: payload && typeof payload === 'object' && (payload.userId || payload.id)
+      });
+      throw new Error('Invalid token structure');
+    }
+    
+    console.log('Token verified successfully for path:', pathname);
+    return NextResponse.next();
+  } catch (error) {
+    // If token is invalid
+    console.error('Token verification failed:', {
+      path: pathname,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+
+    // Clear the invalid token and force redirect
+    const response = NextResponse.redirect(new URL('/login', request.url), {
+      status: 302,
+      statusText: 'Found'
+    });
+    
+    response.cookies.delete({
+      name: 'auth-token',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/'
+    });
+    return response;
+  }
 }
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - auth (auth page)
-     * - api/auth (authentication endpoints)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - / (root page)
-     */
-    '/((?!auth|api/auth|_next/static|_next/image|favicon.ico|$).*)',
-  ],
+    // Match all routes
+    '/:path*'
+  ]
 };

@@ -79,6 +79,8 @@ export default function ProfileEditPage() {
       setCurrentStep(steps[currentIndex + 1]);
     } else {
       // If it's the last step, redirect to dashboard
+      // clear the user local storage
+      //todo remove user from local storage because user details changed 
       router.push('/dashboard');
     }
   };
@@ -99,7 +101,7 @@ export default function ProfileEditPage() {
   }
 
   if (!user) {
-    router.push('/auth');
+    router.push('/login');
     return null;
   }
 

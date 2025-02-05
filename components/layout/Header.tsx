@@ -22,7 +22,7 @@ export default function Header() {
       });
       
       if (res.ok) {
-        router.push('/auth');
+        router.push('/login');
       }
     } catch (error) {
       console.error('Logout failed:', error);

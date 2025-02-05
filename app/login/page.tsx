@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { handleApiError } from '@/lib/auth';
 import Image from 'next/image';
@@ -13,6 +13,12 @@ export default function LoginPage() {
     password: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    // Clear all storage when landing on login page
+    localStorage.clear();
+    sessionStorage.clear();
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

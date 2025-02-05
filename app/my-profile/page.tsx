@@ -69,7 +69,7 @@ export default function MyProfilePage() {
         const res = await fetch('/api/profile');
         
         if (res.status === 401) {
-          router.push('/login');
+          // router.push('/login');
           return;
         }
 

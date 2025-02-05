@@ -115,44 +115,22 @@ function calculateAge(birthDate: string) {
 
 async function getSharedProfile(userId: string, token: string) {
   try {
-    // Try to get from cache first
-    const cacheKey = `profile-${userId}-${token}`;
-    const cachedData = localStorage.getItem(cacheKey);
-    
-    if (cachedData) {
-      const { data, timestamp } = JSON.parse(cachedData);
-      const cacheAge = Date.now() - timestamp;
-      
-      // Return cached data if it's less than 5 minutes old
-      if (cacheAge < 5 * 60 * 1000) {
-        return data;
-      }
-      
-      // Remove expired cache
-      localStorage.removeItem(cacheKey);
-    }
-
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 
-      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+    const baseUrl = window.location.origin ;
 
     const response = await fetch(`${baseUrl}/api/profile/share/${userId}/${token}`, {
       headers: {
         'Content-Type': 'application/json',
       },
-      cache: 'force-cache',
-      next: { revalidate: 300 } // 5 minutes
+      next: { revalidate: 60 } // Cache for 1 minute
     });
     
-    if (!response.ok) return null;
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      console.error('Profile share error:', errorData || response.statusText);
+      return null;
+    }
     
     const data = await response.json();
-    
-    // Cache the new data
-    localStorage.setItem(cacheKey, JSON.stringify({
-      data,
-      timestamp: Date.now()
-    }));
-    
     return data;
   } catch (error) {
     console.error('Error fetching shared profile:', error);

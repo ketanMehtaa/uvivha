@@ -12,35 +12,17 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserRound } from 'lucide-react';
-
-interface UserProfile {
-  id: string;
-  name: string;
-  mobile: string;
-  email?: string;
-  gender?: string;
-  birthDate?: string;
-  location?: string;
-  bio?: string;
-  height?: number;
-  weight?: number;
-  education?: string;
-  occupation?: string;
-  income?: string;
-  maritalStatus?: string;
-  caste?: string;
-  subcaste?: string;
-  photos?: string[];
-  isProfileComplete?: boolean;
-  complexion?: string;
-  physicalStatus?: string;
-  familyType?: string;
-  familyStatus?: string;
-  employedIn?: string;
-}
+import type { User } from '@prisma/client';
 
 export default function DashboardPage() {
-  const [user, setUser] = useState<UserProfile | null>(null);
+  const [user, setUser] = useState<User | null>(() => {
+    // Initialize from localStorage if available
+    if (typeof window !== 'undefined') {
+      const savedUser = localStorage.getItem('user');
+      return savedUser ? JSON.parse(savedUser) : null;
+    }
+    return null;
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -51,7 +33,14 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-       
+        // First check localStorage
+        const savedUser = localStorage.getItem('user');
+        if (savedUser) {
+          setUser(JSON.parse(savedUser));
+          setLoading(false);
+          return;
+        }
+
         const userRes = await fetch('/api/user/me');
         const userData = await userRes.json();
 
@@ -63,6 +52,8 @@ export default function DashboardPage() {
 
         if (userData.user) {
           setUser(userData.user);
+          // Save to localStorage
+          localStorage.setItem('user', JSON.stringify(userData.user));
         } else {
           handleLogout(router);
         }
@@ -76,6 +67,15 @@ export default function DashboardPage() {
 
     fetchUserData();
   }, [router]);
+
+  // Add effect to update localStorage when user changes
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem('user', JSON.stringify(user));
+    } else {
+      localStorage.removeItem('user');
+    }
+  }, [user]);
 
   if (loading) {
     return (
@@ -129,7 +129,7 @@ export default function DashboardPage() {
   }
 
   // Calculate profile completion percentage
-  const requiredFields: (keyof UserProfile)[] = [
+  const requiredFields: (keyof User)[] = [
     'name', 'mobile', 'email', 'gender', 'birthDate', 'location',
     'bio', 'height', 'education', 'occupation', 'income',
     'maritalStatus', 'caste'

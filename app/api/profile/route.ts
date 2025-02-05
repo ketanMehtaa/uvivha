@@ -10,19 +10,7 @@ export async function GET() {
     try {
         const cookieStore = await cookies();
         const token = cookieStore.get('auth-token')?.value;
-
-        if (!token) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-
-        // Verify token and get user ID
-        let decoded;
-        try {
-            decoded = jwt.verify(token, JWT_SECRET);
-        } catch (error) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-
+        const decoded = jwt.verify(token as string, JWT_SECRET);
         const userId = (decoded as any).userId || (decoded as any).id;
 
         const profile = await prisma.user.findUnique({

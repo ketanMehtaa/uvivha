@@ -8,6 +8,10 @@ export default function AuthPage() {
   const router = useRouter();
 
   useEffect(() => {
+    // Clear all storage when landing on auth page
+    localStorage.clear();
+    sessionStorage.clear();
+
     // Check if user is already authenticated
     const checkAuth = async () => {
       try {
