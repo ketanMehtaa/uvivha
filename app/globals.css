@@ -98,6 +98,43 @@
   }
 }
 
+@keyframes slideUp {
+  0% {
+    transform: translateY(20px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes border-rotate {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-border {
+  background-size: 200% 100%;
+  animation: border-rotate 3s linear infinite;
+}
+
+.animate-spin-slow {
+  animation: border-rotate 3s linear infinite;
+}
+
+.animate-slideUp {
+  animation: slideUp 2s ease-out forwards;
+}
+
+.text-gradient {
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
 /* Chrome, Safari, Edge, Opera */
 input[type='search']::-webkit-search-cancel-button {
   -webkit-appearance: none;

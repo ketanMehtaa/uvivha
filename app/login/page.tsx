@@ -179,9 +179,8 @@ export default function LoginPage() {
             alt="Login illustration"
             width={600}
             height={500}
-            className="object-contain"
+            className="object-contain rounded-[40px]"
             priority
-            style={{borderRadius: "40px"}}
           />
         </div>
         <div className="absolute bottom-0 left-0 right-0 p-8 text-center bg-gradient-to-t from-white/80">

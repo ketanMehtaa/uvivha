@@ -4,6 +4,14 @@ import { HighlightInit } from '@highlight-run/next/client';
 import { Metadata } from 'next';
 import { CSPostHogProvider } from '../lib/posthog'
 import { InstallPWA } from '@/components/pwa/InstallPWA';
+import { Poppins } from 'next/font/google';
+
+const poppins = Poppins({ 
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700', '800', '900'],
+  display: 'swap',
+  variable: '--font-poppins'
+});
 
 export const metadata: Metadata = {
   title: 'Hamy - Free Uttrakhand Matrimony Service | Find Your Perfect Match',
@@ -132,7 +140,7 @@ export default function RootLayout({
           urlBlocklist: []
         }}
       />
-      <html lang="en" suppressHydrationWarning>
+      <html lang="en" suppressHydrationWarning className={`${poppins.variable}`}>
         <head>
           <meta
             name="viewport"
