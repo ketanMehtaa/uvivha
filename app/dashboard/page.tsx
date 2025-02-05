@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { handleUnauthorized, handleLogout } from '@/lib/auth';
+import { registerServiceWorker, subscribeUserToPush } from '@/lib/push-notifications';
+import { toast } from 'sonner';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import Filters, { FilterValues, defaultFilters } from '@/components/dashboard/Filters';
@@ -29,6 +31,7 @@ export default function DashboardPage() {
   const [filters, setFilters] = useState<FilterValues>({
     ...defaultFilters
   });
+  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -76,6 +79,54 @@ export default function DashboardPage() {
       localStorage.removeItem('user');
     }
   }, [user]);
+
+  // Check initial permission status and subscribe if already granted
+  useEffect(() => {
+    if ('Notification' in window) {
+      const permission = Notification.permission;
+      setNotificationPermission(permission);
+      
+      if (permission === 'granted') {
+        // Attempt to resubscribe if permission is already granted
+        const setupPushNotification = async () => {
+          try {
+            const registration = await registerServiceWorker();
+            await subscribeUserToPush();
+            console.log('Successfully resubscribed to push notifications');
+          } catch (error) {
+            console.error('Error setting up push notifications:', error);
+          }
+        };
+        
+        setupPushNotification();
+      }
+    }
+  }, []);
+
+  const requestNotificationPermission = async () => {
+    // Check if the browser supports notifications
+    if (!('Notification' in window)) {
+      toast.error('This browser does not support notifications');
+      return;
+    }
+
+    try {
+      const permission = await Notification.requestPermission();
+      setNotificationPermission(permission);
+
+      if (permission === 'granted') {
+        // Register service worker and subscribe
+        const registration = await registerServiceWorker();
+        await subscribeUserToPush();
+        toast.success('Notifications enabled successfully!');
+      } else if (permission === 'denied') {
+        toast.error('Notification permission denied');
+      }
+    } catch (error) {
+      console.error('Error requesting notification permission:', error);
+      toast.error('Failed to enable notifications');
+    }
+  };
 
   if (loading) {
     return (
@@ -145,7 +196,29 @@ export default function DashboardPage() {
       
       <main className="flex-grow container py-6">
         <div className="space-y-6">
-         {completionPercentage < 60 && <Card>
+          {/* Show notification permission button if not granted */}
+          {notificationPermission !== 'granted' && (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold">Enable Notifications</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Get notified about new matches and messages
+                    </p>
+                  </div>
+                  <Button 
+                    onClick={requestNotificationPermission}
+                    variant="outline"
+                  >
+                    Enable Notifications
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {completionPercentage < 60 && <Card>
             <CardContent className="pt-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="space-y-1">

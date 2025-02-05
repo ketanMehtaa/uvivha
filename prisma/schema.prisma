@@ -75,6 +75,8 @@ model User {
   manglik                 Manglik?
   horoscope               Horoscope?
   livingWith              LivingWith?
+
+  pushSubscriptions     PushSubscription[]
 }
 
 model ProfileShare {
@@ -90,7 +92,18 @@ model ProfileShare {
   @@index([userId])
 }
 
+model PushSubscription {
+  userId    String
+  endpoint  String
+  auth      String
+  p256dh    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
 
+  @@id([userId, endpoint])
+  @@index([userId])
+}
 
 // ------------------------enum-----------------------------
 
