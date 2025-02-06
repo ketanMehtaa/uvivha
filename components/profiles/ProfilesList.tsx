@@ -322,15 +322,24 @@ export default function ProfilesList({ profiles }: ProfilesListProps) {
                         )}
                       </div>
                     </div>
-                    <div className="mt-4 pt-4 border-t">
+                    <div className="mt-4 pt-4 border-t flex gap-2">
                       <Button 
-                        variant="default"
+                        variant="outline"
                         size="sm" 
-                        className="w-full"
+                        className="flex-1"
                         onClick={() => handleViewProfile(profile.id)}
                       >
                         <Eye className="h-4 w-4 mr-2" />
-                        View Full Profile
+                        View Profile
+                      </Button>
+                      <Button 
+                        variant="default"
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => router.push(`/messages/${profile.id}`)}
+                      >
+                        <Mail className="h-4 w-4 mr-2" />
+                        Message
                       </Button>
                     </div>
                   </CardContent>
@@ -631,10 +640,10 @@ export default function ProfilesList({ profiles }: ProfilesListProps) {
               </div>
 
               {/* Sticky Back Button */}
-              <div className="sticky bottom-6   flex justify-center mt-8">
+              <div className="sticky bottom-6 flex justify-center gap-4 mt-8">
                 <DialogClose asChild>
                   <Button 
-                    variant="default"
+                    variant="outline"
                     size="lg"
                     className="shadow-lg flex items-center gap-2 px-6"
                   >
@@ -642,6 +651,18 @@ export default function ProfilesList({ profiles }: ProfilesListProps) {
                     Back
                   </Button>
                 </DialogClose>
+                <Button 
+                  variant="default"
+                  size="lg"
+                  className="shadow-lg flex items-center gap-2 px-6"
+                  onClick={() => {
+                    setIsDialogOpen(false);
+                    router.push(`/messages/${selectedProfile?.id}`);
+                  }}
+                >
+                  <Mail className="h-5 w-5" />
+                  Message
+                </Button>
               </div>
             </div>
           )}
