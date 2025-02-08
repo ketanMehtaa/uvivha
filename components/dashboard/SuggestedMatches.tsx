@@ -127,19 +127,19 @@ export default function SuggestedMatches({ filters }: SuggestedMatchesProps) {
   return (
     <div className="space-y-6">
       <Tabs defaultValue="matches">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full ">
           <TabsTrigger value="matches" className="flex items-center gap-2">
             <Heart className="h-4 w-4" />
             Matches
           </TabsTrigger>
-          <TabsTrigger value="shortlisted" className="flex items-center gap-2">
+          {/* <TabsTrigger value="shortlisted" className="flex items-center gap-2">
             <Star className="h-4 w-4" />
             Shortlisted
           </TabsTrigger>
           <TabsTrigger value="search" className="flex items-center gap-2">
             <Search className="h-4 w-4" />
             Search Results
-          </TabsTrigger>
+          </TabsTrigger> */}
         </TabsList>
 
         <TabsContent value="matches" className="space-y-4">

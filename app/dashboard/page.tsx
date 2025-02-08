@@ -194,7 +194,7 @@ export default function DashboardPage() {
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
       
-      <main className="flex-grow container py-6">
+      <main className="flex-grow container pt-6 pb-20">
         <div className="space-y-6">
           {/* Show notification permission button if not granted */}
           {notificationPermission !== 'granted' && (
