@@ -1,5 +1,14 @@
 const CACHE_NAME = 'hamy-cache-v1';
 
+// Add auth-related paths that should never be cached
+const NO_CACHE_PATHS = [
+  '/login',
+  '/auth',
+  '/api/auth',
+  '/api/login',
+  '/api/logout'
+];
+
 const urlsToCache = [
   '/',
   '/dashboard',
@@ -49,71 +58,33 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
+  
+  // Never cache auth-related paths
+  if (NO_CACHE_PATHS.some(path => url.pathname.startsWith(path))) {
+    return event.respondWith(fetch(event.request));
+  }
+
   if (event.request.mode === 'navigate') {
     event.respondWith(
       (async () => {
         try {
-          const url = new URL(event.request.url);
-          console.log('PWA Navigation - Path:', url.pathname);
-
-          // If accessing dashboard, check auth
-          if (url.pathname === '/dashboard') {
-            console.log('PWA - Checking auth for dashboard');
-            
-            try {
-              const authCheck = await fetch('/api/auth/check', {
-                credentials: 'include',
-                headers: {
-                  'Accept': 'application/json',
-                  'Cache-Control': 'no-cache'
-                }
-              });
-              
-              console.log('PWA - Auth check status:', authCheck.status);
-              const authData = await authCheck.json();
-              console.log('PWA - Auth data:', authData);
-
-              if (!authData.authenticated) {
-                console.log('PWA - User not authenticated, redirecting to root');
-                return Response.redirect('/', 302);
-              }
-            } catch (authError) {
-              console.error('PWA - Auth check failed:', authError);
-              return Response.redirect('/', 302);
-            }
-          }
-
-          // For all paths, try network first
-          try {
-            console.log('PWA - Fetching from network:', url.pathname);
-            const networkResponse = await fetch(event.request);
-            
-            // Cache successful responses
-            if (networkResponse.ok) {
-              const cache = await caches.open(CACHE_NAME);
-              cache.put(event.request, networkResponse.clone());
-            }
-            
-            return networkResponse;
-          } catch (error) {
-            console.log('PWA - Navigation fetch failed:', error);
-            
-            // If network fails, try cache
-            const cache = await caches.open(CACHE_NAME);
-            const cachedResponse = await cache.match(event.request);
-            
-            if (cachedResponse) {
-              console.log('PWA - Serving from cache:', url.pathname);
-              return cachedResponse;
-            }
-            
-            // If cache fails, return offline page
-            console.log('PWA - Serving offline page');
-            return cache.match('/offline.html');
-          }
+          // For navigation requests, try network first
+          const networkResponse = await fetch(event.request);
+          return networkResponse;
         } catch (error) {
-          console.error('PWA - Navigation error:', error);
-          return fetch(event.request);
+          console.log('PWA - Navigation fetch failed:', error);
+          
+          // If network fails, try cache
+          const cache = await caches.open(CACHE_NAME);
+          const cachedResponse = await cache.match(event.request);
+          
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+          
+          // If cache fails, return offline page
+          return cache.match('/offline.html');
         }
       })()
     );
@@ -136,23 +107,18 @@ self.addEventListener('fetch', (event) => {
               return response;
             }
 
-            const responseToCache = response.clone();
-
-            caches.open(CACHE_NAME)
-              .then((cache) => {
-                cache.put(event.request, responseToCache)
-                  .catch(error => {
-                    console.error('Cache put failed:', error);
-                  });
-              })
-              .catch(error => {
-                console.error('Cache open failed:', error);
-              });
+            // Don't cache if the path is in NO_CACHE_PATHS
+            if (!NO_CACHE_PATHS.some(path => url.pathname.startsWith(path))) {
+              const responseToCache = response.clone();
+              caches.open(CACHE_NAME)
+                .then((cache) => {
+                  cache.put(event.request, responseToCache);
+                });
+            }
 
             return response;
           })
-          .catch(error => {
-            console.error('Fetch failed:', error);
+          .catch(() => {
             return caches.match(event.request);
           });
       })
