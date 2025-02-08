@@ -2,18 +2,21 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { cookies } from 'next/headers';
 
 export default function PWAStart() {
   const router = useRouter();
 
   useEffect(() => {
-    // Check for auth token in cookies
     const checkAuth = async () => {
       try {
         const response = await fetch('/api/auth/check', {
           method: 'GET',
-          credentials: 'include'
+          credentials: 'include',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+          }
         });
 
         if (response.ok) {

@@ -52,3 +52,5 @@ response.cookies.set('auth-token', token, {
 
   todo
   when it is decided to send user to edit profile page and when to dashboard check this .
+
+  todo in login screen make 10 max digit for login ++ eye button in password
