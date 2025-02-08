@@ -49,3 +49,6 @@ response.cookies.set('auth-token', token, {
   // in the login screen in password give eye option to see password , also give eye in basic details page 
   // when there is some error move the screen to the erro in the profile /edit part
   register me me loader add krna he
+
+  todo
+  when it is decided to send user to edit profile page and when to dashboard check this .
