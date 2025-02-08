@@ -67,12 +67,12 @@ export default function Header() {
                 Edit Profile
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem asChild>
+            {/* <DropdownMenuItem asChild>
               <Link href="/settings" className="cursor-pointer flex items-center">
                 <Settings className="mr-2 h-4 w-4" />
                 Settings
               </Link>
-            </DropdownMenuItem>
+            </DropdownMenuItem> */}
             <DropdownMenuItem
               onClick={handleLogout}
               className="cursor-pointer text-destructive"
