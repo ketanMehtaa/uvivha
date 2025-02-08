@@ -75,7 +75,7 @@ export default function ConversationsList({ userId }: { userId: string }) {
   }, [userId]);
 
   return (
-    <Card className="h-[600px]">
+    <Card className="h-[700px]">
       <div className="p-4 border-b">
         <h2 className="text-lg font-semibold">Messages</h2>
       </div>

@@ -6,8 +6,10 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import Messages from '@/components/chat/Messages';
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { ArrowLeft } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
+import type { User } from '@prisma/client';
 
 interface ChatPageProps {
   params: {
@@ -15,37 +17,50 @@ interface ChatPageProps {
   };
 }
 
-const LoadingSkeleton = () => (
-  <div className="space-y-4 p-4">
-    <Skeleton className="h-12 w-full" />
-    <div className="space-y-2">
-      {[1, 2, 3].map((i) => (
-        <Skeleton key={i} className="h-20 w-3/4" />
-      ))}
-    </div>
+const MessageSkeleton = () => (
+  <div className="space-y-4">
+    {[1, 2, 3].map((i) => (
+      <div key={i} className="flex justify-start">
+        <div className="max-w-[70%] rounded-lg p-3 bg-muted">
+          <Skeleton className="h-4 w-48 mb-2" />
+          <Skeleton className="h-3 w-24" />
+        </div>
+      </div>
+    ))}
   </div>
 );
 
 export default function ChatPage({ params }: ChatPageProps) {
   const router = useRouter();
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(() => {
+    // Initialize from localStorage if available
+    if (typeof window !== 'undefined') {
+      const savedUser = localStorage.getItem('user');
+      return savedUser ? JSON.parse(savedUser) : null;
+    }
+    return null;
+  });
   const [otherUser, setOtherUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        setLoading(true);
-        
-        // Fetch current user
-        const currentUserRes = await fetch('/api/user/me');
-        const currentUserData = await currentUserRes.json();
+        // First check localStorage for current user
+        const savedUser = localStorage.getItem('user');
+        if (savedUser) {
+          setCurrentUser(JSON.parse(savedUser));
+        } else {
+          // Fetch current user if not in localStorage
+          const currentUserRes = await fetch('/api/user/me');
+          const currentUserData = await currentUserRes.json();
+          setCurrentUser(currentUserData.user);
+          localStorage.setItem('user', JSON.stringify(currentUserData.user));
+        }
 
         // Fetch other user
         const otherUserRes = await fetch(`/api/profiles/${params.userId}`);
         const otherUserData = await otherUserRes.json();
-
-        setCurrentUser(currentUserData.user);
         setOtherUser(otherUserData.profile);
       } catch (error) {
         console.error('Error fetching users:', error);
@@ -57,27 +72,7 @@ export default function ChatPage({ params }: ChatPageProps) {
     fetchUsers();
   }, [params.userId]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="container py-8">
-          <Button 
-            variant="ghost" 
-            onClick={() => router.back()}
-            className="mb-6"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
-          <LoadingSkeleton />
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
-  if (!currentUser || !otherUser) {
+  if (!currentUser) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
@@ -96,20 +91,30 @@ export default function ChatPage({ params }: ChatPageProps) {
       <Header />
       
       <main className="flex-grow container py-8">
-        <Button 
-          variant="ghost" 
-          onClick={() => router.back()}
-          className="mb-6"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
-        </Button>
-
-        <Messages
-          currentUserId={currentUser.id}
-          otherUserId={otherUser.id}
-          otherUserName={otherUser.name}
-        />
+        {loading ? (
+          <Card className="flex flex-col h-[600px]">
+            <div className="p-4 border-b">
+              <Skeleton className="h-6 w-32" />
+            </div>
+            <div className="flex-grow p-4">
+              <MessageSkeleton />
+            </div>
+            <div className="p-4 border-t flex gap-2">
+              <Skeleton className="h-10 flex-grow" />
+              <Skeleton className="h-10 w-20" />
+            </div>
+          </Card>
+        ) : otherUser ? (
+          <Messages
+            currentUserId={currentUser.id}
+            otherUserId={otherUser.id}
+            otherUserName={otherUser.name}
+          />
+        ) : (
+          <div className="text-center py-8 text-muted-foreground">
+            User not found
+          </div>
+        )}
       </main>
 
       <Footer />
