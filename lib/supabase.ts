@@ -95,6 +95,31 @@ export async function sendMessage(fromId: string, toId: string, content: string)
     console.error('Error sending message:', error);
     throw error;
   }
+
+  // Send push notification
+  try {
+    await fetch('/api/push/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: toId,
+        notification: {
+          title: 'New Message',
+          body: content,
+          data: {
+            type: 'message',
+            fromId,
+            toId,
+            messageId: data.id
+          }
+        }
+      })
+    });
+  } catch (error) {
+    console.error('Error sending push notification:', error);
+    // Don't throw here - message was sent successfully even if notification fails
+  }
+
   return data;
 }
 

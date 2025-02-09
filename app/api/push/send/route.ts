@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import webpush from 'web-push';
 import { prisma } from '@/lib/prisma';
+import { cookies } from 'next/headers';
+import * as jose from 'jose';
 
 // Configure web-push with your VAPID keys
 webpush.setVapidDetails(
@@ -9,50 +11,72 @@ webpush.setVapidDetails(
   process.env.VAPID_PRIVATE_KEY!
 );
 
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+
 export async function POST(request: Request) {
   try {
-    const { message, userId } = await request.json();
+    // Verify authentication
+    const cookieStore = await cookies();
+    const token = cookieStore.get('auth-token')?.value;
 
-    // If userId is provided, send to specific user, otherwise send to all
-    const subscriptions = await prisma.pushSubscription.findMany({
-      where: userId ? { userId } : undefined
+    if (!token) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Verify JWT token
+    const secret = new TextEncoder().encode(JWT_SECRET);
+    const { payload } = await jose.jwtVerify(token, secret);
+    const userId = payload.userId || payload.id;
+
+    const { userId: targetUserId, notification } = await request.json();
+
+    // Get user's subscription
+    const subscription = await prisma.pushSubscription.findFirst({
+      where: { userId: targetUserId }
     });
 
-    const notifications = subscriptions.map(async (subscription) => {
-      try {
-        await webpush.sendNotification(
-          {
-            endpoint: subscription.endpoint,
-            keys: {
-              auth: subscription.auth,
-              p256dh: subscription.p256dh
+    if (!subscription) {
+      return NextResponse.json(
+        { message: 'No subscription found for user' },
+        { status: 200 }
+      );
+    }
+
+    try {
+      await webpush.sendNotification(
+        {
+          endpoint: subscription.endpoint,
+          keys: {
+            auth: subscription.auth,
+            p256dh: subscription.p256dh
+          }
+        },
+        JSON.stringify(notification)
+      );
+    } catch (error) {
+      console.error('Error sending notification:', error);
+      // If subscription is invalid, remove it
+      if ((error as any).statusCode === 410) {
+        await prisma.pushSubscription.delete({
+          where: {
+            userId_endpoint: {
+              userId: subscription.userId,
+              endpoint: subscription.endpoint
             }
-          },
-          message
-        );
-      } catch (error) {
-        console.error('Error sending notification:', error);
-        // If subscription is invalid, remove it
-        if ((error as any).statusCode === 410) {
-          await prisma.pushSubscription.delete({
-            where: {
-              userId_endpoint: {
-                userId: subscription.userId,
-                endpoint: subscription.endpoint
-              }
-            }
-          });
-        }
+          }
+        });
       }
-    });
+      throw error;
+    }
 
-    await Promise.all(notifications);
-
-    return NextResponse.json({ message: 'Notifications sent successfully' });
+    return NextResponse.json({ message: 'Notification sent successfully' });
   } catch (error) {
     console.error('Push notification error:', error);
     return NextResponse.json(
-      { error: 'Failed to send push notifications' },
+      { error: 'Failed to send push notification' },
       { status: 500 }
     );
   }

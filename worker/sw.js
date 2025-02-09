@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hamy-cache-v2';
+const CACHE_NAME = 'hamy-cache-v3';
 
 // Add auth-related paths that should never be cached
 const NO_CACHE_PATHS = [
@@ -137,22 +137,23 @@ self.addEventListener('push', function(event) {
       icon: '/android-chrome-192x192.png',
       badge: '/android-chrome-192x192.png',
       vibrate: [100, 50, 100],
-      data: {
+      data: data.data || {
         dateOfArrival: Date.now(),
         primaryKey: 1
       },
       actions: [
         {
-          action: 'explore',
-          title: 'View Details',
+          action: 'view',
+          title: 'View Message',
         }
       ]
     };
 
     event.waitUntil(
-      self.registration.showNotification(data.title || 'Uttrakhand Matrimony', options)
+      self.registration.showNotification(data.title || 'New Message', options)
     );
   } catch (error) {
+    console.error('Error showing notification:', error);
     // Fallback for plain text messages
     const options = {
       body: event.data.text(),
@@ -162,46 +163,39 @@ self.addEventListener('push', function(event) {
       data: {
         dateOfArrival: Date.now(),
         primaryKey: 1
-      },
-      actions: [
-        {
-          action: 'explore',
-          title: 'View Details',
-        }
-      ]
+      }
     };
 
     event.waitUntil(
-      self.registration.showNotification('Uttrakhand Matrimony', options)
+      self.registration.showNotification('New Message', options)
     );
   }
 });
 
 self.addEventListener('notificationclick', function(event) {
-  // Close the notification
   event.notification.close();
 
-  // Get the action (if any) and determine URL
-  
-  // todo: add the notification id to the url
-  const urlToOpen = new URL(
-    event.action === 'explore' ? '/dashboard' : '/dashboard',
-    self.location.origin
-  ).href;
+  const notificationData = event.notification.data;
+  let urlToOpen;
 
-  // This ensures the app opens in the correct tab/window
+  if (notificationData?.type === 'message') {
+    // Open the specific chat
+    urlToOpen = new URL(`/messages/${notificationData.fromId}`, self.location.origin).href;
+  } else {
+    // Default fallback
+    urlToOpen = new URL('/dashboard', self.location.origin).href;
+  }
+
   event.waitUntil(
     clients.matchAll({
       type: 'window',
       includeUncontrolled: true
     }).then(function(clientList) {
-      // If we have a client already open, focus it
       for (const client of clientList) {
         if (client.url === urlToOpen && 'focus' in client) {
           return client.focus();
         }
       }
-      // If no client is open, open a new one
       if (clients.openWindow) {
         return clients.openWindow(urlToOpen);
       }
