@@ -6,7 +6,9 @@ const NO_CACHE_PATHS = [
   '/auth',
   '/api/auth',
   '/api/login',
-  '/api/logout'
+  '/api/logout',
+  '/api/profile/share',
+  '/shared-profile'
 ];
 
 const urlsToCache = [
