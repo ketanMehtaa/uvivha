@@ -1,15 +1,16 @@
-'use client'
+'use client';
 
-import React, { useEffect, useState } from "react";
-import { Metadata } from "next";
-import { notFound } from "next/navigation";
-import Image from "next/image";
-import Link from "next/link";
-import { format } from "date-fns";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import React, { useEffect, useState } from 'react';
+import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import Image from 'next/image';
+import Link from 'next/link';
+import { format } from 'date-fns';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { User } from '@prisma/client';
 import {
   MapPin,
   Briefcase,
@@ -25,60 +26,16 @@ import {
   CarouselContent,
   CarouselItem,
   CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
-import { TryAgainButton } from "@/components/shared-profile/TryAgainButton";
+  CarouselPrevious
+} from '@/components/ui/carousel';
+import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
+import { TryAgainButton } from '@/components/shared-profile/TryAgainButton';
 
 interface SharedProfilePageProps {
   params: { userId: string; token: string };
 }
 
-interface User {
-  id: string;
-  name: string;
-  gender?: string;
-  birthDate?: string;
-  location?: string;
-  bio?: string;
-  photos?: string[];
-  height?: number;
-  weight?: number;
-  complexion?: string;
-  physicalStatus?: string;
-  education?: string;
-  educationDetails?: string;
-  occupation?: string;
-  employedIn?: string;
-  companyName?: string;
-  jobTitle?: string;
-  income?: string;
-  maritalStatus?: string;
-  religion?: string;
-  caste?: string;
-  subcaste?: string;
-  motherTongue?: string;
-  familyType?: string;
-  familyStatus?: string;
-  fatherOccupation?: string;
-  motherOccupation?: string;
-  siblings?: string;
-  familyLocation?: string;
-  aboutFamily?: string;
-  mobile?: string;
-  email?: string;
-  agePreferenceMin?: number;
-  agePreferenceMax?: number;
-  heightPreferenceMin?: number;
-  heightPreferenceMax?: number;
-  castePreference?: string;
-  educationPreference?: string;
-  occupationPreference?: string;
-  locationPreference?: string;
-  maritalStatusPreference?: string;
-  isProfileComplete?: boolean;
-}
 
 interface ShareInfo {
   expiresAt: string;
@@ -106,7 +63,7 @@ function calculateAge(birthDate: string) {
 //   const { userId, token } = await params;
 //   const data = await getSharedProfile(userId, token);
 //   if (!data) return { title: "Profile Not Found" };
-  
+
 //   return {
 //     title: `${data.user.name}'s Profile`,
 //     description: `View ${data.user.name}'s matrimony profile`
@@ -115,21 +72,18 @@ function calculateAge(birthDate: string) {
 
 async function getSharedProfile(userId: string, token: string) {
   try {
-    const baseUrl = window.location.origin ;
+    const baseUrl = window.location.origin;
 
-    const response = await fetch(`${baseUrl}/api/profile/share/${userId}/${token}`, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      next: { revalidate: 60 } // Cache for 1 minute
-    });
-    
+    const response = await fetch(
+      `${baseUrl}/api/profile/share/${userId}/${token}`
+    );
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => null);
       console.error('Profile share error:', errorData || response.statusText);
       return null;
     }
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
@@ -138,10 +92,10 @@ async function getSharedProfile(userId: string, token: string) {
   }
 }
 
-export default function SharedProfilePage({ 
-  params: { userId, token } 
-}: { 
-  params: { userId: string; token: string } 
+export default function SharedProfilePage({
+  params: { userId, token }
+}: {
+  params: { userId: string; token: string };
 }) {
   const [data, setData] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -207,9 +161,12 @@ export default function SharedProfilePage({
         <div className="container max-w-2xl py-10 flex-grow">
           <Card>
             <CardContent className="pt-6 text-center">
-              <h2 className="text-lg font-semibold mb-2">Profile Link Expired</h2>
+              <h2 className="text-lg font-semibold mb-2">
+                Profile Link Expired
+              </h2>
               <p className="text-muted-foreground mb-4">
-                This profile share link has expired. The owner needs to renew it to make it accessible again.
+                This profile share link has expired. The owner needs to renew it
+                to make it accessible again.
               </p>
               <TryAgainButton />
             </CardContent>
@@ -231,7 +188,7 @@ export default function SharedProfilePage({
             <h3 className="font-semibold text-xl bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">
               Find Your Perfect Match
             </h3>
-            <button 
+            <button
               onClick={() => setShowToast(false)}
               className="text-gray-500 hover:text-gray-700 transition-colors"
             >
@@ -304,17 +261,24 @@ export default function SharedProfilePage({
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                       <div>
                         <h1 className="text-3xl font-bold mb-2">{user.name}</h1>
-                        <Badge variant="secondary" className="text-base px-4 py-1">
-                          {user.gender}, {user.birthDate ? calculateAge(user.birthDate) : 'N/A'} yrs
+                        <Badge
+                          variant="secondary"
+                          className="text-base px-4 py-1"
+                        >
+                          {user.gender},{' '}
+                          {user.birthDate
+                            ? calculateAge(user.birthDate)
+                            : 'N/A'}{' '}
+                          yrs
                         </Badge>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-base">
-                      <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 ">
+                      {/* <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 ">
                         <Eye className="h-5 w-5 text-primary" />
                         <span>Viewed {shareInfo.viewCount} times</span>
-                      </div>
+                      </div> */}
                       {/* <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 ">
                         <Clock className="h-5 w-5 text-primary" />
                         <span>Expires {format(new Date(shareInfo.expiresAt), "PPP")}</span>
@@ -349,65 +313,87 @@ export default function SharedProfilePage({
             {/* Basic Details */}
             <Card className="shadow-md">
               <CardContent className="p-6">
-                <h2 className="text-xl font-semibold mb-6 pb-2 border-b">Basic Details</h2>
+                <h2 className="text-xl font-semibold mb-6 pb-2 border-b">
+                  Basic Details
+                </h2>
                 <div className="space-y-4">
                   {user.mobile && (
                     <div className="flex items-center justify-between py-2">
-                      <span className="text-muted-foreground font-medium">Mobile</span>
+                      <span className="text-muted-foreground font-medium">
+                        Mobile
+                      </span>
                       <span className="font-medium">{user.mobile}</span>
                     </div>
                   )}
                   {user.email && (
                     <div className="flex items-center justify-between py-2">
-                      <span className="text-muted-foreground font-medium">Email</span>
+                      <span className="text-muted-foreground font-medium">
+                        Email
+                      </span>
                       <span className="font-medium">{user.email}</span>
                     </div>
                   )}
                   {user.height && (
                     <div className="flex items-center justify-between py-2">
-                      <span className="text-muted-foreground font-medium">Height</span>
+                      <span className="text-muted-foreground font-medium">
+                        Height
+                      </span>
                       <span className="font-medium">{user.height} f</span>
                     </div>
                   )}
                   {user.weight && (
                     <div className="flex items-center justify-between py-2">
-                      <span className="text-muted-foreground font-medium">Weight</span>
+                      <span className="text-muted-foreground font-medium">
+                        Weight
+                      </span>
                       <span className="font-medium">{user.weight} kg</span>
                     </div>
                   )}
                   {user.complexion && (
                     <div className="flex items-center justify-between py-2">
-                      <span className="text-muted-foreground font-medium">Complexion</span>
+                      <span className="text-muted-foreground font-medium">
+                        Complexion
+                      </span>
                       <span className="font-medium">{user.complexion}</span>
                     </div>
                   )}
                   {user.maritalStatus && (
                     <div className="flex items-center justify-between py-2">
-                      <span className="text-muted-foreground font-medium">Marital Status</span>
+                      <span className="text-muted-foreground font-medium">
+                        Marital Status
+                      </span>
                       <span className="font-medium">{user.maritalStatus}</span>
                     </div>
                   )}
                   {user.religion && (
                     <div className="flex items-center justify-between py-2">
-                      <span className="text-muted-foreground font-medium">Religion</span>
+                      <span className="text-muted-foreground font-medium">
+                        Religion
+                      </span>
                       <span className="font-medium">{user.religion}</span>
                     </div>
                   )}
                   {user.caste && (
                     <div className="flex items-center justify-between py-2">
-                      <span className="text-muted-foreground font-medium">Caste</span>
+                      <span className="text-muted-foreground font-medium">
+                        Caste
+                      </span>
                       <span className="font-medium">{user.caste}</span>
                     </div>
                   )}
                   {user.subcaste && (
                     <div className="flex items-center justify-between py-2">
-                      <span className="text-muted-foreground font-medium">Subcaste</span>
+                      <span className="text-muted-foreground font-medium">
+                        Subcaste
+                      </span>
                       <span className="font-medium">{user.subcaste}</span>
                     </div>
                   )}
                   {user.motherTongue && (
                     <div className="flex items-center justify-between py-2">
-                      <span className="text-muted-foreground font-medium">Mother Tongue</span>
+                      <span className="text-muted-foreground font-medium">
+                        Mother Tongue
+                      </span>
                       <span className="font-medium">{user.motherTongue}</span>
                     </div>
                   )}
@@ -418,47 +404,65 @@ export default function SharedProfilePage({
             {/* Education & Career */}
             <Card className="shadow-md">
               <CardContent className="p-6">
-                <h2 className="text-xl font-semibold mb-6 pb-2 border-b">Education & Career</h2>
+                <h2 className="text-xl font-semibold mb-6 pb-2 border-b">
+                  Education & Career
+                </h2>
                 <div className="space-y-4">
                   {user.education && (
                     <div className="flex items-center justify-between py-2">
-                      <span className="text-muted-foreground font-medium">Education</span>
+                      <span className="text-muted-foreground font-medium">
+                        Education
+                      </span>
                       <span className="font-medium">{user.education}</span>
                     </div>
                   )}
                   {user.educationDetails && (
                     <div className="flex items-center justify-between py-2">
-                      <span className="text-muted-foreground font-medium">Education Details</span>
-                      <span className="font-medium">{user.educationDetails}</span>
+                      <span className="text-muted-foreground font-medium">
+                        Education Details
+                      </span>
+                      <span className="font-medium">
+                        {user.educationDetails}
+                      </span>
                     </div>
                   )}
                   {user.occupation && (
                     <div className="flex items-center justify-between py-2">
-                      <span className="text-muted-foreground font-medium">Occupation</span>
+                      <span className="text-muted-foreground font-medium">
+                        Occupation
+                      </span>
                       <span className="font-medium">{user.occupation}</span>
                     </div>
                   )}
                   {user.employedIn && (
                     <div className="flex items-center justify-between py-2">
-                      <span className="text-muted-foreground font-medium">Employed In</span>
+                      <span className="text-muted-foreground font-medium">
+                        Employed In
+                      </span>
                       <span className="font-medium">{user.employedIn}</span>
                     </div>
                   )}
                   {user.companyName && (
                     <div className="flex items-center justify-between py-2">
-                      <span className="text-muted-foreground font-medium">Company</span>
+                      <span className="text-muted-foreground font-medium">
+                        Company
+                      </span>
                       <span className="font-medium">{user.companyName}</span>
                     </div>
                   )}
                   {user.jobTitle && (
                     <div className="flex items-center justify-between py-2">
-                      <span className="text-muted-foreground font-medium">Job Title</span>
+                      <span className="text-muted-foreground font-medium">
+                        Job Title
+                      </span>
                       <span className="font-medium">{user.jobTitle}</span>
                     </div>
                   )}
                   {user.income && (
                     <div className="flex items-center justify-between py-2">
-                      <span className="text-muted-foreground font-medium">Income</span>
+                      <span className="text-muted-foreground font-medium">
+                        Income
+                      </span>
                       <span className="font-medium">{user.income}</span>
                     </div>
                   )}
@@ -469,41 +473,59 @@ export default function SharedProfilePage({
             {/* Family Background */}
             <Card className="shadow-md">
               <CardContent className="p-6">
-                <h2 className="text-xl font-semibold mb-6 pb-2 border-b">Family Background</h2>
+                <h2 className="text-xl font-semibold mb-6 pb-2 border-b">
+                  Family Background
+                </h2>
                 <div className="space-y-4">
                   {user.familyType && (
                     <div className="flex items-center justify-between py-2">
-                      <span className="text-muted-foreground font-medium">Family Type</span>
+                      <span className="text-muted-foreground font-medium">
+                        Family Type
+                      </span>
                       <span className="font-medium">{user.familyType}</span>
                     </div>
                   )}
                   {user.familyStatus && (
                     <div className="flex items-center justify-between py-2">
-                      <span className="text-muted-foreground font-medium">Family Status</span>
+                      <span className="text-muted-foreground font-medium">
+                        Family Status
+                      </span>
                       <span className="font-medium">{user.familyStatus}</span>
                     </div>
                   )}
                   {user.fatherOccupation && (
                     <div className="flex items-center justify-between py-2">
-                      <span className="text-muted-foreground font-medium">Father's Occupation</span>
-                      <span className="font-medium">{user.fatherOccupation}</span>
+                      <span className="text-muted-foreground font-medium">
+                        Father's Occupation
+                      </span>
+                      <span className="font-medium">
+                        {user.fatherOccupation}
+                      </span>
                     </div>
                   )}
                   {user.motherOccupation && (
                     <div className="flex items-center justify-between py-2">
-                      <span className="text-muted-foreground font-medium">Mother's Occupation</span>
-                      <span className="font-medium">{user.motherOccupation}</span>
+                      <span className="text-muted-foreground font-medium">
+                        Mother's Occupation
+                      </span>
+                      <span className="font-medium">
+                        {user.motherOccupation}
+                      </span>
                     </div>
                   )}
                   {user.siblings && (
                     <div className="flex items-center justify-between py-2">
-                      <span className="text-muted-foreground font-medium">Siblings</span>
+                      <span className="text-muted-foreground font-medium">
+                        Siblings
+                      </span>
                       <span className="font-medium">{user.siblings}</span>
                     </div>
                   )}
                   {user.familyLocation && (
                     <div className="flex items-center justify-between py-2">
-                      <span className="text-muted-foreground font-medium">Family Location</span>
+                      <span className="text-muted-foreground font-medium">
+                        Family Location
+                      </span>
                       <span className="font-medium">{user.familyLocation}</span>
                     </div>
                   )}
@@ -514,60 +536,86 @@ export default function SharedProfilePage({
             {/* Partner Preferences */}
             <Card className="shadow-md">
               <CardContent className="p-6">
-                <h2 className="text-xl font-semibold mb-6 pb-2 border-b">Partner Preferences</h2>
+                <h2 className="text-xl font-semibold mb-6 pb-2 border-b">
+                  Partner Preferences
+                </h2>
                 <div className="space-y-4">
                   {(user.agePreferenceMin || user.agePreferenceMax) && (
                     <div className="flex items-center justify-between py-2">
-                      <span className="text-muted-foreground font-medium">Age</span>
+                      <span className="text-muted-foreground font-medium">
+                        Age
+                      </span>
                       <span className="font-medium">
                         {user.agePreferenceMin && user.agePreferenceMax
                           ? `${user.agePreferenceMin} to ${user.agePreferenceMax} years`
                           : user.agePreferenceMin
-                          ? `From ${user.agePreferenceMin} years`
-                          : `Up to ${user.agePreferenceMax} years`}
+                            ? `From ${user.agePreferenceMin} years`
+                            : `Up to ${user.agePreferenceMax} years`}
                       </span>
                     </div>
                   )}
                   {(user.heightPreferenceMin || user.heightPreferenceMax) && (
                     <div className="flex items-center justify-between py-2">
-                      <span className="text-muted-foreground font-medium">Height</span>
+                      <span className="text-muted-foreground font-medium">
+                        Height
+                      </span>
                       <span className="font-medium">
                         {user.heightPreferenceMin && user.heightPreferenceMax
                           ? `${user.heightPreferenceMin} to ${user.heightPreferenceMax} f`
                           : user.heightPreferenceMin
-                          ? `From ${user.heightPreferenceMin} f`
-                          : `Up to ${user.heightPreferenceMax} f`}
+                            ? `From ${user.heightPreferenceMin} f`
+                            : `Up to ${user.heightPreferenceMax} f`}
                       </span>
                     </div>
                   )}
                   {user.maritalStatusPreference && (
                     <div className="flex items-center justify-between py-2">
-                      <span className="text-muted-foreground font-medium">Marital Status</span>
-                      <span className="font-medium">{user.maritalStatusPreference}</span>
+                      <span className="text-muted-foreground font-medium">
+                        Marital Status
+                      </span>
+                      <span className="font-medium">
+                        {user.maritalStatusPreference}
+                      </span>
                     </div>
                   )}
                   {user.educationPreference && (
                     <div className="flex items-center justify-between py-2">
-                      <span className="text-muted-foreground font-medium">Education</span>
-                      <span className="font-medium">{user.educationPreference}</span>
+                      <span className="text-muted-foreground font-medium">
+                        Education
+                      </span>
+                      <span className="font-medium">
+                        {user.educationPreference}
+                      </span>
                     </div>
                   )}
                   {user.occupationPreference && (
                     <div className="flex items-center justify-between py-2">
-                      <span className="text-muted-foreground font-medium">Occupation</span>
-                      <span className="font-medium">{user.occupationPreference}</span>
+                      <span className="text-muted-foreground font-medium">
+                        Occupation
+                      </span>
+                      <span className="font-medium">
+                        {user.occupationPreference}
+                      </span>
                     </div>
                   )}
                   {user.locationPreference && (
                     <div className="flex items-center justify-between py-2">
-                      <span className="text-muted-foreground font-medium">Location</span>
-                      <span className="font-medium">{user.locationPreference}</span>
+                      <span className="text-muted-foreground font-medium">
+                        Location
+                      </span>
+                      <span className="font-medium">
+                        {user.locationPreference}
+                      </span>
                     </div>
                   )}
                   {user.castePreference && (
                     <div className="flex items-center justify-between py-2">
-                      <span className="text-muted-foreground font-medium">Caste</span>
-                      <span className="font-medium">{user.castePreference}</span>
+                      <span className="text-muted-foreground font-medium">
+                        Caste
+                      </span>
+                      <span className="font-medium">
+                        {user.castePreference}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -578,7 +626,9 @@ export default function SharedProfilePage({
             {user.bio && (
               <Card className="shadow-md">
                 <CardContent className="p-6">
-                  <h2 className="text-xl font-semibold mb-6 pb-2 border-b">About</h2>
+                  <h2 className="text-xl font-semibold mb-6 pb-2 border-b">
+                    About
+                  </h2>
                   <p className="text-base leading-relaxed">{user.bio}</p>
                 </CardContent>
               </Card>
@@ -588,8 +638,12 @@ export default function SharedProfilePage({
             {user.aboutFamily && (
               <Card className="shadow-md">
                 <CardContent className="p-6">
-                  <h2 className="text-xl font-semibold mb-6 pb-2 border-b">About Family</h2>
-                  <p className="text-base leading-relaxed">{user.aboutFamily}</p>
+                  <h2 className="text-xl font-semibold mb-6 pb-2 border-b">
+                    About Family
+                  </h2>
+                  <p className="text-base leading-relaxed">
+                    {user.aboutFamily}
+                  </p>
                 </CardContent>
               </Card>
             )}
@@ -599,26 +653,22 @@ export default function SharedProfilePage({
           <div className="mt-12 text-center">
             <Card className="bg-gradient-to-r from-pink-500 to-rose-500 text-white">
               <CardContent className="p-8 space-y-4">
-                <h2 className="text-2xl md:text-3xl font-bold">Ready to Find Your Perfect Match?</h2>
+                <h2 className="text-2xl md:text-3xl font-bold">
+                  Ready to Find Your Perfect Match?
+                </h2>
                 <p className="text-lg text-white/90">
-                  Create your profile today and start your journey to finding love
+                  Create your profile today and start your journey to finding
+                  love
                 </p>
-                <Button 
-                  asChild
-                  size="lg" 
-                  variant="secondary" 
-                  className="mt-4"
-                >
-                  <Link href="/auth">
-                    Create Your Profile
-                  </Link>
+                <Button asChild size="lg" variant="secondary" className="mt-4">
+                  <Link href="/auth">Create Your Profile</Link>
                 </Button>
               </CardContent>
             </Card>
           </div>
         </div>
       </main>
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
-} 
+}
