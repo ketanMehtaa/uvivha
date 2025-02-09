@@ -14,9 +14,9 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: 'Hamy - Free Uttrakhand Matrimony Service | Find Your Perfect Match',
+  title: 'Hamy - Free Uttrakhand Matrimony and Dating | Find Your Perfect Match',
   description:
-    'Join Hamy - The most trusted FREE matrimonial service for Uttrakhand. Create your profile for free and connect with verified matches who share your values and traditions. Get 3 months free access today!',
+    'Join Hamy - The most trusted FREE matrimonial and Dating for Uttrakhand. Create your profile for free and connect with verified matches who share your values and traditions. Get 3 months free access today!',
   keywords: [
     'free matrimony',
     'uttrakhand matrimony',
@@ -68,7 +68,25 @@ export const metadata: Metadata = {
     'bio data for marriage',
     'bio data maker',
     'bio data Free',
-    'Free bio data for marriage in uttrakhand'
+    'Free bio data for marriage in uttrakhand',
+    'dating site',
+    'dating app',
+    'dating service',
+    'dating uttrakhand',
+    'dating in uttrakhand',
+    'dating in dehradun',
+    'dating in haridwar',
+    'dating in nainital',
+    'dating in mussoorie',
+    'dating in rishikesh',
+    'dating in kotdwar',
+    'dating in pithoragarh',
+    'dating in almora',
+    'dating in mussoorie',
+    'dating in garhwal',
+    'dating in kumaon',
+    'dating in uttrakhand',
+
   ],
   authors: [{ name: 'Hamy' }],
   creator: 'Hamy',
@@ -83,9 +101,9 @@ export const metadata: Metadata = {
     canonical: '/'
   },
   openGraph: {
-    title: 'Hamy - Free Uttrakhand Matrimony Service | Find Your Perfect Match',
+    title: 'Hamy - Free Uttrakhand Matrimony  and Dating | Find Your Perfect Match',
     description:
-      'Join Hamy - The most trusted FREE matrimonial service for Uttrakhand. Create your profile for free and connect with verified matches. Get 3 months free access today!',
+      'Join Hamy - The most trusted FREE matrimonial and Dating for Uttrakhand. Create your profile for free and connect with verified matches who share your values and traditions. Get 3 months free access today!',
     url: 'https://hamy.com',
     siteName: 'Hamy',
     images: [
@@ -93,7 +111,7 @@ export const metadata: Metadata = {
         url: 'https://hamy.com/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'Hamy - Uttrakhand Matrimony Service'
+        alt: 'Hamy - Uttrakhand Matrimony and Dating'
       }
     ],
     locale: 'en_US',
@@ -101,8 +119,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Hamy - Free Uttrakhand Matrimony Service',
-    description: 'Find your perfect match with our trusted matrimony service',
+    title: 'Hamy - Free Uttrakhand Matrimony and Dating',
+    description: 'Find your perfect match with our trusted matrimony and dating service',
     images: ['https://hamy.com/twitter-image.jpg'],
     creator: '@hamy'
   },
