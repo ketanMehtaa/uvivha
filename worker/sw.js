@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hamy-cache-v1';
+const CACHE_NAME = 'hamy-cache-v2';
 
 // Add auth-related paths that should never be cached
 const NO_CACHE_PATHS = [
@@ -8,7 +8,8 @@ const NO_CACHE_PATHS = [
   '/api/login',
   '/api/logout',
   '/api/profile/share',
-  '/shared-profile'
+  '/shared-profile',
+  '/_next/data', // Prevent caching of Next.js data requests
 ];
 
 const urlsToCache = [
@@ -21,7 +22,8 @@ const urlsToCache = [
   '/apple-touch-icon.png',
   '/favicon-16x16.png',
   '/favicon-32x32.png',
-  '/offline.html'
+  '/offline.html',
+  '/_next/static/',
 ];
 
 self.addEventListener('install', (event) => {
