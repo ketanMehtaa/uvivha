@@ -85,16 +85,34 @@ const config = withPWA({
   skipWaiting: true,
   sw: '/sw.js',
   disable: process.env.NODE_ENV === 'development',
+  buildExcludes: [/middleware-manifest\.json$/],
   runtimeCaching: [
     {
-      // Never cache auth pages and API routes - this should be first!
-      urlPattern: /\/(login|auth|api|profile\/edit|my-profile|messages|dashboard)/i,
-      handler: 'NetworkOnly'
+      // Strict no-cache for auth-related pages
+      urlPattern: /\/(login|auth|api\/auth|profile\/edit|my-profile|messages|dashboard)$/i,
+      handler: 'NetworkOnly',
+      options: {
+        cacheName: 'auth-pages',
+        plugins: [
+          {
+            // Force cache busting for auth pages
+            cacheWillUpdate: async () => null
+          }
+        ]
+      }
     },
     {
-      // Next.js data requests should not be cached
-      urlPattern: /\/_next\/data\/.+\/.+\.json$/i,
-      handler: 'NetworkOnly'
+      // API routes should never be cached
+      urlPattern: /\/api\/.*/i,
+      handler: 'NetworkOnly',
+      options: {
+        cacheName: 'api-routes',
+        plugins: [
+          {
+            cacheWillUpdate: async () => null
+          }
+        ]
+      }
     },
     // Now the cacheable assets follow
     {

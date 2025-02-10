@@ -16,8 +16,13 @@ export default function LoginPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    // Clear all caches and storage
+    // Clear all caches and storage on mount
     clearCache();
+    
+    // Also clear on unmount
+    return () => {
+      clearCache();
+    };
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
