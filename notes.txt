@@ -56,3 +56,10 @@ response.cookies.set('auth-token', token, {
   todo in login screen make 10 max digit for login ++ eye button in password
 
   todo remove the /notifications route and handler not using now 
+
+  todo mesage is shown 2 times same when sending 
+
+  // in supabase need to set heavy condition like a person can not send to himself
+
+  // in pwa due to caching it is sending message to same person 
+  

@@ -1,0 +1,30 @@
+-- 1. Policy to prevent self-messaging and verify sender
+create policy "can_send_messages_to_others"
+on messages 
+for insert
+with check (
+    -- Sender must match the user_id in headers
+    from_id = current_setting('request.headers')::json->>'user_id'
+    -- Prevent sending to self
+    and from_id != to_id
+);
+
+-- 2. Policy to verify message sending to others
+create policy "can_send_to_valid_users"
+on messages
+for insert
+with check (
+    -- Must have a valid to_id
+    to_id is not null
+    -- Sender must be the user making the request
+    and from_id = current_setting('request.headers')::json->>'user_id'
+);
+
+-- 3. Policy to read conversations
+create policy "can_read_own_conversations"
+on messages
+for select
+using (
+    -- Can read if you're either the sender or recipient
+    current_setting('request.headers')::json->>'user_id' in (from_id, to_id)
+);  

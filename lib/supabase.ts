@@ -3,20 +3,48 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-// Initialize the Supabase client with additional options
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: false
-  },
-  global: {
-    headers: {
-      'apikey': supabaseAnonKey,
-      'Authorization': `Bearer ${supabaseAnonKey}`,
-      'Content-Type': 'application/json',
-      'Prefer': 'return=representation'
+// Function to get current user ID from localStorage
+const getCurrentUserId = () => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      const user = JSON.parse(savedUser);
+      return user.id;
     }
+  } catch (error) {
+    console.error('Error getting user ID from localStorage:', error);
   }
-});
+  return null;
+};
+
+// Initialize the Supabase client with additional options
+export const createSupabaseClient = () => {
+  const userId = getCurrentUserId();
+  return createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      persistSession: false
+    },
+    global: {
+      headers: {
+        'apikey': supabaseAnonKey,
+        'Authorization': `Bearer ${supabaseAnonKey}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation',
+        'user_id': userId || ''
+      }
+    },
+    realtime: {
+      params: {
+        headers: {
+          'user_id': userId || ''
+        }
+      }
+    }
+  });
+};
+
+export const supabase = createSupabaseClient();
 
 // Shared WebSocket connection manager
 type MessageHandler = (payload: any) => void;
@@ -24,11 +52,13 @@ let messageChannel: any = null;
 const messageHandlers = new Set<MessageHandler>();
 
 export function subscribeToAllMessages(onMessage: MessageHandler) {
+  // Recreate Supabase client to ensure fresh headers
+  const supabaseClient = createSupabaseClient();
   messageHandlers.add(onMessage);
 
   // Create shared channel if it doesn't exist
   if (!messageChannel) {
-    messageChannel = supabase
+    messageChannel = supabaseClient
       .channel('shared_messages')
       .on(
         'postgres_changes',
