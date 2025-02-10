@@ -21,6 +21,11 @@ const getCurrentUserId = () => {
 // Initialize the Supabase client with additional options
 export const createSupabaseClient = () => {
   const userId = getCurrentUserId();
+  
+  if (!userId) {
+    console.warn('No user ID found when creating Supabase client');
+  }
+
   return createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
       persistSession: false
@@ -44,6 +49,7 @@ export const createSupabaseClient = () => {
   });
 };
 
+// Create a new client instance
 export const supabase = createSupabaseClient();
 
 // Shared WebSocket connection manager
@@ -52,7 +58,7 @@ let messageChannel: any = null;
 const messageHandlers = new Set<MessageHandler>();
 
 export function subscribeToAllMessages(onMessage: MessageHandler) {
-  // Recreate Supabase client to ensure fresh headers
+  // Create a new client with current user ID
   const supabaseClient = createSupabaseClient();
   messageHandlers.add(onMessage);
 
@@ -68,18 +74,14 @@ export function subscribeToAllMessages(onMessage: MessageHandler) {
           table: 'messages'
         },
         (payload) => {
-          // Notify all handlers
           messageHandlers.forEach(handler => handler(payload));
         }
       )
       .subscribe();
   }
 
-  // Return cleanup function
   return () => {
     messageHandlers.delete(onMessage);
-    
-    // If no more handlers, close the channel
     if (messageHandlers.size === 0 && messageChannel) {
       messageChannel.unsubscribe();
       messageChannel = null;
@@ -89,11 +91,13 @@ export function subscribeToAllMessages(onMessage: MessageHandler) {
 
 // Helper function to get messages between two users
 export async function getMessages(currentUserId: string, otherUserId: string) {
-  const { data, error } = await supabase
+  // Ensure we have a valid user ID in headers
+  const client = createSupabaseClient();
+  
+  const { data, error } = await client
     .from('messages')
     .select('id, content, from_id, to_id, created_at')
-    .or(`from_id.eq.${currentUserId},to_id.eq.${currentUserId}`)
-    .or(`from_id.eq.${otherUserId},to_id.eq.${otherUserId}`)
+    .or(`and(from_id.eq.${currentUserId},to_id.eq.${otherUserId}),and(from_id.eq.${otherUserId},to_id.eq.${currentUserId})`)
     .order('created_at', { ascending: true });
 
   if (error) {
@@ -101,16 +105,94 @@ export async function getMessages(currentUserId: string, otherUserId: string) {
     throw error;
   }
 
-  // Filter messages to only show conversation between these two users
-  return (data || []).filter(
-    message => 
-      (message.from_id === currentUserId && message.to_id === otherUserId) ||
-      (message.from_id === otherUserId && message.to_id === currentUserId)
+  return data || [];
+}
+
+// Update subscribeToMessages to use shared connection
+export function subscribeToMessages(currentUserId: string, otherUserId: string, onMessage: (message: any) => void) {
+  return subscribeToAllMessages((payload) => {
+    const msg = payload.new;
+    // Only notify if message is part of this conversation
+    if ((msg.from_id === currentUserId && msg.to_id === otherUserId) ||
+        (msg.from_id === otherUserId && msg.to_id === currentUserId)) {
+      onMessage(payload);
+    }
+  });
+}
+
+// Helper function to get all conversations for a user
+export async function getConversations(userId: string) {
+  // Create a new client with current user ID
+  const client = createSupabaseClient();
+  
+  const { data: messages, error: messagesError } = await client
+    .from('messages')
+    .select('*')
+    .or(`from_id.eq.${userId},to_id.eq.${userId}`)
+    .order('created_at', { ascending: false });
+
+  if (messagesError) {
+    console.error('Error fetching messages:', messagesError);
+    throw messagesError;
+  }
+
+  if (!messages?.length) {
+    return [];
+  }
+
+  // Get unique user IDs from messages
+  const userIds = new Set(
+    messages.flatMap(msg => [msg.from_id, msg.to_id]).filter(id => id !== userId)
   );
+
+  // Fetch user details
+  const userPromises = Array.from(userIds).map(async (id) => {
+    const res = await fetch(`/api/profiles/${id}`);
+    const data = await res.json();
+    return data.profile;
+  });
+
+  const users = await Promise.all(userPromises);
+  const usersMap = users.reduce((acc, user) => {
+    if (user) {
+      acc[user.id] = user;
+    }
+    return acc;
+  }, {} as Record<string, any>);
+
+  // Group messages by conversation
+  const conversations = messages.reduce((acc: any, message: any) => {
+    const otherUserId = message.from_id === userId ? message.to_id : message.from_id;
+    const otherUser = usersMap[otherUserId];
+    
+    if (!acc[otherUserId] && otherUser) {
+      acc[otherUserId] = {
+        otherUser: {
+          id: otherUser.id,
+          name: otherUser.name,
+          image_url: otherUser.image_url
+        },
+        lastMessage: {
+          content: message.content,
+          created_at: message.created_at
+        },
+        unreadCount: message.from_id !== userId && !message.read ? 1 : 0
+      };
+    }
+    
+    return acc;
+  }, {});
+
+  return Object.values(conversations);
 }
 
 // Helper function to send a message
 export async function sendMessage(fromId: string, toId: string, content: string) {
+  // Prevent self-messaging as per policy
+  if (fromId === toId) {
+    throw new Error('Cannot send messages to yourself');
+  }
+
   const { data, error } = await supabase
     .from('messages')
     .insert({
@@ -147,84 +229,7 @@ export async function sendMessage(fromId: string, toId: string, content: string)
     });
   } catch (error) {
     console.error('Error sending push notification:', error);
-    // Don't throw here - message was sent successfully even if notification fails
   }
 
   return data;
-}
-
-// Update subscribeToMessages to use shared connection
-export function subscribeToMessages(currentUserId: string, otherUserId: string, onMessage: (message: any) => void) {
-  return subscribeToAllMessages((payload) => {
-    const msg = payload.new;
-    // Only notify if message is part of this conversation
-    if ((msg.from_id === currentUserId && msg.to_id === otherUserId) ||
-        (msg.from_id === otherUserId && msg.to_id === currentUserId)) {
-      onMessage(payload);
-    }
-  });
-}
-
-// Helper function to get all conversations for a user
-export async function getConversations(userId: string) {
-  // Get all messages involving the user
-  const { data: messages, error: messagesError } = await supabase
-    .from('messages')
-    .select('*')
-    .or(`from_id.eq.${userId},to_id.eq.${userId}`)
-    .order('created_at', { ascending: false });
-
-  if (messagesError) {
-    console.error('Error fetching messages:', messagesError);
-    throw messagesError;
-  }
-
-  if (!messages?.length) {
-    return [];
-  }
-
-  // Get unique user IDs from messages
-  const userIds = new Set(
-    messages.flatMap(msg => [msg.from_id, msg.to_id]).filter(id => id !== userId)
-  );
-
-  // Fetch user details from your API
-  const userPromises = Array.from(userIds).map(async (id) => {
-    const res = await fetch(`/api/profiles/${id}`);
-    const data = await res.json();
-    return data.profile;
-  });
-
-  const users = await Promise.all(userPromises);
-  const usersMap = users.reduce((acc, user) => {
-    if (user) {
-      acc[user.id] = user;
-    }
-    return acc;
-  }, {} as Record<string, any>);
-
-  // Group messages by conversation and get the latest message
-  const conversations = messages.reduce((acc: any, message: any) => {
-    const otherUserId = message.from_id === userId ? message.to_id : message.from_id;
-    const otherUser = usersMap[otherUserId];
-    
-    if (!acc[otherUserId] && otherUser) {
-      acc[otherUserId] = {
-        otherUser: {
-          id: otherUser.id,
-          name: otherUser.name,
-          image_url: otherUser.image_url
-        },
-        lastMessage: {
-          content: message.content,
-          created_at: message.created_at
-        },
-        unreadCount: message.from_id !== userId && !message.read ? 1 : 0
-      };
-    }
-    
-    return acc;
-  }, {});
-
-  return Object.values(conversations);
 } 
