@@ -61,7 +61,12 @@ self.addEventListener('fetch', (event) => {
       url.pathname.includes('/api/') ||
       event.request.method !== 'GET') {
     event.respondWith(
-      fetch(event.request).catch(error => {
+      fetch(event.request, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache'
+        }
+      }).catch(error => {
         console.error('Fetch error:', error);
         return caches.match('/offline.html');
       })
@@ -75,41 +80,41 @@ self.addEventListener('fetch', (event) => {
       fetch(event.request)
         .catch(async () => {
           const cache = await caches.open(CACHE_NAME);
-          const cachedResponse = await cache.match(event.request);
-          return cachedResponse || cache.match('/offline.html');
+          return cache.match('/offline.html');
         })
     );
     return;
   }
 
   // Cache-first strategy for static assets only
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        if (response) {
-          return response;
-        }
+  if (urlsToCache.some(path => url.pathname.includes(path))) {
+    event.respondWith(
+      caches.match(event.request)
+        .then((response) => {
+          if (response) {
+            return response;
+          }
 
-        return fetch(event.request.clone())
-          .then((response) => {
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
-            }
+          return fetch(event.request.clone())
+            .then((response) => {
+              if (!response || response.status !== 200 || response.type !== 'basic') {
+                return response;
+              }
 
-            // Only cache static assets
-            const isStaticAsset = urlsToCache.some(path => 
-              url.pathname.includes(path) || url.pathname === '/'
-            );
-
-            if (isStaticAsset) {
               caches.open(CACHE_NAME)
                 .then((cache) => cache.put(event.request, response.clone()));
-            }
 
-            return response;
-          })
-          .catch(() => caches.match('/offline.html'));
-      })
+              return response;
+            })
+            .catch(() => caches.match('/offline.html'));
+        })
+    );
+    return;
+  }
+
+  // For all other requests, use network-only strategy
+  event.respondWith(
+    fetch(event.request).catch(() => caches.match('/offline.html'))
   );
 });
 
