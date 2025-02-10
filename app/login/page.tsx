@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { handleApiError } from '@/lib/auth';
+import { clearCache } from '@/lib/utils';
 import Image from 'next/image';
 
 export default function LoginPage() {
@@ -16,13 +17,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     // Clear all caches and storage
-    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-      navigator.serviceWorker.controller.postMessage('CLEAR_ALL_CACHES');
-    }
-
-    // Clear local storage and session storage directly
-    localStorage.clear();
-    sessionStorage.clear();
+    clearCache();
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

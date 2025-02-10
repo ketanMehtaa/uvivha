@@ -1,26 +1,22 @@
+import { clearCache } from './utils';
+
 export async function handleLogout(router: any) {
   try {
-    // Clear client-side storage
-    localStorage.clear();
-    sessionStorage.clear();
-    
+    // Clear all caches and storage
+    clearCache();
 
-    // Make a request to clear server-side session
-    const response = await fetch('/api/auth/logout', { 
+    // Call logout API
+    await fetch('/api/auth/logout', {
       method: 'POST',
-      credentials: 'include' // Important for cookie handling
+      headers: { 'Cache-Control': 'no-cache' }
     });
 
-    if (!response.ok) {
-      throw new Error('Logout failed');
-    }
-
-    // Force a page reload to clear any in-memory state
-    window.location.href = '/login';
+    // Navigate to login page
+    router.replace('/login');
   } catch (error) {
     console.error('Logout error:', error);
-    // Still redirect even if server logout fails
-    window.location.href = '/login';
+    // Still redirect to login even if there's an error
+    router.replace('/login');
   }
 }
 

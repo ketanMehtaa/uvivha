@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hamy-cache-v5';
+const CACHE_NAME = 'hamy-cache-v6';
 
 // Add auth-related paths that should never be cached
 const NO_CACHE_PATHS = [
@@ -115,46 +115,104 @@ self.addEventListener('fetch', (event) => {
 
 // Function to clear all PWA caches and storage
 async function clearPWACache() {
+  const errors = [];
+
   try {
-    // Clear all caches
-    const cacheKeys = await caches.keys();
-    await Promise.all(cacheKeys.map(key => caches.delete(key)));
-
-    // Clear IndexedDB databases
-    if (self.indexedDB) {
-      const databases = await self.indexedDB.databases();
-      await Promise.all(databases.map(db => self.indexedDB.deleteDatabase(db.name)));
+    // 1. First unsubscribe from push notifications and clear server subscription
+    try {
+      const subscription = await self.registration.pushManager.getSubscription();
+      if (subscription) {
+        // Call the unsubscribe API first
+        const response = await fetch('/api/push/unsubscribe', {
+          method: 'POST',
+          headers: { 'Cache-Control': 'no-cache' }
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to unsubscribe from server');
+        }
+        
+        // Then unsubscribe from push manager
+        await subscription.unsubscribe();
+      }
+    } catch (error) {
+      console.error('Push unsubscription error:', error);
+      errors.push('Push notification cleanup failed');
     }
 
-    // Clear client storage
-    const clients = await self.clients.matchAll();
-    await Promise.all(
-      clients.map(client => 
-        client.postMessage({
-          type: 'CLEAR_STORAGE',
-          timestamp: Date.now()
+    // 2. Clear all caches
+    try {
+      const cacheKeys = await caches.keys();
+      await Promise.all(cacheKeys.map(key => caches.delete(key)));
+    } catch (error) {
+      console.error('Cache clearing error:', error);
+      errors.push('Cache clearing failed');
+    }
+
+    // 3. Clear IndexedDB databases
+    try {
+      if (self.indexedDB) {
+        const databases = await self.indexedDB.databases();
+        await Promise.all(databases.map(db => self.indexedDB.deleteDatabase(db.name)));
+      }
+    } catch (error) {
+      console.error('IndexedDB clearing error:', error);
+      errors.push('IndexedDB clearing failed');
+    }
+
+    // 4. Clear client storage
+    try {
+      const clients = await self.clients.matchAll();
+      await Promise.all(
+        clients.map(async (client) => {
+          client.postMessage({
+            type: 'CLEAR_STORAGE',
+            timestamp: Date.now()
+          });
         })
-      )
-    );
-
-    // Re-register service worker
-    if (self.registration) {
-      await self.registration.unregister();
-      // Force a reload to ensure clean state
-      clients.forEach(client => client.navigate(client.url));
+      );
+    } catch (error) {
+      console.error('Client storage clearing error:', error);
+      errors.push('Client storage clearing failed');
     }
 
-    return true;
+    // 5. Re-register service worker and reload clients
+    try {
+      if (self.registration) {
+        await self.registration.unregister();
+        const clients = await self.clients.matchAll();
+        clients.forEach(client => client.navigate(client.url));
+      }
+    } catch (error) {
+      console.error('Service worker re-registration error:', error);
+      errors.push('Service worker re-registration failed');
+    }
+
+    // Return result
+    return {
+      success: errors.length === 0,
+      errors: errors.length > 0 ? errors : undefined
+    };
   } catch (error) {
-    console.error('Error clearing PWA cache:', error);
-    return false;
+    console.error('Fatal error in clearPWACache:', error);
+    return {
+      success: false,
+      errors: ['Fatal error in cache clearing']
+    };
   }
 }
 
 // Listen for messages from clients
 self.addEventListener('message', async (event) => {
   if (event.data === 'CLEAR_ALL_CACHES') {
-    await clearPWACache();
+    const result = await clearPWACache();
+    // Notify client about the clearing result
+    event.source?.postMessage({
+      type: 'CLEAR_COMPLETE',
+      success: result.success,
+      errors: result.errors,
+      timestamp: Date.now()
+    });
   }
 });
 
