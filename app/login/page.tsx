@@ -15,14 +15,8 @@ export default function LoginPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        localStorage.clear();
-        sessionStorage.clear();
-      } catch (error) {
-        console.error('Error clearing storage:', error);
-      }
-    }
+    // Clear caches
+    navigator.serviceWorker?.controller?.postMessage('CLEAR_ALL_CACHES');
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

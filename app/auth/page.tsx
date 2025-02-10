@@ -8,9 +8,8 @@ export default function AuthPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Clear all storage when landing on auth page
-    localStorage.clear();
-    sessionStorage.clear();
+    // Clear caches
+    navigator.serviceWorker?.controller?.postMessage('CLEAR_ALL_CACHES');
 
     // Check if user is already authenticated
     const checkAuth = async () => {
@@ -32,7 +31,7 @@ export default function AuthPage() {
       script.id = 'otpless-sdk';
       script.type = 'text/javascript';
       script.setAttribute('data-appid', process.env.NEXT_PUBLIC_OTPLESS_APP_ID || '');
-      script.setAttribute('data-method', 'sms');  // Force SMS method
+      script.setAttribute('data-method', 'sms');
       script.setAttribute('data-platform', 'web');
       document.head.appendChild(script);
     };

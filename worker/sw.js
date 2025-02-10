@@ -1,20 +1,19 @@
-const CACHE_NAME = 'hamy-cache-v3';
+const CACHE_NAME = 'hamy-cache-v4';
 
 // Add auth-related paths that should never be cached
 const NO_CACHE_PATHS = [
   '/login',
   '/auth',
-  '/api/auth',
-  '/api/login',
-  '/api/logout',
-  '/api/profile/share',
-  '/shared-profile',
-  '/_next/data', // Prevent caching of Next.js data requests
+  '/api/',          // All API routes
+  '/profile/edit',  // Profile editing
+  '/my-profile',    // User profile
+  '/messages',      // Real-time messages
+  '/dashboard',     // Dynamic dashboard
+  '/_next/data',    // Next.js data requests
 ];
 
 const urlsToCache = [
   '/',
-  '/dashboard',
   '/manifest.json',
   '/favicon.ico',
   '/android-chrome-192x192.png',
@@ -27,36 +26,28 @@ const urlsToCache = [
 ];
 
 self.addEventListener('install', (event) => {
-  // Skip waiting to activate the new service worker immediately
   self.skipWaiting();
-  
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('Opened cache');
-        return cache.addAll(urlsToCache);
-      })
-      .catch(error => {
-        console.error('Cache installation failed:', error);
-      })
+      .then((cache) => cache.addAll(urlsToCache))
+      .catch(error => console.error('Cache installation failed:', error))
   );
 });
 
 self.addEventListener('activate', (event) => {
-  // Take control of all pages immediately
   event.waitUntil(
     Promise.all([
       self.clients.claim(),
-      caches.keys().then((cacheNames) => {
-        return Promise.all(
+      caches.keys().then((cacheNames) => 
+        Promise.all(
           cacheNames.map((cacheName) => {
             if (cacheName !== CACHE_NAME) {
               console.log('Deleting old cache:', cacheName);
               return caches.delete(cacheName);
             }
           })
-        );
-      })
+        )
+      )
     ])
   );
 });
@@ -64,38 +55,25 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   
-  // Never cache auth-related paths
+  // Skip caching for certain paths
   if (NO_CACHE_PATHS.some(path => url.pathname.startsWith(path))) {
     return event.respondWith(fetch(event.request));
   }
 
+  // Network-first strategy for navigation requests
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      (async () => {
-        try {
-          // For navigation requests, try network first
-          const networkResponse = await fetch(event.request);
-          return networkResponse;
-        } catch (error) {
-          console.log('PWA - Navigation fetch failed:', error);
-          
-          // If network fails, try cache
+      fetch(event.request)
+        .catch(async () => {
           const cache = await caches.open(CACHE_NAME);
           const cachedResponse = await cache.match(event.request);
-          
-          if (cachedResponse) {
-            return cachedResponse;
-          }
-          
-          // If cache fails, return offline page
-          return cache.match('/offline.html');
-        }
-      })()
+          return cachedResponse || cache.match('/offline.html');
+        })
     );
     return;
   }
 
-  // Handle non-navigation requests
+  // Cache-first strategy for static assets
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
@@ -103,33 +81,67 @@ self.addEventListener('fetch', (event) => {
           return response;
         }
 
-        const fetchRequest = event.request.clone();
-
-        return fetch(fetchRequest)
+        return fetch(event.request.clone())
           .then((response) => {
             if (!response || response.status !== 200 || response.type !== 'basic') {
               return response;
             }
 
-            // Don't cache if the path is in NO_CACHE_PATHS
             if (!NO_CACHE_PATHS.some(path => url.pathname.startsWith(path))) {
-              const responseToCache = response.clone();
               caches.open(CACHE_NAME)
-                .then((cache) => {
-                  cache.put(event.request, responseToCache);
-                });
+                .then((cache) => cache.put(event.request, response.clone()));
             }
 
             return response;
           })
-          .catch(() => {
-            return caches.match(event.request);
-          });
+          .catch(() => caches.match('/offline.html'));
       })
   );
 });
 
-self.addEventListener('push', function(event) {
+// Function to clear all PWA caches and storage
+async function clearPWACache() {
+  try {
+    // Clear all caches
+    const cacheKeys = await caches.keys();
+    await Promise.all(cacheKeys.map(key => caches.delete(key)));
+
+    // Clear IndexedDB databases
+    if (self.indexedDB) {
+      const databases = await self.indexedDB.databases();
+      await Promise.all(databases.map(db => self.indexedDB.deleteDatabase(db.name)));
+    }
+
+    // Clear client storage
+    const clients = await self.clients.matchAll();
+    await Promise.all(
+      clients.map(client => 
+        client.postMessage({
+          type: 'CLEAR_STORAGE',
+          timestamp: Date.now()
+        })
+      )
+    );
+
+    // Re-register service worker
+    await self.registration?.unregister();
+
+    return true;
+  } catch (error) {
+    console.error('Error clearing PWA cache:', error);
+    return false;
+  }
+}
+
+// Listen for messages from clients
+self.addEventListener('message', async (event) => {
+  if (event.data === 'CLEAR_ALL_CACHES') {
+    await clearPWACache();
+  }
+});
+
+// Push notification handling
+self.addEventListener('push', (event) => {
   try {
     const data = event.data.json();
     const options = {
@@ -137,16 +149,12 @@ self.addEventListener('push', function(event) {
       icon: '/android-chrome-192x192.png',
       badge: '/android-chrome-192x192.png',
       vibrate: [100, 50, 100],
-      data: data.data || {
+      data: {
         dateOfArrival: Date.now(),
-        primaryKey: 1
+        primaryKey: 1,
+        ...data.data
       },
-      actions: [
-        {
-          action: 'view',
-          title: 'View Message',
-        }
-      ]
+      actions: [{ action: 'view', title: 'View Message' }]
     };
 
     event.waitUntil(
@@ -154,53 +162,34 @@ self.addEventListener('push', function(event) {
     );
   } catch (error) {
     console.error('Error showing notification:', error);
-    // Fallback for plain text messages
-    const options = {
-      body: event.data.text(),
-      icon: '/android-chrome-192x192.png',
-      badge: '/android-chrome-192x192.png',
-      vibrate: [100, 50, 100],
-      data: {
-        dateOfArrival: Date.now(),
-        primaryKey: 1
-      }
-    };
-
     event.waitUntil(
-      self.registration.showNotification('New Message', options)
+      self.registration.showNotification('New Message', {
+        body: event.data.text(),
+        icon: '/android-chrome-192x192.png',
+        badge: '/android-chrome-192x192.png'
+      })
     );
   }
 });
 
-self.addEventListener('notificationclick', function(event) {
+self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
-  const notificationData = event.notification.data;
-  let urlToOpen;
-
-  if (notificationData?.type === 'message') {
-    // Open the specific chat
-    urlToOpen = new URL(`/messages/${notificationData.fromId}`, self.location.origin).href;
-  } else {
-    // Default fallback
-    urlToOpen = new URL('/dashboard', self.location.origin).href;
-  }
+  const urlToOpen = event.notification.data?.type === 'message'
+    ? `/messages/${event.notification.data.fromId}`
+    : '/dashboard';
 
   event.waitUntil(
-    clients.matchAll({
-      type: 'window',
-      includeUncontrolled: true
-    }).then(function(clientList) {
-      for (const client of clientList) {
-        if (client.url === urlToOpen && 'focus' in client) {
-          return client.focus();
-        }
-      }
-      if (clients.openWindow) {
-        return clients.openWindow(urlToOpen);
-      }
-    }).catch(function(error) {
-      console.error('Error handling notification click:', error);
-    })
+    clients.matchAll({ type: 'window', includeUncontrolled: true })
+      .then(clientList => {
+        const matchingClient = clientList.find(client => 
+          client.url === urlToOpen && 'focus' in client
+        );
+
+        return matchingClient
+          ? matchingClient.focus()
+          : clients.openWindow(urlToOpen);
+      })
+      .catch(error => console.error('Error handling notification click:', error))
   );
 }); 
