@@ -17,11 +17,14 @@ export default function LoginPage() {
 
   useEffect(() => {
     // Clear all caches and storage on mount
-    clearCache();
+    const cleanup = async () => {
+      await clearCache();
+    };
+    cleanup();
     
     // Also clear on unmount
     return () => {
-      clearCache();
+      cleanup();
     };
   }, []);
 
