@@ -8,13 +8,22 @@ export default function AuthPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Clear caches
-    navigator.serviceWorker?.controller?.postMessage('CLEAR_ALL_CACHES');
+    // Clear all caches and storage
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage('CLEAR_ALL_CACHES');
+    }
+
+    // Clear local storage and session storage directly
+    localStorage.clear();
+    sessionStorage.clear();
 
     // Check if user is already authenticated
     const checkAuth = async () => {
       try {
-        const res = await fetch('/api/auth/check');
+        const res = await fetch('/api/auth/check', { 
+          cache: 'no-store',  // Prevent caching of auth check
+          headers: { 'Cache-Control': 'no-cache' }
+        });
         const data = await res.json();
         
         if (data.authenticated) {

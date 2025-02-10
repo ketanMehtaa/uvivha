@@ -1,10 +1,10 @@
-const CACHE_NAME = 'hamy-cache-v4';
+const CACHE_NAME = 'hamy-cache-v5';
 
 // Add auth-related paths that should never be cached
 const NO_CACHE_PATHS = [
-  '/login',
-  '/auth',
-  '/api/',          // All API routes
+  '/login',         // Login page
+  '/auth',          // Auth page
+  '/api',           // All API routes
   '/profile/edit',  // Profile editing
   '/my-profile',    // User profile
   '/messages',      // Real-time messages
@@ -12,8 +12,8 @@ const NO_CACHE_PATHS = [
   '/_next/data',    // Next.js data requests
 ];
 
+// Static assets that can be cached
 const urlsToCache = [
-  '/',
   '/manifest.json',
   '/favicon.ico',
   '/android-chrome-192x192.png',
@@ -22,7 +22,7 @@ const urlsToCache = [
   '/favicon-16x16.png',
   '/favicon-32x32.png',
   '/offline.html',
-  '/_next/static/',
+  '/_next/static/'
 ];
 
 self.addEventListener('install', (event) => {
@@ -35,12 +35,13 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('activate', (event) => {
+  // Take control immediately and clear old caches
   event.waitUntil(
     Promise.all([
       self.clients.claim(),
-      caches.keys().then((cacheNames) => 
+      caches.keys().then(cacheNames => 
         Promise.all(
-          cacheNames.map((cacheName) => {
+          cacheNames.map(cacheName => {
             if (cacheName !== CACHE_NAME) {
               console.log('Deleting old cache:', cacheName);
               return caches.delete(cacheName);
@@ -55,9 +56,17 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   
-  // Skip caching for certain paths
-  if (NO_CACHE_PATHS.some(path => url.pathname.startsWith(path))) {
-    return event.respondWith(fetch(event.request));
+  // Never cache auth-related paths or API requests
+  if (NO_CACHE_PATHS.some(path => url.pathname.startsWith(path)) || 
+      url.pathname.includes('/api/') ||
+      event.request.method !== 'GET') {
+    event.respondWith(
+      fetch(event.request).catch(error => {
+        console.error('Fetch error:', error);
+        return caches.match('/offline.html');
+      })
+    );
+    return;
   }
 
   // Network-first strategy for navigation requests
@@ -73,7 +82,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Cache-first strategy for static assets
+  // Cache-first strategy for static assets only
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
@@ -87,7 +96,12 @@ self.addEventListener('fetch', (event) => {
               return response;
             }
 
-            if (!NO_CACHE_PATHS.some(path => url.pathname.startsWith(path))) {
+            // Only cache static assets
+            const isStaticAsset = urlsToCache.some(path => 
+              url.pathname.includes(path) || url.pathname === '/'
+            );
+
+            if (isStaticAsset) {
               caches.open(CACHE_NAME)
                 .then((cache) => cache.put(event.request, response.clone()));
             }
@@ -124,7 +138,11 @@ async function clearPWACache() {
     );
 
     // Re-register service worker
-    await self.registration?.unregister();
+    if (self.registration) {
+      await self.registration.unregister();
+      // Force a reload to ensure clean state
+      clients.forEach(client => client.navigate(client.url));
+    }
 
     return true;
   } catch (error) {

@@ -96,7 +96,7 @@ export default function Messages({ currentUserId, otherUserId, otherUserName }: 
 
     setLoading(true);
     // Optimistically add the message
-    setMessages(prev => [...prev, tempMessage]);
+    // setMessages(prev => [...prev, tempMessage]);
     setNewMessage('');
 
     try {

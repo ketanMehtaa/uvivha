@@ -15,8 +15,14 @@ export default function LoginPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    // Clear caches
-    navigator.serviceWorker?.controller?.postMessage('CLEAR_ALL_CACHES');
+    // Clear all caches and storage
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage('CLEAR_ALL_CACHES');
+    }
+
+    // Clear local storage and session storage directly
+    localStorage.clear();
+    sessionStorage.clear();
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -46,7 +52,11 @@ export default function LoginPage() {
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache'  // Prevent caching
+        },
+        cache: 'no-store',  // Prevent caching
         body: JSON.stringify(formData)
       });
 
