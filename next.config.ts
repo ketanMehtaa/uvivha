@@ -1,4 +1,20 @@
 import withPWA from 'next-pwa';
+import type { PWAConfig } from 'next-pwa';
+
+interface ExtendedPWAConfig extends PWAConfig {
+  runtimeCaching?: Array<{
+    urlPattern: RegExp | string;
+    handler: string;
+    options?: {
+      cacheName?: string;
+      expiration?: {
+        maxEntries?: number;
+        maxAgeSeconds?: number;
+      };
+      networkTimeoutSeconds?: number;
+    };
+  }>;
+}
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -67,7 +83,111 @@ const config = withPWA({
   dest: 'public',
   register: true,
   skipWaiting: true,
-  sw: '/sw.js'
-})(nextConfig);
+  sw: '/sw.js',
+  disable: process.env.NODE_ENV === 'development',
+  runtimeCaching: [
+    {
+      // Never cache auth pages and API routes - this should be first!
+      urlPattern: /\/(login|auth|api|profile\/edit|my-profile|messages|dashboard)/i,
+      handler: 'NetworkOnly'
+    },
+    {
+      // Next.js data requests should not be cached
+      urlPattern: /\/_next\/data\/.+\/.+\.json$/i,
+      handler: 'NetworkOnly'
+    },
+    // Now the cacheable assets follow
+    {
+      urlPattern: /^https:\/\/fonts\.(?:googleapis|gstatic)\.com\/.*/i,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'google-fonts',
+        expiration: {
+          maxEntries: 4,
+          maxAgeSeconds: 365 * 24 * 60 * 60 // 365 days
+        }
+      }
+    },
+    {
+      urlPattern: /\.(?:eot|otf|ttc|ttf|woff|woff2|font.css)$/i,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'static-font-assets',
+        expiration: {
+          maxEntries: 4,
+          maxAgeSeconds: 7 * 24 * 60 * 60 // 7 days
+        }
+      }
+    },
+    {
+      urlPattern: /\.(?:jpg|jpeg|gif|png|svg|ico|webp)$/i,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'static-image-assets',
+        expiration: {
+          maxEntries: 64,
+          maxAgeSeconds: 24 * 60 * 60 // 24 hours
+        }
+      }
+    },
+    {
+      urlPattern: /\/_next\/image\?url=.+$/i,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'next-image',
+        expiration: {
+          maxEntries: 64,
+          maxAgeSeconds: 24 * 60 * 60 // 24 hours
+        }
+      }
+    },
+    {
+      urlPattern: /\.(?:mp3|wav|ogg)$/i,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'static-audio-assets',
+        expiration: {
+          maxEntries: 32,
+          maxAgeSeconds: 24 * 60 * 60 // 24 hours
+        }
+      }
+    },
+    {
+      urlPattern: /\.(?:js)$/i,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'static-js-assets',
+        expiration: {
+          maxEntries: 32,
+          maxAgeSeconds: 24 * 60 * 60 // 24 hours
+        }
+      }
+    },
+    {
+      urlPattern: /\.(?:css|less)$/i,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'static-style-assets',
+        expiration: {
+          maxEntries: 32,
+          maxAgeSeconds: 24 * 60 * 60 // 24 hours
+        }
+      }
+    },
+    {
+      // Default handler for everything else should be last
+      urlPattern: /.*/i,
+      handler: 'NetworkFirst',
+      options: {
+        cacheName: 'others',
+        expiration: {
+          maxEntries: 32,
+          maxAgeSeconds: 24 * 60 * 60 // 24 hours
+        },
+        networkTimeoutSeconds: 10
+      }
+    }
+  ]
+} as ExtendedPWAConfig)(nextConfig);
 
 export default config;
