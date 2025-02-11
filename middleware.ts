@@ -8,7 +8,11 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 const publicRoutes = [
   '/',
   '/auth',
+  '/auth/',  // Add trailing slash variant
+  '/api/auth',  // Base API auth route
+  '/api/auth/',  // API auth with trailing slash
   '/login',
+  '/login/',  // Add trailing slash variant
   '/api/auth/check',
   '/api/auth/login',
   '/api/auth/register',
@@ -18,7 +22,10 @@ const publicRoutes = [
   '/favicon.ico',
   '/manifest.json',
   '/android-chrome-192x192.png',
-  '/shared-profile'
+  '/shared-profile',
+  '/sw.js',  // Add service worker
+  '/workbox-*.js',  // Add workbox scripts
+  '/offline'  // Add offline page
 ];
 
 // Static asset prefixes that should always be public
@@ -36,6 +43,11 @@ export async function middleware(request: NextRequest) {
   // First check if it's a static asset
   if (staticPrefixes.some(prefix => pathname.startsWith(prefix))) {
     // console.log('Static asset accessed:', pathname);
+    return NextResponse.next();
+  }
+
+  // Check for API auth routes
+  if (pathname.startsWith('/api/auth/')) {
     return NextResponse.next();
   }
 
