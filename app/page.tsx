@@ -265,7 +265,7 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing Section */}
-      <section className="py-16 md:py-20 bg-white">
+      {/* <section className="py-16 md:py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12 md:mb-16">
             <div className="inline-block bg-red-100 text-red-600 px-6 py-3 rounded-full font-semibold mb-6 animate-pulse text-sm md:text-base">
@@ -276,7 +276,7 @@ export default function LandingPage() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto">
-            {/* Free Plan */}
+          
             <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 hover:border-red-100 transition-all transform hover:scale-105">
               <div className="p-8">
                 <h3 className="text-xl font-semibold text-gray-900 mb-4">Basic</h3>
@@ -322,7 +322,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Premium Plan */}
+            
             <div className="bg-white rounded-2xl shadow-xl overflow-hidden border-2 border-red-500 relative transform hover:scale-105 transition-all">
               <div className="absolute top-0 right-0 bg-red-500 text-white px-3 py-1 text-sm font-semibold rounded-bl">
                 Most Popular
@@ -379,7 +379,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* VIP Plan */}
+   
             <div className="bg-white rounded-2xl shadow-xl overflow-hidden relative transform hover:scale-105 transition-all">
               <div className="absolute top-0 left-0 bg-green-500 text-white px-3 py-1 text-sm font-semibold rounded-br">
                 60% OFF
@@ -434,7 +434,7 @@ export default function LandingPage() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Testimonials Section */}
       <section className="py-16 md:py-20 bg-gray-50">
