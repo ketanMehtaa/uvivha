@@ -17,6 +17,9 @@ export default function LoginPage() {
 
   useEffect(() => {
     // Clear all caches and storage on mount
+    console.log('Clearing cache');
+    localStorage.clear();
+    sessionStorage.clear();
     const cleanup = async () => {
       await clearCache();
     };

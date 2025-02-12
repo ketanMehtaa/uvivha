@@ -10,6 +10,9 @@ export default function AuthPage() {
 
   useEffect(() => {
     // Clear all caches and storage
+    console.log('Clearing cache');
+    localStorage.clear();
+    sessionStorage.clear();
     clearCache();
 
     // Check if user is already authenticated
