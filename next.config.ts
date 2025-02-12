@@ -76,6 +76,9 @@ const nextConfig = {
   },
   eslint: {
     ignoreDuringBuilds: true,
+  },
+  compiler: {
+    removeConsole: false // This will preserve console.log in production
   }
 };
 
