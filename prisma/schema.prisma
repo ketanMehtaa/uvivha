@@ -76,7 +76,11 @@ model User {
   horoscope               Horoscope?
   livingWith              LivingWith?
 
-  pushSubscriptions     PushSubscription[]
+  pushSubscriptions       PushSubscription[]
+  deactivatedByTeam       Boolean?      @default(false) // if true, the user is deactivated by the team
+  deactivatedAt           DateTime?
+  deactivatedReason       String?
+
 }
 
 model ProfileShare {

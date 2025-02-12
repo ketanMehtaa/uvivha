@@ -29,6 +29,14 @@ export async function POST(request: Request) {
       );
     }
 
+    // Check if account is deactivated by team
+    if (user.deactivatedByTeam) {
+      return NextResponse.json(
+        { error: 'Your account has been deactivated. Please contact support for assistance. mail here : hamyuttarakhand@gmail.com' },
+        { status: 403 }
+      );
+    }
+
     // Generate JWT token
     const token = jwt.sign(
       { userId: user.id },

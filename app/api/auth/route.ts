@@ -21,6 +21,13 @@ export async function POST(request: Request) {
       where: { mobile }
     });
 
+    if (user?.deactivatedByTeam) {
+      return NextResponse.json(
+        { error: 'Your account has been deactivated. Please contact support for assistance. mail here : hamyuttarakhand@gmail.com' },
+        { status: 403 }
+      );
+    }
+
     if (user) {
       // If user exists, only update otplessUserId
       // user = await prisma.user.update({

@@ -35,6 +35,7 @@ export async function POST(request: Request) {
       id: { not: userId },
       isProfileComplete: true,
       gender: oppositeGender,
+      deactivatedByTeam: false,
     };
 
     // Handle mode/purpose filtering
