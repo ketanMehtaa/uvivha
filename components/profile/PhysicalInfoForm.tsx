@@ -36,8 +36,8 @@ export default function PhysicalInfoForm({
   const [formData, setFormData] = useState({
     height: user?.height?.toString() || '',
     weight: user?.weight?.toString() || '',
-    complexion: user?.complexion || 'none',
-    physicalStatus: user?.physicalStatus || 'none',
+    complexion: user?.complexion || 'FAIR',
+    physicalStatus: user?.physicalStatus || 'Normal',
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -146,7 +146,7 @@ export default function PhysicalInfoForm({
           min="3"
           max="8"
           className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-red-500 focus:outline-none focus:ring-red-500"
-          placeholder="Enter height in ft"
+          placeholder="Enter height in ft like 5.5,5.6 and do not enter 5.10 use 5.11"
         />
         {errors.height && <p className="mt-1 text-sm text-red-600">{errors.height}</p>}
       </div>

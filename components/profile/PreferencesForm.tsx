@@ -206,7 +206,7 @@ export default function PreferencesForm({
             min="3"
             max="8"
             className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-red-500 focus:outline-none focus:ring-red-500"
-            placeholder="Enter height in ft"
+            placeholder="like 5.5,5.6"
           />
           {errors.heightPreferenceMin && <p className="mt-1 text-sm text-red-600">{errors.heightPreferenceMin}</p>}
         </div>
@@ -224,7 +224,7 @@ export default function PreferencesForm({
             min="3"
             max="8"
             className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-red-500 focus:outline-none focus:ring-red-500"
-            placeholder="Enter height in ft"
+            placeholder="like 5.5,5.6"
           />
           {errors.heightPreferenceMax && <p className="mt-1 text-sm text-red-600">{errors.heightPreferenceMax}</p>}
         </div>

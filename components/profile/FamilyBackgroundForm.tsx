@@ -34,8 +34,8 @@ export default function FamilyBackgroundForm({
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    familyType: user?.familyType || 'none',
-    familyStatus: user?.familyStatus || 'none',
+    familyType: user?.familyType || 'Nuclear',
+    familyStatus: user?.familyStatus || 'Middle Class',
     fatherOccupation: user?.fatherOccupation || '',
     motherOccupation: user?.motherOccupation || '',
     siblings: user?.siblings || '',

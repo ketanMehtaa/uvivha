@@ -58,12 +58,12 @@ export default function BasicInfoForm({
     name: '',
     password: '',
     email: '',
-    gender: '',
-    purpose: '',
+    gender: 'Male',
+    purpose: 'Matrimony',
     instagramHandle: '',
     birthDate: '',
-    onBehalf: '',
-    maritalStatus: '',
+    onBehalf: 'Self',
+    maritalStatus: 'NeverMarried',
     location: '',
     bio: '',
     caste: '',
@@ -86,12 +86,12 @@ export default function BasicInfoForm({
         name: user.name || '',
         password: user.password || '',
         email: user.email || '',
-        gender: user.gender || '',
-        purpose: user.purpose || '',
+        gender: user.gender || 'none',
+        purpose: user.purpose || 'none',
         instagramHandle: user.instagramHandle || '',
         birthDate: formattedDate,
-        onBehalf: user.onBehalf || '',
-        maritalStatus: user.maritalStatus || '',
+        onBehalf: user.onBehalf || 'none',
+        maritalStatus: user.maritalStatus || 'none',
         location: user.location || '',
         bio: user.bio || '',
         caste: user.caste || '',
@@ -107,7 +107,7 @@ export default function BasicInfoForm({
       if (!isMounted) return;
       
       try {
-        const res = await fetch('/api/user/me');
+        const res = await fetch('/ ');
         const data = await res.json();
 
         if (!isMounted) return;
@@ -274,7 +274,7 @@ export default function BasicInfoForm({
           Password
         </label>
         <input
-          type="password"
+          type="text"
           id="password"
           name="password"
           value={formData.password}

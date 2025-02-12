@@ -140,6 +140,8 @@ export default function ProfileEditPage() {
             user={user}
             onNext={handleNext}
             onPrevious={handlePrevious}
+            onNextAction={handleNext}
+            onPreviousAction={handlePrevious}
             isFirstStep={currentStep === steps[0]}
             isLastStep={currentStep === steps[steps.length - 1]}
             setUser={setUser}
