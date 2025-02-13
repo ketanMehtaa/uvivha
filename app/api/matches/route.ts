@@ -27,8 +27,15 @@ export async function POST(request: Request) {
     // Get current user's gender
     const currentUser = await prisma.user.findUnique({
       where: { id: userId },
-      select: { gender: true }
+      select: { gender: true ,deactivatedByTeam:true}
     });
+
+    if (currentUser?.deactivatedByTeam) {
+      //remove the auth token from the cookie
+      // delete the cookie
+      cookieStore.delete('auth-token');
+      return NextResponse.json({ error: 'Your account has been deactivated. Please contact support for assistance. mail here : hamyuttarakhand@gmail.com' }, { status: 403 });
+    }
 
     const oppositeGender = currentUser?.gender === 'Male' ? 'Female' : 'Male';
     const where: any = {

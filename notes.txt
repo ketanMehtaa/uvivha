@@ -63,3 +63,6 @@ response.cookies.set('auth-token', token, {
 
   // in pwa due to caching it is sending message to same person 
   
+
+  use 2️⃣ Use Broadcast Instead of postgres_changes in supabse messaging
+  
