@@ -1,7 +1,14 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Users, Star, Heart, Shield, MessageCircle, Share2 } from 'lucide-react';
+import {
+  Users,
+  Star,
+  Heart,
+  Shield,
+  MessageCircle,
+  Share2
+} from 'lucide-react';
 
 export default function LandingPage() {
   return (
@@ -110,13 +117,17 @@ export default function LandingPage() {
                   <div className="p-2 bg-red-50 rounded-full">
                     <Users className="w-4 h-4 text-red-600" />
                   </div>
-                  <span className="text-sm text-gray-600">10,000+ Active Users</span>
+                  <span className="text-sm text-gray-600">
+                    10,000+ Active Users
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="p-2 bg-red-50 rounded-full">
                     <Star className="w-4 h-4 text-red-600" />
                   </div>
-                  <span className="text-sm text-gray-600">4.8/5 User Rating</span>
+                  <span className="text-sm text-gray-600">
+                    4.8/5 User Rating
+                  </span>
                 </div>
               </div>
             </div>
@@ -178,7 +189,11 @@ export default function LandingPage() {
                   that matter to you. Our advanced filtering system helps you
                   discover the most compatible matches quickly and efficiently.
                 </p>
-                <Button className="bg-red-600 hover:bg-red-700" size="lg" asChild>
+                <Button
+                  className="bg-red-600 hover:bg-red-700"
+                  size="lg"
+                  asChild
+                >
                   <Link href="/auth">Try Smart Filters</Link>
                 </Button>
               </div>
@@ -211,13 +226,19 @@ export default function LandingPage() {
                 </div>
               </div>
               <div className="w-full lg:w-1/2 text-center lg:text-left">
-                <h3 className="text-3xl font-semibold mb-6">Seamless Communication</h3>
+                <h3 className="text-3xl font-semibold mb-6">
+                  Seamless Communication
+                </h3>
                 <p className="text-gray-600 text-lg leading-relaxed mb-8">
                   Connect with matches through our secure and easy-to-use
                   messaging system. Start meaningful conversations and get to
                   know your potential partner better.
                 </p>
-                <Button className="bg-red-600 hover:bg-red-700" size="lg" asChild>
+                <Button
+                  className="bg-red-600 hover:bg-red-700"
+                  size="lg"
+                  asChild
+                >
                   <Link href="/auth">Start Chatting</Link>
                 </Button>
               </div>
@@ -250,12 +271,18 @@ export default function LandingPage() {
                 </div>
               </div>
               <div className="w-full lg:w-1/2 text-center lg:text-left">
-                <h3 className="text-3xl font-semibold mb-6">Easy Profile Sharing</h3>
+                <h3 className="text-3xl font-semibold mb-6">
+                  Easy Profile Sharing
+                </h3>
                 <p className="text-gray-600 text-lg leading-relaxed mb-8">
-                  Share your profile as a biodata with family and friends outside
-                  the platform. Share your Images and data together.
+                  Share your profile as a biodata with family and friends
+                  outside the platform. Share your Images and data together.
                 </p>
-                <Button className="bg-red-600 hover:bg-red-700" size="lg" asChild>
+                <Button
+                  className="bg-red-600 hover:bg-red-700"
+                  size="lg"
+                  asChild
+                >
                   <Link href="/auth">Create Your Profile</Link>
                 </Button>
               </div>
@@ -770,6 +797,22 @@ export default function LandingPage() {
           >
             Create Free Profile
           </Link>
+        </div>
+      </section>
+      {/* contact us section */}
+      <section className="py-16 md:py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center max-w-2xl mx-auto mb-12 md:mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Contact Us</h2>
+            <p className="text-base md:text-lg text-gray-600">
+              Have questions or need help? We're here to assist you.
+              <br />
+              mail us at{' '}
+              <a href="mailto:hamyUttarakhand@gmail.com">
+                hamyUttarakhand@gmail.com
+              </a>
+            </p>
+          </div>
         </div>
       </section>
     </div>
