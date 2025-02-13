@@ -56,7 +56,7 @@ export default function AuthPage() {
   return (
     <div className="min-h-screen bg-gradient-to-r from-pink-50 to-red-50 flex items-center justify-center p-4 rounded-lg">
       <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
-        {/* <h1 className="text-2xl font-bold text-center mb-6">Welcome to Uttrakhand Matrimony</h1> */}
+        {/* <h1 className="text-2xl font-bold text-center mb-6">Welcome to Uttarakhand Matrimony</h1> */}
         <div id="otpless-login-page"></div>
       </div>
       <OtplessHandler />

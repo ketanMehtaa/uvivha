@@ -240,7 +240,7 @@ export default function LoginPage() {
         </div>
         <div className="absolute bottom-0 left-0 right-0 p-8 text-center bg-gradient-to-t from-white/80">
           <p className="text-lg font-medium text-gray-900">
-            &ldquo;Finding love in Uttrakhand&apos;s traditions&rdquo;
+            &ldquo;Finding love in Uttarakhand&apos;s traditions&rdquo;
           </p>
         </div>
       </div>

@@ -1,7 +1,7 @@
 {
-  "name": "Hamy - Free Uttrakhand Matrimony Service",
+  "name": "Hamy - Free Uttarakhand Matrimony Service",
   "short_name": "Hamy",
-  "description": "Find your perfect match in Uttrakhand",
+  "description": "Find your perfect match in Uttarakhand",
   "start_url": "/dashboard",
   "scope": "/",
   "display": "standalone",

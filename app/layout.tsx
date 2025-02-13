@@ -14,15 +14,15 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: 'Hamy - Free Uttrakhand Matrimony and Dating | Find Your Perfect Match',
+  title: 'Hamy - Free Uttarakhand Matrimony and Dating | Find Your Perfect Match',
   description:
-    'Join Hamy - The most trusted FREE matrimonial and Dating for Uttrakhand. Create your profile for free and connect with verified matches who share your values and traditions. Get 3 months free access today!',
+    'Join Hamy - The most trusted FREE matrimonial and Dating for Uttarakhand. Create your profile for free and connect with verified matches who share your values and traditions. Get 3 months free access today!',
   keywords: [
     'free matrimony',
-    'uttrakhand matrimony',
+    'Uttarakhand matrimony',
     'matrimonial site',
     'free marriage site',
-    'uttrakhand marriage',
+    'Uttarakhand marriage',
     'dehradun matrimony',
     'haridwar matrimony',
     'nainital matrimony',
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     'verified profiles',
     'trusted matrimony',
     'local matches',
-    'uttrakhand wedding',
+    'Uttarakhand wedding',
     'roorkee matrimony',
     'haldwani matrimony',
     'rudrapur matrimony',
@@ -43,19 +43,19 @@ export const metadata: Metadata = {
     'mussoorie matrimony',
     'garhwali matrimony',
     'kumaoni matrimony',
-    'uttrakhand shaadi',
+    'Uttarakhand shaadi',
     'pahari marriage',
-    'uttrakhand bride',
-    'uttrakhand groom',
+    'Uttarakhand bride',
+    'Uttarakhand groom',
     'dehradun marriage bureau',
     'haridwar marriage bureau',
-    'uttarakhand matrimonial service',
+    'Uttarakhand matrimonial service',
     'garhwal matrimony',
     'kumaon matrimony',
-    'uttrakhand marriage site',
-    'best matrimony uttrakhand',
-    'free matrimonial uttrakhand',
-    'uttrakhand rishtey',
+    'Uttarakhand marriage site',
+    'best matrimony Uttarakhand',
+    'free matrimonial Uttarakhand',
+    'Uttarakhand rishtey',
     'pauri garhwal matrimony',
     'tehri garhwal matrimony',
     'chamoli matrimony',
@@ -68,12 +68,12 @@ export const metadata: Metadata = {
     'bio data for marriage',
     'bio data maker',
     'bio data Free',
-    'Free bio data for marriage in uttrakhand',
+    'Free bio data for marriage in Uttarakhand',
     'dating site',
     'dating app',
     'dating service',
-    'dating uttrakhand',
-    'dating in uttrakhand',
+    'dating Uttarakhand',
+    'dating in Uttarakhand',
     'dating in dehradun',
     'dating in haridwar',
     'dating in nainital',
@@ -85,7 +85,7 @@ export const metadata: Metadata = {
     'dating in mussoorie',
     'dating in garhwal',
     'dating in kumaon',
-    'dating in uttrakhand',
+    'dating in Uttarakhand',
 
   ],
   authors: [{ name: 'Hamy' }],
@@ -101,9 +101,9 @@ export const metadata: Metadata = {
     canonical: '/'
   },
   openGraph: {
-    title: 'Hamy - Free Uttrakhand Matrimony  and Dating | Find Your Perfect Match',
+    title: 'Hamy - Free Uttarakhand Matrimony  and Dating | Find Your Perfect Match',
     description:
-      'Join Hamy - The most trusted FREE matrimonial and Dating for Uttrakhand. Create your profile for free and connect with verified matches who share your values and traditions. Get 3 months free access today!',
+      'Join Hamy - The most trusted FREE matrimonial and Dating for Uttarakhand. Create your profile for free and connect with verified matches who share your values and traditions. Get 3 months free access today!',
     url: 'https://hamy.com',
     siteName: 'Hamy',
     images: [
@@ -111,7 +111,7 @@ export const metadata: Metadata = {
         url: 'https://hamy.com/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'Hamy - Uttrakhand Matrimony and Dating'
+        alt: 'Hamy - Uttarakhand Matrimony and Dating'
       }
     ],
     locale: 'en_US',
@@ -119,7 +119,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Hamy - Free Uttrakhand Matrimony and Dating',
+    title: 'Hamy - Free Uttarakhand Matrimony and Dating',
     description: 'Find your perfect match with our trusted matrimony and dating service',
     images: ['https://hamy.com/twitter-image.jpg'],
     creator: '@hamy'
