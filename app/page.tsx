@@ -9,10 +9,12 @@ import {
   MessageCircle,
   Share2
 } from 'lucide-react';
+import UtmTracker from './components/UtmTracker';
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen">
+      <UtmTracker />
       {/* Navbar */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
         <div className="container mx-auto px-4">
@@ -43,10 +45,10 @@ export default function LandingPage() {
             </div>
 
             <div className="flex items-center gap-4">
-              <Link href="/auth/login">
+              <Link href="/login">
                 <Button variant="ghost">Login</Button>
               </Link>
-              <Link href="/auth/register">
+              <Link href="/auth">
                 <Button>Sign Up</Button>
               </Link>
             </div>

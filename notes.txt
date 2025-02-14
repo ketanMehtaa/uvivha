@@ -66,3 +66,7 @@ response.cookies.set('auth-token', token, {
 
   use 2️⃣ Use Broadcast Instead of postgres_changes in supabse messaging
   
+
+  search response.cookies.set and in there i am setting the profilecomplete which is wrong
+
+  http://localhost:3000/?utmSource=ketan utm 

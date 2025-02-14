@@ -66,9 +66,9 @@ export default function BasicInfoForm({
     maritalStatus: 'NeverMarried',
     location: '',
     bio: '',
-    caste: '',
-    subcaste: '',
-    community: '',
+    caste: 'none',
+    subcaste: 'none',
+    community: 'none',
     images: [] as string[],
   });
 
