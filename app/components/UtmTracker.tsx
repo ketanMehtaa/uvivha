@@ -1,18 +1,32 @@
 'use client';
 
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { UTM_COOKIE_MAX_AGE } from '@/lib/utm';
+import { UTM_COOKIE_NAME, UTM_COOKIE_MAX_AGE } from '@/lib/utm';
 
-export default function UtmTracker() {
+function UtmTrackerContent() {
   const searchParams = useSearchParams();
   
   useEffect(() => {
     const utmSource = searchParams.get('utmSource');
     if (utmSource) {
-      document.cookie = `utmSource=${utmSource}; path=/; max-age=${UTM_COOKIE_MAX_AGE}`;
+      const cookieValue = `${UTM_COOKIE_NAME}=${encodeURIComponent(utmSource)}; path=/; max-age=${UTM_COOKIE_MAX_AGE}`;
+      
+      if (process.env.NODE_ENV === 'production') {
+        document.cookie = `${cookieValue}; domain=.hamy.in; secure; samesite=lax`;
+      } else {
+        document.cookie = `${cookieValue}; samesite=lax`;
+      }
     }
   }, [searchParams]);
 
   return null;
-} 
+}
+
+export default function UtmTracker() {
+  return (
+    <Suspense fallback={null}>
+      <UtmTrackerContent />
+    </Suspense>
+  );
+}

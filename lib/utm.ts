@@ -26,6 +26,8 @@ export function clearUtmSourceCookie(response: NextResponse) {
     name: UTM_COOKIE_NAME,
     value: '',
     maxAge: 0,
+    domain: process.env.NODE_ENV === 'production' ? '.hamy.in' : undefined,
+    sameSite: 'lax',
     path: '/',
   });
   // console.log('clearUtmSourceCookie', response);
