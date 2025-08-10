@@ -194,7 +194,7 @@ export default function RootLayout({
         </head>
         <body className="flex min-h-screen w-full flex-col">
           <CSPostHogProvider>
-            <InstallPWA />
+            {/* <InstallPWA /> */}
             {children}
           </CSPostHogProvider>
           <Analytics />

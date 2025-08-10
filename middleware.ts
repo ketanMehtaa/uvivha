@@ -12,6 +12,8 @@ const publicRoutes = [
   '/api/auth',  // Base API auth route
   '/api/auth/',  // API auth with trailing slash
   '/login',
+  '/termsandconditions',
+  '/privacy',
   '/login/',  // Add trailing slash variant
   '/api/auth/check',
   '/api/auth/login',

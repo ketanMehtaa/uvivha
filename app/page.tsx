@@ -42,303 +42,31 @@ export default function LandingPage() {
               >
                 Testimonials
               </Link>
+              <Link
+                href="/termsandconditions"
+                className="text-gray-600 hover:text-red-600 transition-colors"
+              >
+                Terms & Conditions And Privacy Policy
+              </Link>
+              {/* <Link
+                href="/privacypolicy"
+                className="text-gray-600 hover:text-red-600 transition-colors"
+              >
+                Privacy Policy
+              </Link> */}
             </div>
 
-            <div className="flex items-center gap-4">
+            {/* <div className="flex items-center gap-4">
               <Link href="/login">
                 <Button variant="ghost">Login</Button>
               </Link>
               <Link href="/auth">
                 <Button>Sign Up</Button>
               </Link>
-            </div>
+            </div> */}
           </div>
         </div>
       </nav>
-
-      {/* Hero Section with Main Profile Demo */}
-      <section className="pt-32 pb-20">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col lg:flex-row items-center gap-12">
-            {/* Left Content */}
-            <div className="flex-1 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 bg-red-50 px-4 py-2 rounded-full border border-red-100 shadow-sm mb-8">
-                <span className="relative flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
-                </span>
-                <span className="text-sm font-semibold text-red-600">
-                  New: Smart Profile Matching
-                </span>
-              </div>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
-                Find Your Perfect Match in{' '}
-                <span className="text-red-600 relative">
-                  Uttarakhand
-                  <svg
-                    className="absolute w-full left-0 -bottom-2"
-                    viewBox="0 0 358 8"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M1 5.26172C71.1365 2.44258 141.273 1.03352 211.409 1.03352C281.545 1.03352 351.682 2.44258 356.364 5.26172"
-                      stroke="#EF4444"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                </span>
-              </h1>
-              <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto lg:mx-0">
-                Join the most trusted Dating and Matrimony platform for
-                Uttarakhand. Connect with compatible matches who share your
-                values and traditions.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <Link href="/auth">
-                  <Button
-                    size="lg"
-                    className="w-full sm:w-auto bg-red-600 hover:bg-red-700"
-                  >
-                    Register Free
-                  </Button>
-                </Link>
-                <Link href="/login">
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="w-full sm:w-auto"
-                  >
-                    Login
-                  </Button>
-                </Link>
-              </div>
-              <div className="flex items-center justify-center lg:justify-start gap-6 mt-8">
-                <div className="flex items-center gap-2">
-                  <div className="p-2 bg-red-50 rounded-full">
-                    <Users className="w-4 h-4 text-red-600" />
-                  </div>
-                  <span className="text-sm text-gray-600">
-                    10,000+ Active Users
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="p-2 bg-red-50 rounded-full">
-                    <Star className="w-4 h-4 text-red-600" />
-                  </div>
-                  <span className="text-sm text-gray-600">
-                    4.8/5 User Rating
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Content - Main Profile Video Demo */}
-            <div className="flex-1 w-full max-w-xl">
-              <div className="relative">
-                <video
-                  className="max-w-full rounded-3xl border-8 border-black shadow-xl"
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  controls
-                >
-                  <source
-                    src="https://dz6rpm1p9xe7o.cloudfront.net/profile.mp4"
-                    type="video/mp4"
-                  />
-                  Your browser does not support the video tag.
-                </video>
-                <div className="absolute -z-10 top-8 right-8 w-full h-full rounded-3xl bg-gradient-to-r from-red-500/30 to-pink-500/30 blur-2xl"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section with Multiple Videos */}
-      <section id="features" className="divide-y divide-gray-100">
-        {/* Smart Filters Feature */}
-        <div className="min-h-screen bg-gray-50">
-          <div className="container mx-auto px-4 h-full">
-            <div className="flex flex-col lg:flex-row items-center gap-12 h-full py-16">
-              <div className="w-full lg:w-1/2">
-                <div className="relative h-[80vh] lg:h-[90vh]">
-                  <video
-                    className="w-full h-full rounded-2xl border-8 border-black shadow-xl object-cover"
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    controls
-                  >
-                    <source
-                      src="https://dz6rpm1p9xe7o.cloudfront.net/filtersnew.mp4"
-                      type="video/mp4"
-                    />
-                  </video>
-                  <div className="absolute top-4 right-4 p-3 bg-white/90 rounded-full shadow-lg">
-                    <Shield className="w-5 h-5 text-red-600" />
-                  </div>
-                </div>
-              </div>
-              <div className="w-full lg:w-1/2 text-center lg:text-left">
-                <h3 className="text-3xl font-semibold mb-6">Smart Filters</h3>
-                <p className="text-gray-600 text-lg leading-relaxed mb-8">
-                  Find matches based on location, caste, and other preferences
-                  that matter to you. Our advanced filtering system helps you
-                  discover the most compatible matches quickly and efficiently.
-                </p>
-                <Button
-                  className="bg-red-600 hover:bg-red-700"
-                  size="lg"
-                  asChild
-                >
-                  <Link href="/auth">Try Smart Filters</Link>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Messaging Feature */}
-        <div className="min-h-screen bg-white">
-          <div className="container mx-auto px-4 h-full">
-            <div className="flex flex-col lg:flex-row items-center gap-12 h-full py-16">
-              <div className="w-full lg:w-1/2">
-                <div className="relative h-[80vh] lg:h-[90vh]">
-                  <video
-                    className="w-full h-full rounded-2xl border-8 border-black shadow-xl object-cover"
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    controls
-                  >
-                    <source
-                      src="https://dz6rpm1p9xe7o.cloudfront.net/profileandmessagedemo.mp4"
-                      type="video/mp4"
-                    />
-                  </video>
-                  <div className="absolute top-4 right-4 p-3 bg-white/90 rounded-full shadow-lg">
-                    <MessageCircle className="w-5 h-5 text-red-600" />
-                  </div>
-                </div>
-              </div>
-              <div className="w-full lg:w-1/2 text-center lg:text-left">
-                <h3 className="text-3xl font-semibold mb-6">
-                  Seamless Communication
-                </h3>
-                <p className="text-gray-600 text-lg leading-relaxed mb-8">
-                  Connect with matches through our secure and easy-to-use
-                  messaging system. Start meaningful conversations and get to
-                  know your potential partner better.
-                </p>
-                <Button
-                  className="bg-red-600 hover:bg-red-700"
-                  size="lg"
-                  asChild
-                >
-                  <Link href="/auth">Start Chatting</Link>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Profile Sharing Feature */}
-        <div className="min-h-screen bg-gray-50">
-          <div className="container mx-auto px-4 h-full">
-            <div className="flex flex-col lg:flex-row items-center gap-12 h-full py-16">
-              <div className="w-full lg:w-1/2">
-                <div className="relative h-[80vh] lg:h-[90vh]">
-                  <video
-                    className="w-full h-full rounded-2xl border-8 border-black shadow-xl object-cover"
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    controls
-                  >
-                    <source
-                      src="https://dz6rpm1p9xe7o.cloudfront.net/shareProfile.mp4"
-                      type="video/mp4"
-                    />
-                  </video>
-                  <div className="absolute top-4 right-4 p-3 bg-white/90 rounded-full shadow-lg">
-                    <Share2 className="w-5 h-5 text-red-600" />
-                  </div>
-                </div>
-              </div>
-              <div className="w-full lg:w-1/2 text-center lg:text-left">
-                <h3 className="text-3xl font-semibold mb-6">
-                  Easy Profile Sharing
-                </h3>
-                <p className="text-gray-600 text-lg leading-relaxed mb-8">
-                  Share your profile as a biodata with family and friends
-                  outside the platform. Share your Images and data together.
-                </p>
-                <Button
-                  className="bg-red-600 hover:bg-red-700"
-                  size="lg"
-                  asChild
-                >
-                  <Link href="/auth">Create Your Profile</Link>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section className="py-16 md:py-24 bg-gradient-to-b from-white to-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
-            {[
-              {
-                number: '10K+',
-                label: 'Active Users',
-                icon: <Users className="w-6 h-6 text-red-500" />
-              },
-              {
-                number: '5K+',
-                label: 'Successful Matches',
-                icon: <Heart className="w-6 h-6 text-red-500" />
-              },
-              {
-                number: '100%',
-                label: 'Verified Profiles',
-                icon: <Shield className="w-6 h-6 text-red-500" />
-              },
-              {
-                number: '4.8/5',
-                label: 'User Rating',
-                icon: <Star className="w-6 h-6 text-red-500" />
-              }
-            ].map((stat, i) => (
-              <div
-                key={i}
-                className="group relative bg-white rounded-2xl p-6 md:p-8 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100"
-              >
-                <div className="absolute -top-4 left-6 bg-red-50 rounded-xl p-3 group-hover:scale-110 transition-transform duration-300">
-                  {stat.icon}
-                </div>
-                <div className="mt-4">
-                  <div className="text-3xl md:text-4xl font-bold text-gray-900 mb-2 group-hover:text-red-600 transition-colors">
-                    {stat.number}
-                  </div>
-                  <div className="text-sm md:text-base text-gray-600">
-                    {stat.label}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Features Section */}
       <section
