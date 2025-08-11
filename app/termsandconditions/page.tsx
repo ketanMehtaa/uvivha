@@ -125,7 +125,7 @@ export default function TermsAndConditionsPage() {
             <ul>
                 <li>Initial messages are monitored for inappropriate content.</li>
                 <li>Users can block, report, or restrict communications from other users.</li>
-                <li>Video calls are available within the app for safer initial interactions.</li>
+                {/* <li>Video calls are available within the app for safer initial interactions.</li> */}
                 <li>Meeting suggestions include public places and safety tips.</li>
             </ul>
 
@@ -179,9 +179,9 @@ export default function TermsAndConditionsPage() {
 
             <h2>16. Refund Policy</h2>
             <ul>
-                <li>Refunds for premium subscriptions may be provided within 48 hours of purchase if no premium features were used.</li>
+                <li> No Refunds for premium subscriptions after Purchase.</li>
                 <li>No refunds for terminated accounts due to Terms violations.</li>
-                <li>Refund requests: meetketanmehta@gmail.com</li>
+                {/* <li>Refund requests: meetketanmehta@gmail.com</li> */}
             </ul>
 
             <h2>17. Amendments</h2>
@@ -274,12 +274,12 @@ export default function TermsAndConditionsPage() {
             <h2>5. Enhanced Permissions & Sensitive Data Handling</h2>
             <p><strong>Sensitive permissions are requested with clear disclosure:</strong></p>
             <ul>
-                <li><strong>Camera:</strong> Profile photo upload, video calling, ID verification</li>
+                {/* <li><strong>Camera:</strong> Profile photo upload, ID verification</li> */}
                 <li><strong>Storage:</strong> Photo/video upload and download</li>
-                <li><strong>Location:</strong> Distance-based matching, location preferences</li>
-                <li><strong>SMS:</strong> OTP auto-fill only (read-only access)</li>
-                <li><strong>Contacts:</strong> Friend discovery (opt-in only)</li>
-                <li><strong>Microphone:</strong> Voice messages, video calling</li>
+                {/* <li><strong>Location:</strong> Distance-based matching, location preferences</li> */}
+                {/* <li><strong>SMS:</strong> OTP auto-fill only (read-only access)</li> */}
+                {/* <li><strong>Contacts:</strong> Friend discovery (opt-in only)</li> */}
+                {/* <li><strong>Microphone:</strong> Voice messages, video calling</li> */}
             </ul>
 
             <p>All permissions include just-in-time disclosure and require explicit consent.</p>
@@ -290,9 +290,9 @@ export default function TermsAndConditionsPage() {
                 <li><strong>Access Controls:</strong> Role-based access, multi-factor authentication for staff</li>
                 <li><strong>Monitoring:</strong> 24/7 security monitoring, intrusion detection</li>
                 <li><strong>Testing:</strong> Regular penetration testing, vulnerability assessments</li>
-                <li><strong>Compliance:</strong> SOC 2 Type II, ISO 27001 standards</li>
+                {/* <li><strong>Compliance:</strong> SOC 2 Type II, ISO 27001 standards</li> */}
                 <li><strong>Incident Response:</strong> Rapid response team for security incidents</li>
-                <li><strong>MASA Support:</strong> Google-recommended Mobile App Security Assessment</li>
+                {/* <li><strong>MASA Support:</strong> Google-recommended Mobile App Security Assessment</li> */}
             </ul>
 
             <h2>7. Enhanced Data Retention & Deletion</h2>
@@ -309,8 +309,8 @@ export default function TermsAndConditionsPage() {
             <h3>Account Deletion:</h3>
             <p>Users can delete accounts via:</p>
             <ul>
-                <li>In-app deletion feature</li>
-                <li>Web form at hamy.in/delete-account</li>
+                <li>In-app disable/deletion feature</li>
+                <li>Web form at hamy.in/deleteaccount</li>
                 <li>Email request to meetketanmehta@gmail.com</li>
             </ul>
 
@@ -361,7 +361,7 @@ export default function TermsAndConditionsPage() {
 
             <p>All partners are vetted and bound by strict data protection agreements.</p>
 
-            <h2>12. Cookies & Tracking</h2>
+            {/* <h2>12. Cookies & Tracking</h2>
             <ul>
                 <li><strong>Essential Cookies:</strong> Required for service functionality</li>
                 <li><strong>Analytics Cookies:</strong> Usage statistics and improvement</li>
@@ -369,9 +369,9 @@ export default function TermsAndConditionsPage() {
                 <li><strong>Marketing Cookies:</strong> Personalized content (opt-in)</li>
             </ul>
 
-            <p>Cookie preferences can be managed in-app or via browser settings.</p>
+            <p>Cookie preferences can be managed in-app or via browser settings.</p> */}
 
-            <h2>13. Contact Information</h2>
+            <h2>12. Contact Information</h2>
             <ul>
                 <li><strong>Data Protection Officer:</strong> Ketan Mehta</li>
                 <li><strong>General Privacy:</strong> meetketanmehta@gmail.com</li>
@@ -381,7 +381,7 @@ export default function TermsAndConditionsPage() {
                 <li><strong>Business Hours:</strong> Monday-Friday, 9 AM - 6 PM IST</li>
             </ul>
 
-            <h2>14. Policy Updates & Notifications</h2>
+            <h2>13. Policy Updates & Notifications</h2>
             <p>
                 We will notify you of material changes via:
             </p>
