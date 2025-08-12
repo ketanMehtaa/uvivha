@@ -14,6 +14,7 @@ const publicRoutes = [
   '/login',
   '/termsandconditions',
   '/deleteaccount',
+  '/Deleteaccount',
   '/privacy',
   '/login/',  // Add trailing slash variant
   '/api/auth/check',
