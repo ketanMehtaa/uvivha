@@ -15,6 +15,8 @@ const publicRoutes = [
   '/termsandconditions',
   '/deleteaccount',
   '/Deleteaccount',
+  '/profiles',
+  '/profiles/',  // Add trailing slash variant
   '/privacy',
   '/login/',  // Add trailing slash variant
   '/api/auth/check',
@@ -40,30 +42,43 @@ const staticPrefixes = [
   '/assets/'
 ];
 
+// Function to check if a route is public
+const isPublicRoute = (pathname: string): boolean => {
+  // Check exact matches
+  if (publicRoutes.includes(pathname)) {
+    return true;
+  }
+  
+  // Check static prefixes
+  if (staticPrefixes.some(prefix => pathname.startsWith(prefix))) {
+    return true;
+  }
+  
+  // Check for profiles/[id] pattern
+  if (pathname.match(/^\/profiles\/[^/]+\/?$/)) {
+    return true;
+  }
+  
+  // Check for shared-profile routes
+  if (pathname.startsWith('/shared-profile/') || pathname.startsWith('/api/profile/share/')) {
+    return true;
+  }
+  
+  // Check for API auth routes
+  if (pathname.startsWith('/api/auth/')) {
+    return true;
+  }
+  
+  return false;
+};
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   // console.log('Middleware checking path:', pathname);
 
-  // First check if it's a static asset
-  if (staticPrefixes.some(prefix => pathname.startsWith(prefix))) {
-    // console.log('Static asset accessed:', pathname);
-    return NextResponse.next();
-  }
-
-  // Check for API auth routes
-  if (pathname.startsWith('/api/auth/')) {
-    return NextResponse.next();
-  }
-
-  // Then check public routes with exact matching
-  if (publicRoutes.includes(pathname)) {
+  // Check if it's a public route
+  if (isPublicRoute(pathname)) {
     console.log('Public route accessed:', pathname);
-    return NextResponse.next();
-  }
-
-  // For shared-profile and its API routes, allow the dynamic routes
-  if (pathname.startsWith('/shared-profile/') || pathname.startsWith('/api/profile/share/')) {
-    console.log('Shared profile route accessed:', pathname);
     return NextResponse.next();
   }
 
