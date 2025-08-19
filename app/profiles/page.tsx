@@ -1,13 +1,24 @@
 'use client'
-import { useState, useEffect } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Share2, MapPin, Briefcase, GraduationCap, ChevronDown, ChevronUp, X, Phone, Calendar, Users, Home } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+    MapPin,
+    Briefcase,
+    GraduationCap,
+    Eye,
+    Share2,
+    Filter,
+    RefreshCw,
+    Search,
+    X
+} from 'lucide-react';
 
 export interface Profile {
     id: string;
@@ -50,103 +61,336 @@ const supabase = createClient(
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5cG1vc3N3YWdvZG9oa2ZuZGZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU0NTkyNDgsImV4cCI6MjA3MTAzNTI0OH0.6h8NMVs1aZ_OuvogShCUygG8Mh2k687Y6cXluRGaWQY"
 );
 
+const FILTER_KEY = 'matrimony-filters-v5';
+const SCROLL_KEY = 'matrimony-scroll';
+const CACHE_KEY = 'matrimony-profiles-cache';
+const CACHE_TIMESTAMP_KEY = 'matrimony-cache-timestamp';
+const CACHE_DURATION = 60 * 60 * 1000; // 1 hour in milliseconds
+
 export default function Profiles() {
-    const pathname = usePathname();
     const router = useRouter();
-
-    // Extract ID from pathname
-    const pathSegments = pathname.split('/').filter(Boolean);
-    const isSpecificProfile = pathSegments.length > 1 && pathSegments[0] === 'profiles';
-    const urlProfileId = isSpecificProfile ? pathSegments[1] : undefined;
-
     const [profiles, setProfiles] = useState<Profile[]>([]);
-    const [expandedProfile, setExpandedProfile] = useState<string | null>(null);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [filters, setFilters] = useState({
+    const [filteredAndSortedProfiles, setFilteredAndSortedProfiles] = useState<Profile[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [showFilters, setShowFilters] = useState(false);
+
+    // Default filter values
+    const defaultFilters = {
         gender: '',
         community: '',
         caste: '',
         district: '',
         minAge: '',
-        maxAge: ''
+        maxAge: '',
+        minHeight: '',
+        maxHeight: '',
+        minIncome: '',
+        maxIncome: '',
+        education: '',
+        occupation: '',
+        marital_status: '',
+        sortBy: 'updated_at',
+        sortOrder: 'desc'
+    };
+
+    // Initialize filters and searchQuery from localStorage immediately
+    const [filters, setFilters] = useState(() => {
+        if (typeof window === 'undefined') return defaultFilters;
+        
+        try {
+            const savedFilters = localStorage.getItem(FILTER_KEY);
+            if (savedFilters) {
+                const parsedFilters = JSON.parse(savedFilters);
+                return { ...defaultFilters, ...parsedFilters };
+            }
+        } catch {
+            // Ignore invalid JSON
+        }
+        return defaultFilters;
     });
 
-    useEffect(() => {
-        const savedFilters = localStorage.getItem('matrimony-filters');
-        if (savedFilters) {
-            setFilters(JSON.parse(savedFilters));
+    const [searchQuery, setSearchQuery] = useState(() => {
+        if (typeof window === 'undefined') return '';
+        
+        try {
+            const savedFilters = localStorage.getItem(FILTER_KEY);
+            if (savedFilters) {
+                const parsedFilters = JSON.parse(savedFilters);
+                return parsedFilters.searchQuery || '';
+            }
+        } catch {
+            // Ignore invalid JSON
         }
+        return '';
+    });
 
-        if (isSpecificProfile && urlProfileId) {
-            // Handle /profiles/[id] - fetch specific profile
-            fetchSpecificProfile(urlProfileId);
+    const isRestored = useRef(false);
+
+    // Check if cache is valid
+    const isCacheValid = useCallback(() => {
+        const timestamp = localStorage.getItem(CACHE_TIMESTAMP_KEY);
+        if (!timestamp) return false;
+        return Date.now() - parseInt(timestamp) < CACHE_DURATION;
+    }, []);
+
+    // Load from cache
+    const loadFromCache = useCallback(() => {
+        try {
+            const cached = localStorage.getItem(CACHE_KEY);
+            return cached ? JSON.parse(cached) : null;
+        } catch {
+            return null;
+        }
+    }, []);
+
+    // Save to cache
+    const saveToCache = useCallback((data: Profile[]) => {
+        localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+        localStorage.setItem(CACHE_TIMESTAMP_KEY, Date.now().toString());
+    }, []);
+
+    // Event listener setup
+    useEffect(() => {
+        window.addEventListener('popstate', handlePopstate, { passive: true });
+        return () => window.removeEventListener('popstate', handlePopstate);
+    }, []);
+
+    // Save filters to localStorage whenever they change
+    useEffect(() => {
+        const filtersToSave = {
+            ...filters,
+            searchQuery // Include search query in saved filters
+        };
+        localStorage.setItem(FILTER_KEY, JSON.stringify(filtersToSave));
+    }, [filters, searchQuery]);
+
+    // Restore scroll position
+    useEffect(() => {
+        if (isRestored.current) return;
+        const y = sessionStorage.getItem(SCROLL_KEY);
+        if (y) {
+            setTimeout(() => {
+                window.scrollTo(0, parseInt(y, 10));
+                isRestored.current = true;
+            }, 100);
+        }
+    }, []);
+
+    // Initial data load
+    useEffect(() => {
+        fetchProfiles();
+    }, []);
+
+    // Apply filters and sorting when filters or profiles change
+    useEffect(() => {
+        applyFiltersAndSort();
+    }, [filters, profiles, searchQuery]);
+
+    const handlePopstate = () => {
+        setTimeout(() => {
+            const y = sessionStorage.getItem(SCROLL_KEY);
+            if (y) window.scrollTo(0, parseInt(y, 10));
+        }, 50);
+    };
+
+    const handleProfileClick = (id: string) => {
+        sessionStorage.setItem(SCROLL_KEY, String(window.scrollY));
+        router.push(`/profiles/${id}`);
+    };
+
+    const calculateAge = useCallback((birthDate: string) => {
+        const today = new Date();
+        const birth = new Date(birthDate);
+        let age = today.getFullYear() - birth.getFullYear();
+        const monthDiff = today.getMonth() - birth.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+            age--;
+        }
+        return age;
+    }, []);
+
+    const fetchProfiles = async (isBackgroundRefresh = false) => {
+        if (!isBackgroundRefresh) {
+            setLoading(true);
+            setError(null);
         } else {
-            // Handle /profiles - fetch all profiles with filters
-            fetchProfiles();
+            setRefreshing(true);
         }
-    }, [isSpecificProfile, urlProfileId]);
 
-    useEffect(() => {
-        if (!isSpecificProfile) {
-            localStorage.setItem('matrimony-filters', JSON.stringify(filters));
-            fetchProfiles();
+        // Try to load from cache first if not a forced refresh
+        if (isBackgroundRefresh === false && isCacheValid()) {
+            const cached = loadFromCache();
+            if (cached && Array.isArray(cached)) {
+                setProfiles(cached);
+                setLoading(false);
+
+                // Refresh data in background
+                setTimeout(() => fetchProfiles(true), 1000);
+                return;
+            }
         }
-    }, [filters, isSpecificProfile]);
 
-    const fetchSpecificProfile = async (profileId: string) => {
-        setLoading(true);
-        const { data, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', profileId)
-            .single();
+        // Fetch from Supabase
+        try {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('is_profile_complete', true)
+                .order('updated_at', { ascending: false });
 
-        if (!error && data) {
-            setProfiles([data]);
-            setExpandedProfile(data.id);
+            if (error) {
+                throw new Error(`Database error: ${error.message}`);
+            }
+
+            if (data) {
+                setProfiles(data);
+                saveToCache(data);
+                setError(null);
+            }
+        } catch (err) {
+            console.error('Error fetching profiles:', err);
+            setError(err instanceof Error ? err.message : 'Failed to load profiles');
+
+            // If we have cached data, use it even if it's stale
+            const cached = loadFromCache();
+            if (cached && Array.isArray(cached)) {
+                setProfiles(cached);
+            }
+        } finally {
+            setLoading(false);
+            setRefreshing(false);
         }
-        setLoading(false);
     };
 
-    const fetchProfiles = async () => {
-        setLoading(true);
-        let query = supabase
-            .from('profiles')
-            .select('*')
-            .eq('is_profile_complete', true)
-            .order('updated_at', { ascending: false });
+    const applyFiltersAndSort = useCallback(() => {
+        let filtered = [...profiles];
 
-        // Apply filters
-        if (filters.gender) query = query.eq('gender', filters.gender);
-        if (filters.community) query = query.eq('community', filters.community);
-        if (filters.caste) query = query.eq('caste', filters.caste);
-        if (filters.district) query = query.ilike('district', `%${filters.district}%`);
+        // Apply search query
+        if (searchQuery) {
+            const query = searchQuery.toLowerCase();
+            filtered = filtered.filter(profile =>
+                (profile.name?.toLowerCase().includes(query)) ||
+                (profile.location?.toLowerCase().includes(query)) ||
+                (profile.district?.toLowerCase().includes(query)) ||
+                (profile.occupation?.toLowerCase().includes(query)) ||
+                (profile.education?.toLowerCase().includes(query)) ||
+                (profile.bio?.toLowerCase().includes(query))
+            );
+        }
 
-        // Age filter
+        // Apply filters - only filter if a value is selected
+        if (filters.gender) {
+            filtered = filtered.filter(p => p.gender === filters.gender);
+        }
+
+        if (filters.community) {
+            filtered = filtered.filter(p => p.community === filters.community);
+        }
+
+        if (filters.caste) {
+            filtered = filtered.filter(p => p.caste === filters.caste);
+        }
+
+        if (filters.district) {
+            filtered = filtered.filter(p =>
+                p.district?.toLowerCase().includes(filters.district.toLowerCase())
+            );
+        }
+
+        if (filters.education) {
+            filtered = filtered.filter(p =>
+                p.education?.toLowerCase().includes(filters.education.toLowerCase())
+            );
+        }
+
+        if (filters.occupation) {
+            filtered = filtered.filter(p =>
+                p.occupation?.toLowerCase().includes(filters.occupation.toLowerCase())
+            );
+        }
+
+        if (filters.marital_status) {
+            filtered = filtered.filter(p => p.marital_status === filters.marital_status);
+        }
+
+        // Age filters
         if (filters.minAge) {
-            const maxBirthDate = new Date();
-            maxBirthDate.setFullYear(maxBirthDate.getFullYear() - parseInt(filters.minAge));
-            query = query.lte('birth_date', maxBirthDate.toISOString().split('T')[0]);
+            const minAge = parseInt(filters.minAge);
+            filtered = filtered.filter(p => {
+                if (!p.birth_date) return false;
+                return calculateAge(p.birth_date) >= minAge;
+            });
         }
+
         if (filters.maxAge) {
-            const minBirthDate = new Date();
-            minBirthDate.setFullYear(minBirthDate.getFullYear() - parseInt(filters.maxAge) - 1);
-            query = query.gte('birth_date', minBirthDate.toISOString().split('T')[0]);
+            const maxAge = parseInt(filters.maxAge);
+            filtered = filtered.filter(p => {
+                if (!p.birth_date) return false;
+                return calculateAge(p.birth_date) <= maxAge;
+            });
         }
 
-        const { data, error } = await query;
-        if (!error) setProfiles(data || []);
-        setLoading(false);
-    };
+        // Height filters
+        if (filters.minHeight) {
+            const minHeight = parseInt(filters.minHeight);
+            filtered = filtered.filter(p => p.height && p.height >= minHeight);
+        }
 
-    const calculateAge = (birthDate: string) => {
-        return new Date().getFullYear() - new Date(birthDate).getFullYear();
-    };
+        if (filters.maxHeight) {
+            const maxHeight = parseInt(filters.maxHeight);
+            filtered = filtered.filter(p => p.height && p.height <= maxHeight);
+        }
+
+        // Income filters
+        if (filters.minIncome) {
+            const minIncome = parseInt(filters.minIncome);
+            filtered = filtered.filter(p => p.income && p.income >= minIncome);
+        }
+
+        if (filters.maxIncome) {
+            const maxIncome = parseInt(filters.maxIncome);
+            filtered = filtered.filter(p => p.income && p.income <= maxIncome);
+        }
+
+        // Apply sorting
+        filtered.sort((a, b) => {
+            let aValue: any, bValue: any;
+
+            switch (filters.sortBy) {
+                case 'age':
+                    aValue = a.birth_date ? calculateAge(a.birth_date) : 0;
+                    bValue = b.birth_date ? calculateAge(b.birth_date) : 0;
+                    break;
+                case 'income':
+                    aValue = a.income || 0;
+                    bValue = b.income || 0;
+                    break;
+                case 'height':
+                    aValue = a.height || 0;
+                    bValue = b.height || 0;
+                    break;
+                case 'updated_at':
+                default:
+                    aValue = new Date(a.updated_at || 0).getTime();
+                    bValue = new Date(b.updated_at || 0).getTime();
+                    break;
+            }
+
+            if (filters.sortOrder === 'asc') {
+                return aValue - bValue;
+            } else {
+                return bValue - aValue;
+            }
+        });
+
+        setFilteredAndSortedProfiles(filtered);
+    }, [filters, profiles, searchQuery, calculateAge]);
 
     const shareProfile = (profileId: string, name: string) => {
         const url = `${window.location.origin}/profiles/${profileId}`;
         const text = `Check out ${name}'s profile: ${url}`;
-
         if (navigator.share) {
             navigator.share({ title: `${name}'s Profile`, text, url });
         } else {
@@ -155,283 +399,430 @@ export default function Profiles() {
         }
     };
 
-    const toggleExpandProfile = (profileId: string) => {
-        // Always just toggle expansion, no redirection
-        setExpandedProfile(expandedProfile === profileId ? null : profileId);
-
-        // Optional: Update URL without page reload (for shareable links)
-        if (expandedProfile !== profileId) {
-            window.history.pushState({}, '', `/profiles/${profileId}`);
-        } else {
-            window.history.pushState({}, '', '/profiles');
-        }
-    };
-
-
     const clearFilters = () => {
-        setFilters({
-            gender: '',
-            community: '',
-            caste: '',
-            district: '',
-            minAge: '',
-            maxAge: ''
-        });
+        setFilters(defaultFilters);
+        setSearchQuery('');
     };
 
-    const goBackToList = () => {
-        setExpandedProfile(null);
-        router.push('/profiles');
+    const refreshData = () => {
+        localStorage.removeItem(CACHE_KEY);
+        localStorage.removeItem(CACHE_TIMESTAMP_KEY);
+        fetchProfiles();
     };
 
-    const ProfileCard = ({ profile, isExpanded }: { profile: Profile; isExpanded: boolean }) => (
-        <Card className={`hover:shadow-lg transition-all ${isExpanded ? 'ring-2 ring-blue-500' : ''}`}>
+    // Check if any filters are applied
+    const hasActiveFilters = useMemo(() => {
+        return Object.values(filters).some(value => value !== '') || searchQuery !== '';
+    }, [filters, searchQuery]);
+
+    const FilterSection = (
+        <Card className="mb-6">
             <CardContent className="p-4">
-                {/* Header */}
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+                    <h2 className="text-lg font-semibold flex items-center gap-2">
+                        <Filter className="w-5 h-5" />
+                        Filters & Sort
+                        {hasActiveFilters && (
+                            <Badge variant="secondary" className="ml-2">
+                                Active
+                            </Badge>
+                        )}
+                    </h2>
+
+                    <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={refreshData}
+                            disabled={refreshing}
+                            className="flex-1 sm:flex-none"
+                        >
+                            <RefreshCw className={`w-4 h-4 mr-1 ${refreshing ? 'animate-spin' : ''}`} />
+                            {refreshing ? 'Refreshing...' : 'Refresh Data'}
+                        </Button>
+
+                        {hasActiveFilters && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={clearFilters}
+                                className="flex-1 sm:flex-none"
+                            >
+                                <X className="w-4 h-4 mr-1" />
+                                Clear All
+                            </Button>
+                        )}
+
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setShowFilters(!showFilters)}
+                            className="sm:hidden flex-1"
+                        >
+                            {showFilters ? 'Hide Filters' : 'Show Filters'}
+                        </Button>
+                    </div>
+                </div>
+
+                <div className="mb-4 relative">
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        placeholder="Search by name, location, occupation, education..."
+                        value={searchQuery}
+                        onChange={e => setSearchQuery(e.target.value)}
+                        className="pl-9"
+                    />
+                </div>
+
+                <div className={`grid gap-3 ${showFilters ? 'grid-cols-1' : 'hidden sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'}`}>
+                    <Select value={filters.gender} onValueChange={value => setFilters(f => ({ ...f, gender: value }))}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Gender">
+                                {filters.gender || <span className="text-muted-foreground">Gender</span>}
+                            </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="">All Genders</SelectItem>
+                            <SelectItem value="Male">Male</SelectItem>
+                            <SelectItem value="Female">Female</SelectItem>
+                        </SelectContent>
+                    </Select>
+
+                    <Select value={filters.community} onValueChange={value => setFilters(f => ({ ...f, community: value }))}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Community">
+                                {filters.community || <span className="text-muted-foreground">Community</span>}
+                            </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="">All Communities</SelectItem>
+                            <SelectItem value="Kumaoni">Kumaoni</SelectItem>
+                            <SelectItem value="Garhwali">Garhwali</SelectItem>
+                            <SelectItem value="Jaunsari">Jaunsari</SelectItem>
+                        </SelectContent>
+                    </Select>
+
+                    <Select value={filters.caste} onValueChange={value => setFilters(f => ({ ...f, caste: value }))}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Caste">
+                                {filters.caste || <span className="text-muted-foreground">Caste</span>}
+                            </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="">All Castes</SelectItem>
+                            <SelectItem value="Rajput">Rajput</SelectItem>
+                            <SelectItem value="Brahmin">Brahmin</SelectItem>
+                            <SelectItem value="Others">Others</SelectItem>
+                        </SelectContent>
+                    </Select>
+
+                    <Input
+                        placeholder="District"
+                        value={filters.district}
+                        onChange={e => setFilters(f => ({ ...f, district: e.target.value }))}
+                    />
+
+                    <Input
+                        placeholder="Education keywords"
+                        value={filters.education}
+                        onChange={e => setFilters(f => ({ ...f, education: e.target.value }))}
+                    />
+
+                    <Input
+                        placeholder="Occupation keywords"
+                        value={filters.occupation}
+                        onChange={e => setFilters(f => ({ ...f, occupation: e.target.value }))}
+                    />
+
+                    <Select value={filters.marital_status} onValueChange={value => setFilters(f => ({ ...f, marital_status: value }))}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Marital Status">
+                                {filters.marital_status || <span className="text-muted-foreground">Marital Status</span>}
+                            </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="">All Statuses</SelectItem>
+                            <SelectItem value="Unmarried">Unmarried</SelectItem>
+                            <SelectItem value="Married">Married</SelectItem>
+                            <SelectItem value="Divorced">Divorced</SelectItem>
+                            <SelectItem value="Widowed">Widowed</SelectItem>
+                        </SelectContent>
+                    </Select>
+
+                    <div className="grid grid-cols-2 gap-2">
+                        <Input
+                            placeholder="Min Age"
+                            type="number"
+                            min="18"
+                            max="100"
+                            value={filters.minAge}
+                            onChange={e => setFilters(f => ({ ...f, minAge: e.target.value }))}
+                        />
+                        <Input
+                            placeholder="Max Age"
+                            type="number"
+                            min="18"
+                            max="100"
+                            value={filters.maxAge}
+                            onChange={e => setFilters(f => ({ ...f, maxAge: e.target.value }))}
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                        <Input
+                            placeholder="Min Height (cm)"
+                            type="number"
+                            min="100"
+                            max="250"
+                            value={filters.minHeight}
+                            onChange={e => setFilters(f => ({ ...f, minHeight: e.target.value }))}
+                        />
+                        <Input
+                            placeholder="Max Height (cm)"
+                            type="number"
+                            min="100"
+                            max="250"
+                            value={filters.maxHeight}
+                            onChange={e => setFilters(f => ({ ...f, maxHeight: e.target.value }))}
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                        <Input
+                            placeholder="Min Income (L)"
+                            type="number"
+                            min="0"
+                            value={filters.minIncome}
+                            onChange={e => setFilters(f => ({ ...f, minIncome: e.target.value }))}
+                        />
+                        <Input
+                            placeholder="Max Income (L)"
+                            type="number"
+                            min="0"
+                            value={filters.maxIncome}
+                            onChange={e => setFilters(f => ({ ...f, maxIncome: e.target.value }))}
+                        />
+                    </div>
+
+                    <Select value={filters.sortBy} onValueChange={value => setFilters(f => ({ ...f, sortBy: value }))}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Sort By">
+                                {filters.sortBy === 'updated_at' ? 'Last Updated' :
+                                    filters.sortBy === 'age' ? 'Age' :
+                                        filters.sortBy === 'income' ? 'Income' :
+                                            filters.sortBy === 'height' ? 'Height' :
+                                                <span className="text-muted-foreground">Sort By</span>}
+                            </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="updated_at">Last Updated</SelectItem>
+                            <SelectItem value="age">Age</SelectItem>
+                            <SelectItem value="income">Income</SelectItem>
+                            <SelectItem value="height">Height</SelectItem>
+                        </SelectContent>
+                    </Select>
+
+                    <Select value={filters.sortOrder} onValueChange={value => setFilters(f => ({ ...f, sortOrder: value }))}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Order">
+                                {filters.sortOrder === 'desc' ? 'Descending' :
+                                    filters.sortOrder === 'asc' ? 'Ascending' :
+                                        <span className="text-muted-foreground">Order</span>}
+                            </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="desc">Descending</SelectItem>
+                            <SelectItem value="asc">Ascending</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+            </CardContent>
+        </Card>
+    );
+
+    const ProfileCardSkeleton = () => (
+        <Card className="hover:shadow-lg transition-all">
+            <CardContent className="p-4">
+                <div className="flex justify-between items-start mb-3">
+                    <div className="space-y-2">
+                        <Skeleton className="h-6 w-40" />
+                        <Skeleton className="h-4 w-32" />
+                    </div>
+                    <Skeleton className="h-8 w-8 rounded-md" />
+                </div>
+
+                <div className="space-y-2 mb-4">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-4 w-2/3" />
+                </div>
+
+                <div className="flex flex-wrap gap-1 mb-4">
+                    <Skeleton className="h-6 w-16 rounded-full" />
+                    <Skeleton className="h-6 w-20 rounded-full" />
+                    <Skeleton className="h-6 w-14 rounded-full" />
+                </div>
+
+                <Skeleton className="h-10 w-full rounded-md" />
+            </CardContent>
+        </Card>
+    );
+
+    const ProfileCard = ({ profile }: { profile: Profile }) => (
+        <Card className="hover:shadow-lg transition-all h-full flex flex-col">
+            <CardContent className="p-4 flex flex-col flex-grow">
                 <div className="flex justify-between items-start mb-3">
                     <div>
-                        <h3 className="font-semibold text-lg">{profile.name}</h3>
+                        <h3 className="font-semibold text-lg">{profile.name || 'Name not provided'}</h3>
                         <p className="text-sm text-gray-600">
                             {profile.birth_date && `${calculateAge(profile.birth_date)} years`}
                             {profile.gender && ` • ${profile.gender}`}
                         </p>
                     </div>
-                    <div className="flex gap-2">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => shareProfile(profile.id, profile.name || 'Profile')}
-                        >
-                            <Share2 className="w-4 h-4" />
-                        </Button>
-                        {isSpecificProfile && (
-                            <Button variant="ghost" size="sm" onClick={goBackToList}>
-                                <X className="w-4 h-4" />
-                            </Button>
-                        )}
-                    </div>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            shareProfile(profile.id, profile.name || 'Profile');
+                        }}
+                        aria-label="Share profile"
+                    >
+                        <Share2 className="w-4 h-4" />
+                    </Button>
                 </div>
 
-                {/* Basic Info */}
-                <div className="space-y-2 mb-4">
+                <div className="space-y-2 mb-4 flex-grow">
                     {profile.location && (
                         <div className="flex items-center text-sm text-gray-600">
-                            <MapPin className="w-3 h-3 mr-1" />
-                            {profile.location}
+                            <MapPin className="w-3 h-3 mr-1 flex-shrink-0" />
+                            <span className="truncate">{profile.location}</span>
                         </div>
                     )}
-
                     {profile.occupation && (
                         <div className="flex items-center text-sm text-gray-600">
-                            <Briefcase className="w-3 h-3 mr-1" />
-                            {profile.occupation}
-                            {profile.company_name && ` at ${profile.company_name}`}
+                            <Briefcase className="w-3 h-3 mr-1 flex-shrink-0" />
+                            <span className="truncate">
+                                {profile.occupation}
+                                {profile.company_name && ` at ${profile.company_name}`}
+                            </span>
                         </div>
                     )}
-
                     {profile.education && (
                         <div className="flex items-center text-sm text-gray-600">
-                            <GraduationCap className="w-3 h-3 mr-1" />
-                            {profile.education}
+                            <GraduationCap className="w-3 h-3 mr-1 flex-shrink-0" />
+                            <span className="truncate">{profile.education}</span>
                         </div>
                     )}
                 </div>
 
-                {/* Badges */}
                 <div className="flex flex-wrap gap-1 mb-4">
                     {profile.community && <Badge variant="secondary">{profile.community}</Badge>}
                     {profile.caste && <Badge variant="outline">{profile.caste}</Badge>}
                     {profile.height && <Badge variant="outline">{profile.height}cm</Badge>}
-                    {profile.weight && <Badge variant="outline">{profile.weight}kg</Badge>}
                     {profile.income && <Badge variant="outline">₹{profile.income}L</Badge>}
                     {profile.marital_status && <Badge variant="outline">{profile.marital_status}</Badge>}
                 </div>
 
-                {/* Expanded Content */}
-                {isExpanded && (
-                    <div className="border-t pt-4 space-y-4">
-                        {/* Contact Info */}
-                        <div className="space-y-2">
-                            <h4 className="font-medium flex items-center">
-                                <Phone className="w-4 h-4 mr-2" />
-                                Contact
-                            </h4>
-                            {profile.mobile1 && <p className="text-sm ml-6">Primary: {profile.mobile1}</p>}
-                            {profile.mobile2 && <p className="text-sm ml-6">Secondary: {profile.mobile2}</p>}
-                        </div>
-
-                        {/* Personal Details */}
-                        <div className="space-y-2">
-                            <h4 className="font-medium flex items-center">
-                                <Calendar className="w-4 h-4 mr-2" />
-                                Personal Details
-                            </h4>
-                            <div className="ml-6 text-sm space-y-1">
-                                {profile.birth_date && <p>Date of Birth: {new Date(profile.birth_date).toLocaleDateString()}</p>}
-                                {profile.complexion && <p>Complexion: {profile.complexion}</p>}
-                                {profile.district && <p>District: {profile.district}</p>}
-                                {profile.job_title && <p>Job Title: {profile.job_title}</p>}
-                                {profile.manglik && <p>Manglik: {profile.manglik}</p>}
-                                {profile.gotra && <p>Gotra: {profile.gotra}</p>}
-                            </div>
-                        </div>
-
-                        {/* Family Details */}
-                        <div className="space-y-2">
-                            <h4 className="font-medium flex items-center">
-                                <Users className="w-4 h-4 mr-2" />
-                                Family Details
-                            </h4>
-                            <div className="ml-6 text-sm space-y-1">
-                                {profile.father_occupation && <p>Father's Occupation: {profile.father_occupation}</p>}
-                                {profile.mother_occupation && <p>Mother's Occupation: {profile.mother_occupation}</p>}
-                                {profile.family_location && <p>Family Location: {profile.family_location}</p>}
-                                {profile.siblings && <p>Siblings: {profile.siblings}</p>}
-                            </div>
-                        </div>
-
-                        {/* Bio */}
-                        {profile.bio && (
-                            <div className="space-y-2">
-                                <h4 className="font-medium">About</h4>
-                                <p className="text-sm text-gray-600">{profile.bio}</p>
-                            </div>
-                        )}
-                    </div>
-                )}
-
-                {/* Bio Preview for collapsed */}
-                {!isExpanded && profile.bio && (
+                {profile.bio && (
                     <p className="text-sm text-gray-600 line-clamp-2 mb-4">
                         {profile.bio}
                     </p>
                 )}
 
                 <Button
-                    className="w-full"
-                    onClick={() => toggleExpandProfile(profile.id)}
-                    variant={isExpanded ? "outline" : "default"}
+                    className="w-full mt-auto"
+                    onClick={() => handleProfileClick(profile.id)}
                 >
-                    {isExpanded ? (
-                        <>
-                            <ChevronUp className="w-4 h-4 mr-2" />
-                            Show Less
-                        </>
-                    ) : (
-                        <>
-                            <ChevronDown className="w-4 h-4 mr-2" />
-                            View Full Profile
-                        </>
-                    )}
+                    <Eye className="w-4 h-4 mr-2" />
+                    View Full Profile
                 </Button>
             </CardContent>
         </Card>
     );
 
+    const cacheTimestamp = useMemo(() => {
+        const timestamp = localStorage.getItem(CACHE_TIMESTAMP_KEY);
+        return timestamp ? parseInt(timestamp) : null;
+    }, [profiles]);
+
+    const cacheTimeRemaining = useMemo(() => {
+        if (!cacheTimestamp) return 0;
+        return Math.max(0, CACHE_DURATION - (Date.now() - cacheTimestamp));
+    }, [cacheTimestamp]);
+
+    const minutesRemaining = Math.ceil(cacheTimeRemaining / (1000 * 60));
+
     return (
-        <div className="min-h-screen bg-gray-50 p-4">
-            {/* Filters - Hide when viewing specific profile */}
-            {!isSpecificProfile && (
-                <Card className="mb-6">
-                    <CardContent className="p-4">
-                        <h2 className="text-lg font-semibold mb-4">Filters</h2>
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-                            <Select value={filters.gender} onValueChange={(value) => setFilters({ ...filters, gender: value })}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Gender" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="Male">Male</SelectItem>
-                                    <SelectItem value="Female">Female</SelectItem>
-                                </SelectContent>
-                            </Select>
+        <div className="min-h-screen bg-gray-50 p-4 container mx-auto max-w-7xl">
+            <div className="mb-6">
+                <h1 className="text-3xl font-bold text-gray-900">Matrimony Profiles</h1>
+                <p className="text-gray-600">Browse and find compatible matches</p>
+            </div>
 
-                            <Select value={filters.community} onValueChange={(value) => setFilters({ ...filters, community: value })}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Community" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="Kumaoni">Kumaoni</SelectItem>
-                                    <SelectItem value="Garhwali">Garhwali</SelectItem>
-                                    <SelectItem value="Jaunsari">Jaunsari</SelectItem>
-                                </SelectContent>
-                            </Select>
+            {FilterSection}
 
-                            <Select value={filters.caste} onValueChange={(value) => setFilters({ ...filters, caste: value })}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Caste" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="Rajput">Rajput</SelectItem>
-                                    <SelectItem value="Brahmin">Brahmin</SelectItem>
-                                    <SelectItem value="Others">Others</SelectItem>
-                                </SelectContent>
-                            </Select>
-
-                            <Input
-                                placeholder="District"
-                                value={filters.district}
-                                onChange={(e) => setFilters({ ...filters, district: e.target.value })}
-                            />
-
-                            <Input
-                                placeholder="Min Age"
-                                type="number"
-                                value={filters.minAge}
-                                onChange={(e) => setFilters({ ...filters, minAge: e.target.value })}
-                            />
-
-                            <Input
-                                placeholder="Max Age"
-                                type="number"
-                                value={filters.maxAge}
-                                onChange={(e) => setFilters({ ...filters, maxAge: e.target.value })}
-                            />
-                        </div>
-
-                        <Button
-                            variant="outline"
-                            onClick={clearFilters}
-                            className="mt-3 text-sm"
-                        >
-                            Clear Filters
-                        </Button>
-                    </CardContent>
-                </Card>
+            {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-6">
+                    <p>{error}</p>
+                    <Button variant="outline" size="sm" onClick={fetchProfiles} className="mt-2">
+                        Try Again
+                    </Button>
+                </div>
             )}
 
-            {/* Results Count */}
-            <div className="mb-4">
+            <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                 <p className="text-sm text-gray-600">
-                    {loading ? 'Loading...' :
-                        isSpecificProfile ? 'Profile Details' : `${profiles.length} profiles found`
-                    }
+                    {loading ? 'Loading profiles...' : `${filteredAndSortedProfiles.length} profiles found`}
                 </p>
+
+                {cacheTimestamp && !loading && (
+                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                        <RefreshCw className="w-3 h-3" />
+                        <span>
+                            {cacheTimeRemaining > 0
+                                ? `Data will refresh in ${minutesRemaining} min`
+                                : 'Data is ready to refresh'
+                            }
+                        </span>
+                    </div>
+                )}
             </div>
 
-            {/* Profiles Grid */}
-            <div className={`grid gap-4 ${isSpecificProfile ? 'grid-cols-1 max-w-4xl mx-auto' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
-                {profiles.map((profile) => (
-                    <ProfileCard
-                        key={profile.id}
-                        profile={profile}
-                        isExpanded={expandedProfile === profile.id}
-                    />
-                ))}
-            </div>
-
-            {/* Empty State */}
-            {!loading && profiles.length === 0 && (
-                <div className="text-center py-12">
-                    <p className="text-gray-500">
-                        {isSpecificProfile ? 'Profile not found.' : 'No profiles found matching your criteria.'}
-                    </p>
-                    {!isSpecificProfile && (
-                        <Button variant="outline" onClick={clearFilters} className="mt-2">
-                            Clear Filters
-                        </Button>
-                    )}
+            {loading ? (
+                <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                    {Array.from({ length: 6 }).map((_, i) => (
+                        <ProfileCardSkeleton key={i} />
+                    ))}
                 </div>
+            ) : (
+                <>
+                    {filteredAndSortedProfiles.length > 0 ? (
+                        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                            {filteredAndSortedProfiles.map((profile) => (
+                                <ProfileCard key={profile.id} profile={profile} />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-12 bg-white rounded-lg border border-dashed">
+                            <div className="mx-auto w-16 h-16 flex items-center justify-center bg-gray-100 rounded-full mb-4">
+                                <Search className="w-8 h-8 text-gray-400" />
+                            </div>
+                            <h3 className="text-lg font-medium text-gray-900 mb-2">No profiles found</h3>
+                            <p className="text-gray-500 mb-4">
+                                {hasActiveFilters
+                                    ? "Try adjusting your search or filters to find more results."
+                                    : "No profiles available at the moment. Please check back later."
+                                }
+                            </p>
+                            {hasActiveFilters && (
+                                <Button variant="outline" onClick={clearFilters}>
+                                    Clear All Filters
+                                </Button>
+                            )}
+                        </div>
+                    )}
+                </>
             )}
         </div>
     );

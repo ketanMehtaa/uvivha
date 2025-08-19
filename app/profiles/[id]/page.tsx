@@ -6,7 +6,28 @@ import { createClient } from '@supabase/supabase-js';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Share2, MapPin, Briefcase, GraduationCap, Phone, Calendar, Users, ChevronLeft } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+    Share2,
+    MapPin,
+    Briefcase,
+    GraduationCap,
+    Phone,
+    Calendar,
+    Users,
+    ChevronLeft,
+    Heart,
+    MessageCircle,
+    Mail,
+    User,
+    Home,
+    Cake,
+    Scale,
+    IndianRupee,
+    BookOpen,
+    Shield
+} from 'lucide-react';
 
 export interface Profile {
     id: string;
@@ -56,6 +77,8 @@ export default function ProfilePage() {
 
     const [profile, setProfile] = useState<Profile | null>(null);
     const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState('overview');
+    const [imageError, setImageError] = useState(false);
 
     useEffect(() => {
         if (profileId) {
@@ -65,48 +88,91 @@ export default function ProfilePage() {
 
     const fetchProfile = async (id: string) => {
         setLoading(true);
-        const { data, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', id)
-            .single();
+        try {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', id)
+                .single();
 
-        if (!error && data) {
-            setProfile(data);
+            if (!error && data) {
+                setProfile(data);
+            } else {
+                console.error('Error fetching profile:', error);
+            }
+        } catch (error) {
+            console.error('Error fetching profile:', error);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     const calculateAge = (birthDate: string) => {
-        return new Date().getFullYear() - new Date(birthDate).getFullYear();
+        const today = new Date();
+        const birth = new Date(birthDate);
+        let age = today.getFullYear() - birth.getFullYear();
+        const monthDiff = today.getMonth() - birth.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+            age--;
+        }
+        return age;
     };
 
     const shareProfile = (profileId: string, name: string) => {
         const url = `${window.location.origin}/profiles/${profileId}`;
-        const text = `Check out ${name}'s profile: ${url}`;
+        const text = `Check out ${name}'s profile on Kumaoni Matrimony: ${url}`;
 
         if (navigator.share) {
             navigator.share({ title: `${name}'s Profile`, text, url });
         } else {
-            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
-            window.open(whatsappUrl, '_blank');
+            // Fallback for desktop - copy to clipboard
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Profile link copied to clipboard!');
+            });
+        }
+    };
+
+    const handleContact = (type: 'call' | 'message' | 'whatsapp') => {
+        if (!profile) return;
+
+        const number = profile.mobile1 || profile.mobile2;
+        if (!number) {
+            alert('No contact number available');
+            return;
+        }
+
+        switch (type) {
+            case 'call':
+                window.open(`tel:${number}`, '_self');
+                break;
+            case 'message':
+                window.open(`sms:${number}`, '_self');
+                break;
+            case 'whatsapp':
+                const profileLink = `${window.location.origin}/profiles/${profile.id}`;
+                const message = encodeURIComponent(
+                    `Hello${profile.name ? ` ${profile.name}` : ''}! I found your profile on hamy.in : ${profileLink}\n\nCould you please share your photos and bio data?`
+                );
+                window.open(`https://wa.me/${number}?text=${message}`, '_blank');
+                break;
         }
     };
 
     if (loading) {
-        return (
-            <div className="min-h-screen bg-gray-50 p-4 flex items-center justify-center">
-                <p className="text-lg">Loading profile...</p>
-            </div>
-        );
+        return <ProfileSkeleton />;
     }
 
     if (!profile) {
         return (
             <div className="min-h-screen bg-gray-50 p-4 flex items-center justify-center">
-                <div className="text-center">
-                    <p className="text-lg mb-4">Profile not found</p>
-                    <Button onClick={() => router.push('/profiles')}>
+                <div className="text-center max-w-md mx-auto">
+                    <div className="mx-auto w-16 h-16 flex items-center justify-center bg-gray-100 rounded-full mb-4">
+                        <User className="w-8 h-8 text-gray-400" />
+                    </div>
+                    <h2 className="text-xl font-semibold text-gray-900 mb-2">Profile Not Found</h2>
+                    <p className="text-gray-600 mb-6">The profile you're looking for doesn't exist or may have been removed.</p>
+                    <Button onClick={() => router.push('/profiles')} className="w-full sm:w-auto">
+                        <ChevronLeft className="w-4 h-4 mr-2" />
                         Back to Profiles
                     </Button>
                 </div>
@@ -115,154 +181,403 @@ export default function ProfilePage() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 p-4">
-            <Card className="max-w-4xl mx-auto">
-                <CardContent className="p-6">
-                    {/* Header */}
-                    <div className="flex justify-between items-start mb-6">
-                        <div>
-                            <h1 className="font-bold text-3xl mb-2">{profile.name}</h1>
-                            <p className="text-lg text-gray-600">
-                                {profile.birth_date && `${calculateAge(profile.birth_date)} years`}
-                                {profile.gender && ` • ${profile.gender}`}
-                            </p>
-                        </div>
-                        <div className="flex gap-2">
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => shareProfile(profile.id, profile.name ?? 'Profile')}
-                            >
-                                <Share2 className="w-5 h-5" />
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => router.push('/profiles')}
-                            >
-                                <ChevronLeft className="w-5 h-5" />
-                            </Button>
-                        </div>
-                    </div>
+        <div className="min-h-screen bg-gray-50 pb-20">
+            {/* Header with back button and actions */}
+            <div className="sticky top-0 z-10 bg-white border-b shadow-sm p-4 flex items-center justify-between">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => router.push('/profiles')}
+                    className="rounded-full"
+                >
+                    <ChevronLeft className="w-5 h-5" />
+                </Button>
 
-                    {/* Basic Info */}
-                    <div className="space-y-3 mb-6">
-                        {profile.location && (
-                            <div className="flex items-center text-gray-700">
-                                <MapPin className="w-5 h-5 mr-2" />
-                                {profile.location}
-                            </div>
-                        )}
-                        {profile.occupation && (
-                            <div className="flex items-center text-gray-700">
-                                <Briefcase className="w-5 h-5 mr-2" />
-                                {profile.occupation}
-                                {profile.company_name && ` at ${profile.company_name}`}
-                            </div>
-                        )}
-                        {profile.education && (
-                            <div className="flex items-center text-gray-700">
-                                <GraduationCap className="w-5 h-5 mr-2" />
-                                {profile.education}
+                <h1 className="font-semibold text-lg">Profile Details</h1>
+
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => shareProfile(profile.id, profile.name ?? 'Profile')}
+                    className="rounded-full"
+                >
+                    <Share2 className="w-5 h-5" />
+                </Button>
+            </div>
+
+            {/* Profile Header */}
+            <div className="p-4 bg-gradient-to-b from-white to-gray-50">
+                <div className="flex items-start gap-4 mb-4">
+                    <div className="relative">
+                        <div className="w-20 h-20 rounded-full bg-gradient-to-r from-pink-400 to-purple-500 flex items-center justify-center text-white text-2xl font-bold">
+                            {profile.name ? profile.name.charAt(0).toUpperCase() : 'U'}
+                        </div>
+                        {profile.gender && (
+                            <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center text-xs ${profile.gender === 'Male' ? 'bg-blue-500' : 'bg-pink-500'
+                                } text-white`}>
+                                {profile.gender === 'Male' ? 'M' : 'F'}
                             </div>
                         )}
                     </div>
 
-                    {/* Badges */}
-                    <div className="flex flex-wrap gap-2 mb-8">
-                        {profile.community && <Badge variant="secondary">{profile.community}</Badge>}
-                        {profile.caste && <Badge variant="outline">{profile.caste}</Badge>}
-                        {profile.height && <Badge variant="outline">{profile.height}cm</Badge>}
-                        {profile.weight && <Badge variant="outline">{profile.weight}kg</Badge>}
-                        {profile.income && <Badge variant="outline">₹{profile.income}L</Badge>}
-                        {profile.marital_status && <Badge variant="outline">{profile.marital_status}</Badge>}
-                    </div>
+                    <div className="flex-1 min-w-0">
+                        <h1 className="font-bold text-2xl mb-1 truncate">{profile.name || 'Name not provided'}</h1>
+                        <div className="flex items-center gap-2 text-gray-600 mb-2">
+                            {profile.birth_date && (
+                                <span className="flex items-center text-sm">
+                                    <Cake className="w-4 h-4 mr-1" />
+                                    {calculateAge(profile.birth_date)} years
+                                </span>
+                            )}
+                            {profile.height && (
+                                <span className="flex items-center text-sm">
+                                    <Scale className="w-4 h-4 mr-1" />
+                                    {profile.height} cm
+                                </span>
+                            )}
+                        </div>
 
-                    {/* Contact Section */}
-                    <div className="mb-8">
-                        <h2 className="text-xl font-semibold mb-4 flex items-center">
-                            <Phone className="w-5 h-5 mr-2" />
-                            Contact Information
-                        </h2>
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                            {profile.mobile1 && <p className="mb-2"><strong>Primary:</strong> {profile.mobile1}</p>}
-                            {profile.mobile2 && <p><strong>Secondary:</strong> {profile.mobile2}</p>}
+                        <div className="flex flex-wrap gap-1">
+                            {profile.community && <Badge variant="secondary">{profile.community}</Badge>}
+                            {profile.caste && <Badge variant="outline">{profile.caste}</Badge>}
+                            {profile.marital_status && <Badge variant="outline">{profile.marital_status}</Badge>}
                         </div>
                     </div>
+                </div>
+
+                {/* Quick Actions */}
+                <div className="flex gap-2 mb-4">
+                    <Button
+                        className="flex-1"
+                        size="sm"
+                        onClick={() => handleContact('call')}
+                        disabled={!profile.mobile1 && !profile.mobile2}
+                    >
+                        <Phone className="w-4 h-4 mr-1" />
+                        Call
+                    </Button>
+                    <Button
+                        className="flex-1"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleContact('whatsapp')}
+                        disabled={!profile.mobile1 && !profile.mobile2}
+                    >
+                        <MessageCircle className="w-4 h-4 mr-1" />
+                        WhatsApp
+                    </Button>
+                    <Button
+                        size="icon"
+                        variant="outline"
+                        className="shrink-0"
+                    >
+                        <Heart className="w-4 h-4" />
+                    </Button>
+                </div>
+            </div>
+
+            {/* Content Tabs */}
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="px-4">
+                <TabsList className="grid grid-cols-3 mb-4">
+                    <TabsTrigger value="overview">Overview</TabsTrigger>
+                    <TabsTrigger value="family">Family</TabsTrigger>
+                    <TabsTrigger value="contact">Contact</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="overview" className="space-y-4">
+                    {/* Location & Occupation */}
+                    <Card>
+                        <CardContent className="p-4">
+                            <h2 className="font-semibold text-lg mb-3 flex items-center">
+                                <MapPin className="w-5 h-5 mr-2 text-blue-500" />
+                                Location & Career
+                            </h2>
+
+                            <div className="space-y-3">
+                                {profile.location && (
+                                    <div className="flex items-start">
+                                        <Home className="w-5 h-5 mr-3 text-gray-400 shrink-0" />
+                                        <div>
+                                            <p className="text-sm font-medium">Lives in</p>
+                                            <p className="text-gray-600">{profile.location}</p>
+                                            {profile.district && <p className="text-gray-500 text-sm">{profile.district} District</p>}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {profile.occupation && (
+                                    <div className="flex items-start">
+                                        <Briefcase className="w-5 h-5 mr-3 text-gray-400 shrink-0" />
+                                        <div>
+                                            <p className="text-sm font-medium">Occupation</p>
+                                            <p className="text-gray-600">{profile.occupation}</p>
+                                            {profile.company_name && <p className="text-gray-500 text-sm">{profile.company_name}</p>}
+                                            {profile.job_title && <p className="text-gray-500 text-sm">{profile.job_title}</p>}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {profile.income && (
+                                    <div className="flex items-start">
+                                        <IndianRupee className="w-5 h-5 mr-3 text-gray-400 shrink-0" />
+                                        <div>
+                                            <p className="text-sm font-medium">Annual Income</p>
+                                            <p className="text-gray-600">₹{profile.income} Lakhs</p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {profile.education && (
+                                    <div className="flex items-start">
+                                        <GraduationCap className="w-5 h-5 mr-3 text-gray-400 shrink-0" />
+                                        <div>
+                                            <p className="text-sm font-medium">Education</p>
+                                            <p className="text-gray-600">{profile.education}</p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </CardContent>
+                    </Card>
 
                     {/* Personal Details */}
-                    <div className="mb-8">
-                        <h2 className="text-xl font-semibold mb-4 flex items-center">
-                            <Calendar className="w-5 h-5 mr-2" />
-                            Personal Details
-                        </h2>
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {profile.birth_date && (
-                                    <p><strong>Date of Birth:</strong> {new Date(profile.birth_date).toLocaleDateString()}</p>
-                                )}
+                    <Card>
+                        <CardContent className="p-4">
+                            <h2 className="font-semibold text-lg mb-3 flex items-center">
+                                <User className="w-5 h-5 mr-2 text-purple-500" />
+                                Personal Details
+                            </h2>
+
+                            <div className="grid grid-cols-2 gap-3">
                                 {profile.complexion && (
-                                    <p><strong>Complexion:</strong> {profile.complexion}</p>
+                                    <div>
+                                        <p className="text-sm font-medium">Complexion</p>
+                                        <p className="text-gray-600">{profile.complexion}</p>
+                                    </div>
                                 )}
-                                {profile.district && (
-                                    <p><strong>District:</strong> {profile.district}</p>
-                                )}
-                                {profile.job_title && (
-                                    <p><strong>Job Title:</strong> {profile.job_title}</p>
-                                )}
+
                                 {profile.manglik && (
-                                    <p><strong>Manglik:</strong> {profile.manglik}</p>
+                                    <div>
+                                        <p className="text-sm font-medium">Manglik</p>
+                                        <p className="text-gray-600">{profile.manglik}</p>
+                                    </div>
                                 )}
+
+                                {profile.weight && (
+                                    <div>
+                                        <p className="text-sm font-medium">Weight</p>
+                                        <p className="text-gray-600">{profile.weight} kg</p>
+                                    </div>
+                                )}
+
                                 {profile.gotra && (
-                                    <p><strong>Gotra:</strong> {profile.gotra}</p>
+                                    <div className="col-span-2">
+                                        <p className="text-sm font-medium">Gotra</p>
+                                        <p className="text-gray-600">{profile.gotra}</p>
+                                    </div>
                                 )}
                             </div>
-                        </div>
-                    </div>
+                        </CardContent>
+                    </Card>
 
-                    {/* Family Details */}
-                    <div className="mb-8">
-                        <h2 className="text-xl font-semibold mb-4 flex items-center">
-                            <Users className="w-5 h-5 mr-2" />
-                            Family Details
-                        </h2>
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {profile.father_occupation && (
-                                    <p><strong>Father's Occupation:</strong> {profile.father_occupation}</p>
-                                )}
-                                {profile.mother_occupation && (
-                                    <p><strong>Mother's Occupation:</strong> {profile.mother_occupation}</p>
-                                )}
-                                {profile.family_location && (
-                                    <p><strong>Family Location:</strong> {profile.family_location}</p>
-                                )}
-                                {profile.siblings && (
-                                    <p><strong>Siblings:</strong> {profile.siblings}</p>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Bio */}
+                    {/* About */}
                     {profile.bio && (
-                        <div className="mb-8">
-                            <h2 className="text-xl font-semibold mb-4">About</h2>
-                            <div className="bg-gray-50 p-4 rounded-lg">
+                        <Card>
+                            <CardContent className="p-4">
+                                <h2 className="font-semibold text-lg mb-3 flex items-center">
+                                    <BookOpen className="w-5 h-5 mr-2 text-green-500" />
+                                    About
+                                </h2>
                                 <p className="text-gray-700 leading-relaxed">{profile.bio}</p>
-                            </div>
-                        </div>
+                            </CardContent>
+                        </Card>
                     )}
+                </TabsContent>
 
-                    {/* Back Button */}
-                    <div className="text-center">
-                        <Button onClick={() => router.push('/profiles')} size="lg">
-                            <ChevronLeft className="w-4 h-4 mr-2" />
-                            Back to All Profiles
+                <TabsContent value="family">
+                    <Card>
+                        <CardContent className="p-4">
+                            <h2 className="font-semibold text-lg mb-3 flex items-center">
+                                <Users className="w-5 h-5 mr-2 text-orange-500" />
+                                Family Details
+                            </h2>
+
+                            <div className="space-y-4">
+                                {(profile.father_occupation || profile.mother_occupation) && (
+                                    <div>
+                                        <h3 className="font-medium mb-2">Parents</h3>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            {profile.father_occupation && (
+                                                <div className="bg-gray-50 p-3 rounded-lg">
+                                                    <p className="text-sm font-medium">Father's Occupation</p>
+                                                    <p className="text-gray-600">{profile.father_occupation}</p>
+                                                </div>
+                                            )}
+                                            {profile.mother_occupation && (
+                                                <div className="bg-gray-50 p-3 rounded-lg">
+                                                    <p className="text-sm font-medium">Mother's Occupation</p>
+                                                    <p className="text-gray-600">{profile.mother_occupation}</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {profile.family_location && (
+                                    <div>
+                                        <h3 className="font-medium mb-2">Family Location</h3>
+                                        <p className="text-gray-600">{profile.family_location}</p>
+                                    </div>
+                                )}
+
+                                {profile.siblings && (
+                                    <div>
+                                        <h3 className="font-medium mb-2">Siblings</h3>
+                                        <p className="text-gray-600">{profile.siblings}</p>
+                                    </div>
+                                )}
+                            </div>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
+                <TabsContent value="contact">
+                    <Card>
+                        <CardContent className="p-4">
+                            <h2 className="font-semibold text-lg mb-3 flex items-center">
+                                <Phone className="w-5 h-5 mr-2 text-red-500" />
+                                Contact Information
+                            </h2>
+
+                            <div className="space-y-3">
+                                {profile.mobile1 && (
+                                    <div className="bg-gray-50 p-3 rounded-lg">
+                                        <p className="text-sm font-medium mb-1">Primary Mobile</p>
+                                        <p className="text-gray-600">{profile.mobile1}</p>
+                                        <div className="flex gap-2 mt-2">
+                                            <Button size="sm" onClick={() => handleContact('call')}>
+                                                <Phone className="w-4 h-4 mr-1" />
+                                                Call
+                                            </Button>
+                                            <Button size="sm" variant="outline" onClick={() => handleContact('whatsapp')}>
+                                                <MessageCircle className="w-4 h-4 mr-1" />
+                                                WhatsApp
+                                            </Button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {profile.mobile2 && (
+                                    <div className="bg-gray-50 p-3 rounded-lg">
+                                        <p className="text-sm font-medium mb-1">Secondary Mobile</p>
+                                        <p className="text-gray-600">{profile.mobile2}</p>
+                                        <div className="flex gap-2 mt-2">
+                                            <Button size="sm" onClick={() => handleContact('call')}>
+                                                <Phone className="w-4 h-4 mr-1" />
+                                                Call
+                                            </Button>
+                                            <Button size="sm" variant="outline" onClick={() => handleContact('whatsapp')}>
+                                                <MessageCircle className="w-4 h-4 mr-1" />
+                                                WhatsApp
+                                            </Button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {!profile.mobile1 && !profile.mobile2 && (
+                                    <div className="text-center py-8 text-gray-500">
+                                        <Shield className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                                        <p>Contact information is not available</p>
+                                    </div>
+                                )}
+                            </div>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+            </Tabs>
+
+            {/* Fixed bottom contact bar */}
+            {(profile.mobile1 || profile.mobile2) && (
+                <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 shadow-lg">
+                    <div className="flex gap-2 max-w-md mx-auto">
+                        <Button
+                            className="flex-1"
+                            onClick={() => handleContact('call')}
+                        >
+                            <Phone className="w-4 h-4 mr-1" />
+                            Call
+                        </Button>
+                        <Button
+                            className="flex-1"
+                            variant="outline"
+                            onClick={() => handleContact('whatsapp')}
+                        >
+                            <MessageCircle className="w-4 h-4 mr-1" />
+                            WhatsApp
                         </Button>
                     </div>
-                </CardContent>
-            </Card>
+                </div>
+            )}
+        </div>
+    );
+}
+
+// Skeleton loader for better UX
+function ProfileSkeleton() {
+    return (
+        <div className="min-h-screen bg-gray-50">
+            {/* Header Skeleton */}
+            <div className="sticky top-0 z-10 bg-white border-b shadow-sm p-4 flex items-center justify-between">
+                <Skeleton className="w-10 h-10 rounded-full" />
+                <Skeleton className="w-32 h-6 rounded-md" />
+                <Skeleton className="w-10 h-10 rounded-full" />
+            </div>
+
+            {/* Profile Header Skeleton */}
+            <div className="p-4 bg-gradient-to-b from-white to-gray-50">
+                <div className="flex items-start gap-4 mb-4">
+                    <Skeleton className="w-20 h-20 rounded-full" />
+
+                    <div className="flex-1 space-y-2">
+                        <Skeleton className="h-7 w-3/4 rounded-md" />
+                        <Skeleton className="h-4 w-1/2 rounded-md" />
+                        <div className="flex gap-2">
+                            <Skeleton className="h-6 w-16 rounded-full" />
+                            <Skeleton className="h-6 w-20 rounded-full" />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex gap-2 mb-4">
+                    <Skeleton className="h-10 flex-1 rounded-md" />
+                    <Skeleton className="h-10 flex-1 rounded-md" />
+                    <Skeleton className="h-10 w-10 rounded-md" />
+                </div>
+            </div>
+
+            {/* Content Skeleton */}
+            <div className="px-4 space-y-4">
+                <Skeleton className="h-10 w-full rounded-md mb-4" />
+
+                {[1, 2, 3].map(i => (
+                    <Card key={i}>
+                        <CardContent className="p-4">
+                            <Skeleton className="h-6 w-40 mb-3 rounded-md" />
+                            <div className="space-y-3">
+                                {[1, 2, 3].map(j => (
+                                    <div key={j} className="flex items-start">
+                                        <Skeleton className="w-5 h-5 mr-3 rounded-full" />
+                                        <div className="flex-1 space-y-2">
+                                            <Skeleton className="h-4 w-24 rounded-md" />
+                                            <Skeleton className="h-4 w-32 rounded-md" />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
         </div>
     );
 }
