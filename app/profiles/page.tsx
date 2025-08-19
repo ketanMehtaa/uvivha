@@ -98,7 +98,7 @@ export default function Profiles() {
     // Initialize filters and searchQuery from localStorage immediately
     const [filters, setFilters] = useState(() => {
         if (typeof window === 'undefined') return defaultFilters;
-        
+
         try {
             const savedFilters = localStorage.getItem(FILTER_KEY);
             if (savedFilters) {
@@ -113,7 +113,7 @@ export default function Profiles() {
 
     const [searchQuery, setSearchQuery] = useState(() => {
         if (typeof window === 'undefined') return '';
-        
+
         try {
             const savedFilters = localStorage.getItem(FILTER_KEY);
             if (savedFilters) {
@@ -741,16 +741,27 @@ export default function Profiles() {
         </Card>
     );
 
-    const cacheTimestamp = useMemo(() => {
+    // const cacheTimestamp = useMemo(() => {
+    //     const timestamp = localStorage.getItem(CACHE_TIMESTAMP_KEY);
+    //     return timestamp ? parseInt(timestamp) : null;
+    // }, [profiles]);
+
+    // const cacheTimeRemaining = useMemo(() => {
+    //     if (!cacheTimestamp) return 0;
+    //     return Math.max(0, CACHE_DURATION - (Date.now() - cacheTimestamp));
+    // }, [cacheTimestamp]);
+    const [cacheTimestamp, setCacheTimestamp] = useState<number | null>(null);
+    const [cacheTimeRemaining, setCacheTimeRemaining] = useState(0);
+
+    useEffect(() => {
+        // This runs only on the client
         const timestamp = localStorage.getItem(CACHE_TIMESTAMP_KEY);
-        return timestamp ? parseInt(timestamp) : null;
+        if (timestamp) {
+            const ts = parseInt(timestamp);
+            setCacheTimestamp(ts);
+            setCacheTimeRemaining(Math.max(0, CACHE_DURATION - (Date.now() - ts)));
+        }
     }, [profiles]);
-
-    const cacheTimeRemaining = useMemo(() => {
-        if (!cacheTimestamp) return 0;
-        return Math.max(0, CACHE_DURATION - (Date.now() - cacheTimestamp));
-    }, [cacheTimestamp]);
-
     const minutesRemaining = Math.ceil(cacheTimeRemaining / (1000 * 60));
 
     return (
