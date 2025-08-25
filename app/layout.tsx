@@ -6,7 +6,7 @@ import { CSPostHogProvider } from '../lib/posthog'
 import { InstallPWA } from '@/components/pwa/InstallPWA';
 import { Poppins } from 'next/font/google';
 
-const poppins = Poppins({ 
+const poppins = Poppins({
   subsets: ['latin'],
   weight: ['300', '400', '500', '600', '700', '800', '900'],
   display: 'swap',
@@ -170,21 +170,21 @@ export default function RootLayout({
             sizes="180x180"
             href="/apple-touch-icon.png"
           />
-          <link 
-            rel="icon" 
-            type="image/png" 
-            sizes="32x32" 
+          <link
+            rel="icon"
+            type="image/png"
+            sizes="32x32"
             href="/favicon-32x32.png"
           />
-          <link 
-            rel="icon" 
-            type="image/png" 
-            sizes="16x16" 
+          <link
+            rel="icon"
+            type="image/png"
+            sizes="16x16"
             href="/favicon-16x16.png"
           />
-          <link 
-            rel="manifest" 
-            href="/manifest.json" 
+          <link
+            rel="manifest"
+            href="/manifest.json"
             crossOrigin="use-credentials"
           />
           <meta name="theme-color" content="#dc2626" />
@@ -196,6 +196,8 @@ export default function RootLayout({
           <CSPostHogProvider>
             {/* <InstallPWA /> */}
             {children}
+            <Analytics />
+
           </CSPostHogProvider>
           <Analytics />
         </body>
